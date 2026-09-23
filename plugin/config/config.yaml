@@ -1,0 +1,7 @@
+device: auto
+dtype: auto
+workers: 2
+context_tokens: 4096
+prefix_cache_mb: 256
+trust_remote_code: false
+startup_models: []

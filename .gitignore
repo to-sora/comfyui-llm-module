@@ -1,0 +1,12 @@
+.local-tool/
+.local-dep/
+plugin/.local-tool-app/*
+!plugin/.local-tool-app/install-local-app-build.sh
+plugin/data/
+fan-in/
+fan-out/
+dev-log/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/

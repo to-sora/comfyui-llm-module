@@ -1,0 +1,5 @@
+port: 8188
+purpose: ComfyUI Qwen workflows
+policy: public
+enable_whitelist: false
+whitelist: ""
