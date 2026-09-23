@@ -6,3 +6,7 @@ QWEN-07 PENDING: Vision-prefix KV reuse; image requests use full prefill.
 QWEN-07 待完成：視覺前綴 KV 重用；影像請求使用完整 prefill。
 QWEN-08 PENDING: Large MoE, FP8/MXFP4 hardware-specific validation.
 QWEN-08 待完成：大型 MoE、FP8／MXFP4 硬體相容性驗收。
+QWEN-09 BLOCKED: Remote branch publication; git push stopped at five seconds.
+QWEN-09 受阻：遠端分支發佈；git push 達五秒上限後終止。
+QWEN-10 BLOCKED: ComfyUI end-to-end run; dependency clone failed with network EOF.
+QWEN-10 受阻：ComfyUI 端到端執行；相依套件 clone 因網路 EOF 失敗。

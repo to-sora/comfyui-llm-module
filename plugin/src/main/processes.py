@@ -39,6 +39,12 @@ def stop():
     if not STATE.exists():
         return
     state = json.loads(STATE.read_text())
+    try:
+        if psutil.Process(state["pid"]).create_time() != state["created"]:
+            STATE.unlink()
+            return
+    except psutil.NoSuchProcess:
+        pass
     targets = []
     for process in psutil.process_iter(["pid", "create_time"]):
         try:

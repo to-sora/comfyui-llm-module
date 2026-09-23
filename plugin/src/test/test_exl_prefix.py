@@ -13,8 +13,9 @@ class Backend:
         self.generator = SimpleNamespace(sequence_ids=None)
         self.model = SimpleNamespace(forward=self.forward)
 
-    def encode(self, messages, generation):
-        return torch.tensor([[5, 6, 7, 8]])
+    def encode(self, messages, generation=True):
+        token = 9 if messages[-1]['content'].startswith('A') else 10
+        return torch.tensor([[5, 6, 7, 8, token]])
 
     def forward(self, ids, kv, **kwargs):
         for state in kv.key_states + kv.value_states:

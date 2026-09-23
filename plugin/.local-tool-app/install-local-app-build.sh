@@ -24,6 +24,12 @@ case "$profile" in
 esac
 if [ "$profile" = gguf ]; then
   export CMAKE_ARGS="-DGGML_CUDA=${QWEN_CUDA:-ON}"
+  export CMAKE_BUILD_PARALLEL_LEVEL="${CMAKE_BUILD_PARALLEL_LEVEL:-2}"
+  "$venv/bin/python" "$app/src/main/pip_ipv4.py" install \
+    -r "$app/requirements-build.txt"
+  exec "$venv/bin/python" "$app/src/main/pip_ipv4.py" install \
+    --no-build-isolation -c "$app/.local-tool-app/constraints.txt" \
+    -r "$app/requirements-gguf.txt"
 fi
 "$venv/bin/python" "$app/src/main/pip_ipv4.py" install \
   -c "$app/.local-tool-app/constraints.txt" -r "$app/requirements-$profile.txt"

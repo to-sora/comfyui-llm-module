@@ -1,4 +1,6 @@
 import weakref
+from .prefix_tokens import common_prefix
+from .messages import messages
 
 
 class EXLPrefix:
@@ -11,7 +13,8 @@ class EXLPrefix:
         import torch
         b = self.backend
         for text in set(b.spec["prefixes"].values()):
-            ids = b.encode([{"role": "system", "content": text}], False)
+            ids = torch.tensor([common_prefix(lambda probe:
+                b.encode(messages(text, probe))[0].tolist())])
             length = ids.shape[1]
             if length >= b.spec["context_tokens"]:
                 raise ValueError("Configured prefix exceeds context_tokens")

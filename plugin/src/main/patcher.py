@@ -16,7 +16,12 @@ class Patcher:
         return self._engine()
 
     def model_size(self):
-        return sum(b.size for b in self.model.backends) or 2 * 1024**3
+        measured = sum(b.size for b in self.model.backends)
+        if measured:
+            return measured
+        if self.load_device.type == "cuda":
+            return torch.cuda.get_device_properties(self.load_device).total_memory
+        return 0
 
     def loaded_size(self):
         if self.model.resident and self.load_device.type != "cpu":

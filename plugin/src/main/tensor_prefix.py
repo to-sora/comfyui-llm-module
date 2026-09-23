@@ -1,4 +1,6 @@
 from .cache_tree import transfer, byte_size
+from .prefix_tokens import common_prefix
+from .messages import messages
 
 
 class TensorPrefix:
@@ -14,14 +16,12 @@ class TensorPrefix:
         for text in set(b.spec["prefixes"].values()):
             if not text or text in self.entries:
                 continue
-            inputs = b.processor.apply_chat_template(
-                [{"role": "system", "content": text}], tokenize=True,
-                add_generation_prompt=False, return_dict=True,
-                return_tensors="pt", enable_thinking=False)
-            ids = tuple(inputs["input_ids"][0].tolist())
+            ids = tuple(common_prefix(lambda probe:
+                b.encode(messages(text, probe))["input_ids"][0].tolist()))
             if len(ids) >= b.spec["context_tokens"]:
                 raise ValueError("Configured prefix exceeds context_tokens")
-            args = {k: v.to(b.spec["device"]) for k, v in inputs.items()}
+            tokens = torch.tensor([ids], device=b.spec["device"])
+            args = {"input_ids": tokens, "attention_mask": torch.ones_like(tokens)}
             if "logits_to_keep" in inspect.signature(b.model.forward).parameters:
                 args["logits_to_keep"] = 1
             with torch.inference_mode():

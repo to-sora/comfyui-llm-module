@@ -1,3 +1,7 @@
+from .prefix_tokens import common_prefix
+from .messages import messages
+
+
 class GGUFPrefix:
     def __init__(self, model, spec):
         from llama_cpp.llama_chat_format import Jinja2ChatFormatter
@@ -11,8 +15,10 @@ class GGUFPrefix:
             eos_token=decode(model.token_eos()), bos_token=decode(model.token_bos()),
             add_generation_prompt=False)
         for prefix in set(spec["prefixes"].values()):
-            text = formatter(messages=[{"role": "system", "content": prefix}]).prompt
-            ids = model.tokenize(text.encode(), add_bos=False, special=True)
+            def encode(probe):
+                text = formatter(messages=messages(prefix, probe)).prompt
+                return model.tokenize(text.encode(), add_bos=False, special=True)
+            ids = common_prefix(encode)
             if len(ids) >= spec["context_tokens"]:
                 raise ValueError("Configured prefix exceeds context_tokens")
             model.reset()
