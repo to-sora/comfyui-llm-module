@@ -1,5 +1,5 @@
 from .cache import PrefixCache, nbytes, snapshot
-from .hf_inputs import prepare
+from .hf_inputs import prefill_inputs, prepare
 from .hf_load import load
 
 
@@ -23,7 +23,7 @@ class HFEngine:
                 if not prefix or not self.cache.budget:
                     continue
                 self.reset_rope()
-                inputs = prepare(self, prefix)
+                inputs = prefill_inputs(self, prefix)
                 if inputs["input_ids"].shape[-1] >= self.cfg["context_tokens"]:
                     raise ValueError("Prefix exceeds context_tokens")
                 state = self.model(**inputs, use_cache=True).past_key_values

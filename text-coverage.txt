@@ -2,6 +2,7 @@ test_cache: tested PrefixCache; mocks none / 測試 PrefixCache；模擬：無�
 test_pool: tested Pool and Python threads; mocked Engine / 測試 Pool 與執行緒；模擬 Engine。
 test_pool_shutdown: tested Pool and Python threads; mocked Engine / 測試 Pool 與執行緒；模擬 Engine。
 test_nodes: tested QwenBatch and gguf_files; mocked Handle / 測試 QwenBatch 與 gguf_files；模擬 Handle。
+test_hf_tensors: real HFEngine, Qwen3.5, official processor; random weights, mocks none / 真實引擎、模型及官方 processor；隨機權重，模擬：無。
 hf_accept: HFEngine, AutoProcessor and Qwen weights; pending / HFEngine、AutoProcessor 與 Qwen 權重；待執行。
 Colab acceptance: ComfyUI, Qwen, CUDA and HTTPS; pending / ComfyUI、Qwen、CUDA 及 HTTPS；待執行。
 Service smoke: launcher, psutil, OpenSSL and HTTPS; mocked ComfyUI backend / launcher、psutil、OpenSSL 及 HTTPS；ComfyUI 後端模擬。

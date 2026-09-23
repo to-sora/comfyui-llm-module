@@ -11,4 +11,4 @@ if model.endswith(".gguf"):
 else:
     from huggingface_hub import snapshot_download
     print(snapshot_download(model, allow_patterns=[
-        "*.safetensors", "*.json", "*.txt", "*.model", "*.tiktoken", "*.py"]))
+        "*.safetensors", "*.json", "*.txt", "*.jinja", "*.model", "*.tiktoken", "*.py"]))

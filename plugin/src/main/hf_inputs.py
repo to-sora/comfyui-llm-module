@@ -21,3 +21,16 @@ def prepare(engine, prefix, prompt=None, images=None):
     if images:
         raise ValueError("Vision checkpoint requires a chat template")
     return tokenizer(prefix + (prompt or ""), return_tensors="pt").to(engine.model.device)
+
+
+def prefill_inputs(engine, prefix):
+    first = prepare(engine, prefix, "A")
+    second = prepare(engine, prefix, "B")
+    a, b = first["input_ids"][0], second["input_ids"][0]
+    length = 0
+    for left, right in zip(a.tolist(), b.tolist()):
+        if left != right:
+            break
+        length += 1
+    return {key: value[..., :length] for key, value in first.items()
+            if key in {"input_ids", "attention_mask", "token_type_ids", "mm_token_type_ids"}}
