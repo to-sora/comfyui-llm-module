@@ -15,6 +15,8 @@ def load(cfg):
     if device == "auto":
         device = "cuda:0" if torch.cuda.is_available() else "cpu"
     dtype = torch.float32 if device == "cpu" else torch.float16
+    if device.startswith("cuda") and torch.cuda.is_bf16_supported():
+        dtype = torch.bfloat16
     model = cls.from_pretrained(
         cfg["model"], config=config, dtype=dtype,
         device_map={"": device}, attn_implementation="sdpa",

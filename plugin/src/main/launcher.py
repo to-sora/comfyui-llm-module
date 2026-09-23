@@ -1,5 +1,6 @@
 import argparse
 import fcntl
+import signal
 import subprocess
 import sys
 from .network import hosts, port_config
@@ -48,7 +49,10 @@ def main():
         child = subprocess.Popen(cmd, cwd=APP.parent, start_new_session=True)
         record(child.pid)
     try:
-        return child.wait()
+        code = child.wait()
+        if code == -signal.SIGTERM:
+            return 0
+        return 128 - code if code < 0 else code
     except KeyboardInterrupt:
         terminate(child.pid, group=True)
         return 130
