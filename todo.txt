@@ -1,0 +1,12 @@
+QWEN-06 PENDING / 待完成
+Cloud GPU notebook acceptance: text/VLM, prefix equivalence, concurrency, native free and reload.
+雲端 GPU notebook 驗收：文字／視覺、prefix 一致性、併發、原生卸載及重載。
+QWEN-07 PENDING / 待完成
+Hardware matrix: GGUF vision, AWQ, GPTQ, HQQ, Quanto, FP8, compressed tensors and large MoE.
+硬體矩陣：GGUF 視覺、AWQ、GPTQ、HQQ、Quanto、FP8、compressed tensors 及大型 MoE。
+QWEN-08 PENDING / 待完成
+Legacy Qwen remote-code VLM processors; video and Omni audio; image prefix KV sharing.
+舊版 Qwen 遠端程式碼 VLM processor、影片及 Omni 音訊、圖片 prefix KV 共用。
+QWEN-09 PENDING / 待完成
+Layerwise CPU offload and multi-GPU placement. Current unload evicts whole engines.
+逐層 CPU offload 與多 GPU 配置；目前卸載採整個引擎釋放。

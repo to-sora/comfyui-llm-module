@@ -1,0 +1,11 @@
+.local-tool/
+.local-dep/
+**/.local-tool-app/*
+!**/.local-tool-app/install-local-app-build.sh
+**/venv/
+**/data/
+**/__pycache__/
+*.pyc
+fan-in/
+fan-out/
+dev-log/
