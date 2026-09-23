@@ -11,8 +11,10 @@ def normalize(model, backend="transformers", quantization="auto", mode="single",
     if spec["device"] == "auto":
         spec["device"] = "cuda:0" if torch.cuda.is_available() else "cpu"
     spec.pop("startup_models", None)
-    if backend not in {"transformers", "gguf"}:
-        raise ValueError("backend must be transformers or gguf")
+    if backend not in {"transformers", "gguf", "exl2"}:
+        raise ValueError("backend must be transformers, gguf, or exl2")
+    if backend != "transformers" and quantization != "auto":
+        raise ValueError("GGUF and EXL2 require quantization=auto")
     if mode not in {"single", "concurrent"}:
         raise ValueError("mode must be single or concurrent")
     if quantization not in {"auto", "nf4", "fp4", "int8"}:

@@ -7,7 +7,7 @@ class QwenLoader:
     def INPUT_TYPES(cls):
         return {"required": {
             "model": ("STRING", {"default": "Qwen/Qwen3.5-0.8B"}),
-            "backend": (["transformers", "gguf"],),
+            "backend": (["transformers", "gguf", "exl2"],),
             "quantization": (["auto", "nf4", "fp4", "int8"],),
             "mode": (["single", "concurrent"],),
         }, "optional": {

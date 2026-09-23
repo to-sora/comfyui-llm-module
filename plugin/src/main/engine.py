@@ -9,9 +9,11 @@ class Engine:
         from .patcher import Patcher
         from .gguf_backend import GGUFBackend
         from .tensor_backend import TensorBackend
+        from .exl_backend import EXLBackend
         self.spec = spec
         self.lock = threading.RLock()
-        backend = GGUFBackend if spec["backend"] == "gguf" else TensorBackend
+        backend = {"gguf": GGUFBackend, "transformers": TensorBackend,
+                   "exl2": EXLBackend}[spec["backend"]]
         self.backends = [backend(spec) for _ in range(spec["workers"])]
         self.resident = False
         self.patcher = Patcher(self)

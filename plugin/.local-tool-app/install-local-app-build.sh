@@ -19,7 +19,7 @@ fi
 "$venv/bin/python" "$app/src/main/constraints.py"
 profile="${1:-core}"
 case "$profile" in
-  core|bnb|gptq|hqq|quanto|compressed|torchao|gguf|test) ;;
+  core|bnb|gptq|hqq|quanto|compressed|torchao|gguf|exl2|test) ;;
   *) echo 'Unknown dependency profile / 相依套件類型錯誤' >&2; exit 2 ;;
 esac
 if [ "$profile" = gguf ]; then

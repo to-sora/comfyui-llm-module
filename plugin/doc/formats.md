@@ -11,6 +11,7 @@
 | FP8 / MXFP4 and other Transformers quantizers | transformers | checkpoint kernel dependencies |
 | GGUF Q2–Q8, K-quants, IQ-quants | gguf | gguf |
 | GGUF vision | gguf + matching mmproj | gguf |
+| EXL2 text | exl2, CUDA | exl2 |
 
 ```bash
 bash plugin/install-local-app-build.sh bnb
@@ -30,12 +31,12 @@ NF4／FP4／INT8 在載入時量化。GGUF 沿用模型聊天模板及 llama.cpp
 NF4／FP4／INT8 在加载时量化。GGUF 沿用模型聊天模板及 llama.cpp 核心。
 架构与加速器兼容性由后端决定；验收结果限定所选模型与格式。
 
-Original Qwen/Qwen-VL remote-code checkpoints and EXL2 remain in `todo.txt`.
+Original Qwen/Qwen-VL adapters and EXL2 vision remain in `todo.txt`.
 Qwen3.6-35B-A3B uses Qwen3.5 MoE architecture; its memory requirement exceeds
 the default Colab acceptance model.
 
-第一代 Qwen／Qwen-VL remote-code 模型與 EXL2 列於待完成項目。
-第一代 Qwen／Qwen-VL remote-code 模型与 EXL2 列于待完成项目。
+第一代 Qwen／Qwen-VL 與 EXL2 視覺列於待完成項目；EXL2 文字適配器待 GPU 驗收。
+第一代 Qwen／Qwen-VL 与 EXL2 视觉列于待完成项目；EXL2 文字适配器待 GPU 验收。
 
 Sources / 來源 / 来源:
 [Qwen3.6](https://huggingface.co/Qwen/Qwen3.6-35B-A3B),

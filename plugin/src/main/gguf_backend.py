@@ -28,13 +28,14 @@ class GGUFBackend:
         self.size = Path(path).stat().st_size
         if projector:
             self.size += Path(projector).stat().st_size
-        from .gguf_prefix import warm
-        self.cache = warm(self.model, self.spec)
+        from .gguf_prefix import GGUFPrefix
+        self.cache = GGUFPrefix(self.model, self.spec)
 
     def generate(self, prompt, prefix, images, tokens, temperature):
         from .interrupt import check_interrupt
         if images and not self.spec.get("mmproj_file"):
             raise ValueError("GGUF vision requires its matching mmproj_file")
+        self.cache.restore(self.model, prefix, bool(images))
         pieces = []
         stream = self.model.create_chat_completion(
             messages=llama_messages(prefix, prompt, images),
