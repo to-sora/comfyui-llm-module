@@ -1,0 +1,5 @@
+test_cache: real Qwen3/Qwen3.5 miniature architectures and KV/recurrent cache; tokenizer, CUDA and pretrained weights excluded. 真實架構快取；分詞器、CUDA、預訓練權重待驗。
+test_concurrency: real executor and lifecycle lock; ComfyUI manager and inference weights mocked. 真實執行緒與鎖；ComfyUI 管理器與權重使用替身。
+test_lifecycle: real patcher protocol and engine lifecycle; backend weights mocked. 真實適配器與生命週期；權重使用替身。
+test_network: real config/address parser; interface inventory mocked for tunnel selection. 真實設定解析；網卡清單使用替身。
+Colab notebook: real ComfyUI HTTPS graph, Qwen3.5-0.8B, GPU and native /free; execution pending. 真實 ComfyUI、GPU 與原生卸載；執行待完成。

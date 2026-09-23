@@ -38,10 +38,10 @@ class Engine:
                 torch.cuda.empty_cache()
 
     def generate(self, prompts, prefix, images, tokens, temperature):
-        from comfy import model_management as mm
+        from .lifecycle import ensure_loaded
         from .interrupt import check_interrupt
         with self.lock:
-            mm.load_models_gpu([self.patcher], force_full_load=True)
+            ensure_loaded(self)
             available = Queue()
             for backend in self.backends:
                 available.put(backend)

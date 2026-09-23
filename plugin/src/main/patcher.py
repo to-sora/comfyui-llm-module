@@ -49,7 +49,7 @@ class Patcher:
         return []
 
     def is_clone(self, other):
-        return False
+        return self.model is other.model
 
     def is_dynamic(self):
         return False

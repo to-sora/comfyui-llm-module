@@ -16,10 +16,10 @@ class QwenLoader:
         }}
 
     def load(self, **kwargs):
-        from comfy import model_management as mm
+        from .lifecycle import ensure_loaded
         from .spec import normalize
         from .registry import acquire
         engine = acquire(normalize(**kwargs))
         with engine.lock:
-            mm.load_models_gpu([engine.patcher], force_full_load=True)
+            ensure_loaded(engine)
         return (engine,)
