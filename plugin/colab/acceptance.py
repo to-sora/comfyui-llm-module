@@ -43,11 +43,9 @@ def main():
              "inference": first, "vision": vision, "released_gpu_bytes": released,
              "startup_prefix_ram": True, "cache_equivalence": True,
              "single_and_concurrent": True, "native_free_and_reload": True}
-    folder = ROOT / "fan-out"
-    folder.mkdir(exist_ok=True)
-    (folder / "colab-result.json").write_text(json.dumps(proof, ensure_ascii=False, indent=2))
-    print(json.dumps(proof, ensure_ascii=False, indent=2))
+    return proof
 
 
 if __name__ == "__main__":
-    main()
+    from .report import checked
+    checked(main)

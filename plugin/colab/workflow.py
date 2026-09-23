@@ -1,9 +1,9 @@
 def workflow(prompt="Name one primary color.", mode="single", batch=False,
-             image=False, model="Qwen/Qwen3.5-0.8B", cached=True):
+             image=False, model="Qwen/Qwen3.5-0.8B", cached=True, device="cuda:0"):
     graph = {
         "1": {"class_type": "QwenModel", "inputs": {
             "model": model, "backend": "auto", "quantization": "auto",
-            "device": "cuda:0", "mode": mode}},
+            "device": device, "mode": mode}},
         "2": {"class_type": "QwenBatch" if batch else "QwenGenerate", "inputs": {
             "model": ["1", 0], "prompt": prompt, "prefix": "assistant",
             "max_tokens": 32, "temperature": 0.0, "prefix_cache": cached}},

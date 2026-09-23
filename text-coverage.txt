@@ -6,3 +6,6 @@ test_hf_tensors: real HFEngine, Qwen3.5, official processor; random weights, moc
 hf_accept: HFEngine, AutoProcessor and Qwen weights; pending / HFEngine、AutoProcessor 與 Qwen 權重；待執行。
 Colab acceptance: ComfyUI, Qwen, CUDA and HTTPS; pending / ComfyUI、Qwen、CUDA 及 HTTPS；待執行。
 Service smoke: launcher, psutil, OpenSSL and HTTPS; mocked ComfyUI backend / launcher、psutil、OpenSSL 及 HTTPS；ComfyUI 後端模擬。
+native_accept: real ComfyUI manager, Pool, HFEngine; random Qwen3.5 weights, mocks none / 原生管理器與引擎；隨機權重，模擬：無。
+service_accept: real ComfyUI HTTPS, nodes, Qwen3.5; random weights, mocks none / 真實服務、節點與模型；隨機權重，模擬：無。
+test_colab_report: real report files; mocked inference callback and destination / 真實報告檔案；模擬推理回呼及儲存路徑。

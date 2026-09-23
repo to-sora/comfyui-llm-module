@@ -16,3 +16,16 @@ These tests cover cache consistency and text/image state isolation. Trained-mode
 Missing processor assets produce an explicit tensor-suite skip; the asset installer enables those tests.
 缺少 processor 素材時，張量測試會顯示跳過；安裝上述素材後啟用。
 缺少 processor 素材时，张量测试会显示跳过；安装上述素材后启用。
+
+```bash
+plugin/venv/bin/python -m plugin.src.test.native_accept
+plugin/venv/bin/python -m plugin.src.test.service_accept
+```
+
+The installed ComfyUI provides native lifecycle and HTTPS API checks on CPU, with random Qwen3.5 weights and real inference code.
+已安裝的 ComfyUI 提供 CPU 原生生命週期與 HTTPS API 測試，採用 Qwen3.5 隨機權重及真實推理程式。
+已安装的 ComfyUI 提供 CPU 原生生命周期与 HTTPS API 测试，采用 Qwen3.5 随机权重及真实推理程序。
+
+Service proof: `fan-out/cpu-service-result.json`; log: `plugin/data/comfy-test.log`.
+服務證據及紀錄位於上述路徑；測試結束會停止服務並還原啟動設定。
+服务证据及记录位于上述路径；测试结束会停止服务并还原启动配置。

@@ -11,5 +11,5 @@ QWEN-09 PENDING / 待完成
 Layerwise CPU offload and multi-GPU placement. Current unload evicts whole engines.
 逐層 CPU offload 與多 GPU 配置；目前卸載採整個引擎釋放。
 QWEN-10 PENDING / 待完成
-Local trained-weight and full ComfyUI integration acceptance; dependency transfers exceeded the session trial budget.
-本機訓練權重及完整 ComfyUI 整合驗收；依賴傳輸超過本次嘗試時限。
+Trained-weight acceptance pending after interrupted transfers. Real ComfyUI HTTPS CPU integration passes with random Qwen3.5 weights.
+權重傳輸中斷，訓練權重驗收待完成。真實 ComfyUI HTTPS CPU 整合已以 Qwen3.5 隨機權重通過。
