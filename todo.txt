@@ -1,0 +1,8 @@
+QWEN-05 PENDING: GPU/Colab execution and quantized checkpoint matrix.
+QWEN-05 待完成：GPU／Colab 執行與量化模型矩陣驗收。
+QWEN-06 PENDING: Original Qwen/Qwen-VL remote-code adapters and EXL2 backend.
+QWEN-06 待完成：第一代 Qwen／Qwen-VL remote-code 適配器與 EXL2 後端。
+QWEN-07 PENDING: Vision-prefix KV reuse; image requests use full prefill.
+QWEN-07 待完成：視覺前綴 KV 重用；影像請求使用完整 prefill。
+QWEN-08 PENDING: Large MoE, FP8/MXFP4 hardware-specific validation.
+QWEN-08 待完成：大型 MoE、FP8／MXFP4 硬體相容性驗收。
