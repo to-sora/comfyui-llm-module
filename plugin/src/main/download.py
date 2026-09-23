@@ -1,6 +1,6 @@
 import sys
 from .ipv4 import enable
-from .settings import environment
+from .settings import APP, environment
 
 enable()
 environment()
@@ -10,5 +10,5 @@ if model.endswith(".gguf"):
     print(resolve(model))
 else:
     from huggingface_hub import snapshot_download
-    print(snapshot_download(model, allow_patterns=[
+    print(snapshot_download(model, cache_dir=str(APP / "data/hf/hub"), allow_patterns=[
         "*.safetensors", "*.json", "*.txt", "*.jinja", "*.model", "*.tiktoken", "*.py"]))

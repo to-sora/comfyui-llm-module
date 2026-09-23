@@ -1,6 +1,7 @@
 from pathlib import Path
 import torch
 from transformers import AutoConfig, AutoModelForImageTextToText, AutoProcessor
+from plugin.src.main.settings import APP
 
 MODEL = "Qwen/Qwen3.5-0.8B"
 
@@ -8,7 +9,8 @@ MODEL = "Qwen/Qwen3.5-0.8B"
 def fixture(path):
     """Small random-weight model; real Qwen architecture and official processor."""
     torch.manual_seed(7)
-    cfg = AutoConfig.from_pretrained(MODEL, local_files_only=True)
+    local = dict(local_files_only=True, cache_dir=str(APP / "data/hf/hub"))
+    cfg = AutoConfig.from_pretrained(MODEL, **local)
     text = cfg.text_config
     text.hidden_size = 32
     text.intermediate_size = 64
@@ -27,7 +29,7 @@ def fixture(path):
     vision.num_heads = 2
     model = AutoModelForImageTextToText.from_config(cfg).eval()
     model.save_pretrained(path)
-    processor = AutoProcessor.from_pretrained(MODEL, local_files_only=True)
+    processor = AutoProcessor.from_pretrained(MODEL, **local)
     processor.image_processor.size = {"shortest_edge": 1024, "longest_edge": 4096}
     processor.save_pretrained(path)
     return str(Path(path).resolve())

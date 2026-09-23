@@ -2,7 +2,9 @@ def load(cfg):
     import torch
     import transformers as tr
     from .quantization import configuration
-    common = {"trust_remote_code": cfg["trust_remote_code"]}
+    from .settings import APP
+    common = {"trust_remote_code": cfg["trust_remote_code"],
+              "cache_dir": str(APP / "data/hf/hub")}
     config = tr.AutoConfig.from_pretrained(cfg["model"], **common)
     vision = hasattr(config, "vision_config")
     if vision:

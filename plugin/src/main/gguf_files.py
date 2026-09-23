@@ -9,12 +9,14 @@ def resolve(name):
             raise FileNotFoundError(name)
         return str(path.resolve())
     from huggingface_hub import hf_hub_download
+    from .settings import APP
+    cache = str(APP / "data/hf/hub")
     repo, filename = name.split("::", 1)
     match = re.search(r"-00001-of-(\d{5})\.gguf$", filename)
     if match:
         for part in range(2, int(match[1]) + 1):
-            hf_hub_download(repo, filename.replace("-00001-of-", f"-{part:05}-of-"))
-    return hf_hub_download(repo, filename)
+            hf_hub_download(repo, filename.replace("-00001-of-", f"-{part:05}-of-"), cache_dir=cache)
+    return hf_hub_download(repo, filename, cache_dir=cache)
 
 
 def chat_prefix(prefix):
