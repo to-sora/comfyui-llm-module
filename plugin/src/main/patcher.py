@@ -1,4 +1,5 @@
 import torch
+import weakref
 
 
 class Patcher:
@@ -6,9 +7,13 @@ class Patcher:
     parent = None
 
     def __init__(self, engine):
-        self.model = engine
+        self._engine = weakref.ref(engine)
         self.load_device = torch.device(engine.spec["device"])
         self.offload_device = torch.device("cpu")
+
+    @property
+    def model(self):
+        return self._engine()
 
     def model_size(self):
         return sum(b.size for b in self.model.backends) or 2 * 1024**3
