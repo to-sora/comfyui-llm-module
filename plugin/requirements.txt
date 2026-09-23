@@ -3,4 +3,5 @@ accelerate==1.15.0
 PyYAML==6.0.2
 Pillow==11.3.0
 psutil==7.0.0
-httpx[socks]==0.28.1
+httpx==0.28.1
+socksio==1.0.0
