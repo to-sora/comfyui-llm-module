@@ -22,6 +22,10 @@ Text requests reuse exact token prefixes. Each request receives a cache copy.
 文字請求重用相同 token prefix，請求各自取得快取副本；混合注意力狀態隨副本保存。
 文本请求复用相同 token prefix，请求各自取得缓存副本；混合注意力状态随副本保存。
 
+QwenBatch executes concurrent requests; ComfyUI schedules workflows through its host queue.
+QwenBatch 執行併發請求；工作流程沿用 ComfyUI 佇列排程。
+QwenBatch 执行并发请求；工作流沿用 ComfyUI 队列调度。
+
 Image requests use full prefill; image-dependent positions require separate state.
 圖片請求使用完整預填，以隔離圖片相關的位置與狀態。
 图片请求使用完整预填，以隔离图片相关的位置与状态。

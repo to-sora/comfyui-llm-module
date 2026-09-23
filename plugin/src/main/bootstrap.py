@@ -10,7 +10,7 @@ def initialize():
     environment()
     from aiohttp import web
     from server import PromptServer
-    from .runtime import get_handle, status
+    from .runtime import LOCK, get_handle, status
     from .network import install_whitelist
     install_whitelist(PromptServer.instance.app)
 
@@ -22,8 +22,9 @@ def initialize():
     for item in read("config.yaml")["startup_models"]:
         try:
             handle = get_handle(options(**item))
-            with handle.pool.lease(handle.ensure):
-                pass
+            with LOCK:
+                with handle.pool.lease(handle.ensure):
+                    pass
             PRELOADED.append(handle)
         except Exception:
             logging.exception("Qwen startup prefill failed / Qwen 啟動預填失敗")

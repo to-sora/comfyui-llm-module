@@ -29,11 +29,9 @@ class Handle:
     def ensure(self):
         from comfy import model_management as mm
         with LOCK:
-            if self.patcher not in mm.loaded_models():
+            if self.patcher not in mm.loaded_models() or not self.pool.engines:
                 mm.free_memory(1e30, self.patcher.load_device)
                 mm.load_model_gpu(self.patcher)
-            elif not self.pool.engines:
-                self.pool.load()
 
     def generate(self, prompt, prefix, images=None, max_tokens=128, temperature=0.0,
                  prefix_cache=True):
@@ -63,6 +61,7 @@ def status():
     import torch
     with LOCK:
         handles = list(HANDLES.values())
-    return {"models": [{"model": h.cfg["model"], **h.pool.status()} for h in handles],
+    return {"models": [{"model": h.cfg["model"], "mode": h.cfg["mode"],
+                        **h.pool.status()} for h in handles],
             "cuda_allocated": torch.cuda.memory_allocated() if torch.cuda.is_available() else 0,
             "cuda_reserved": torch.cuda.memory_reserved() if torch.cuda.is_available() else 0}

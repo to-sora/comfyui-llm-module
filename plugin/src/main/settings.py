@@ -12,8 +12,12 @@ def read(name):
 
 def environment():
     data = APP / "data"
-    for key, suffix in {"HF_HOME": "hf", "TORCH_HOME": "torch",
-                        "XDG_CACHE_HOME": "cache", "TMPDIR": "tmp"}.items():
+    locations = {"HF_HOME": "hf", "TORCH_HOME": "torch",
+                 "HF_HUB_CACHE": "hf/hub", "HUGGINGFACE_HUB_CACHE": "hf/hub",
+                 "XDG_CACHE_HOME": "cache", "TMPDIR": "tmp",
+                 "TRITON_CACHE_DIR": "triton", "CUDA_CACHE_PATH": "cuda",
+                 "TORCHINDUCTOR_CACHE_DIR": "inductor"}
+    for key, suffix in locations.items():
         path = data / suffix
         path.mkdir(parents=True, exist_ok=True)
         os.environ[key] = str(path)

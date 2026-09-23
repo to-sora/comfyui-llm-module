@@ -6,10 +6,14 @@ from .gguf_files import chat_prefix, image_messages, resolve
 class GGUFEngine:
     def __init__(self, cfg):
         import torch
-        from llama_cpp import Llama
+        from llama_cpp import Llama, llama_supports_gpu_offload
         self.cfg = cfg
         handler = None
         gpu = cfg["device"] != "cpu" and torch.cuda.is_available()
+        if cfg["quantization"] not in {"auto", "none"}:
+            raise ValueError("GGUF contains quantization; select auto")
+        if gpu and not llama_supports_gpu_offload():
+            raise RuntimeError("GGUF CUDA build required: plugin/install-gguf.sh")
         if cfg["mmproj"]:
             from llama_cpp.llama_chat_format import MTMDChatHandler
             handler = MTMDChatHandler(resolve(cfg["mmproj"]), use_gpu=gpu)
@@ -55,5 +59,4 @@ class GGUFEngine:
 
     def close(self):
         self.model.close()
-        self.cache.entries.clear()
-        self.cache.bytes = 0
+        self.cache = PrefixCache(0)

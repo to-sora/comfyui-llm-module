@@ -1,4 +1,6 @@
-Cache: real prefix lookup and RAM eviction; model KV tensors deferred to cloud / 真實 prefix 查找及 RAM 淘汰；模型 KV tensor 留待雲端。
-Pool: real threading, admission and lifecycle; inference engine mocked / 真實執行緒、排程與生命週期；推理引擎模擬。
-Nodes: real batch node and GGUF message formatting; model output mocked / 真實批次節點及 GGUF 訊息格式；模型輸出模擬。
-Colab: real ComfyUI, Qwen weights, CUDA and HTTPS; execution pending / 真實 ComfyUI、Qwen 權重、CUDA 及 HTTPS；執行待完成。
+test_cache: tested PrefixCache; mocks none / 測試 PrefixCache；模擬：無。
+test_pool: tested Pool and Python threads; mocked Engine / 測試 Pool 與執行緒；模擬 Engine。
+test_pool_shutdown: tested Pool and Python threads; mocked Engine / 測試 Pool 與執行緒；模擬 Engine。
+test_nodes: tested QwenBatch and gguf_files; mocked Handle / 測試 QwenBatch 與 gguf_files；模擬 Handle。
+hf_accept: HFEngine, AutoProcessor and Qwen weights; pending / HFEngine、AutoProcessor 與 Qwen 權重；待執行。
+Colab acceptance: ComfyUI, Qwen, CUDA and HTTPS; pending / ComfyUI、Qwen、CUDA 及 HTTPS；待執行。

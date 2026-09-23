@@ -1,4 +1,4 @@
-from .runtime import get_handle
+from .runtime import LOCK, get_handle
 from .settings import options
 
 
@@ -25,6 +25,7 @@ class QwenModel:
              mmproj="", trust_remote_code=False):
         handle = get_handle(options(model, backend, quantization, device, mode,
                                     mmproj, trust_remote_code))
-        with handle.pool.lease(handle.ensure):
-            pass
+        with LOCK:
+            with handle.pool.lease(handle.ensure):
+                pass
         return (handle,)

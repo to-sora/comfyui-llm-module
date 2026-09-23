@@ -34,15 +34,12 @@ class Pool:
         engine = None
         try:
             with self.cv:
-                ready = self.cv.wait_for(lambda: not self.closing,
-                                         self.cfg["queue_timeout"])
-                if not ready:
-                    raise TimeoutError("Model unload timeout")
-                ensure()
-                ready = self.cv.wait_for(lambda: self.idle and not self.closing,
-                                         self.cfg["queue_timeout"])
+                ready = self.cv.wait_for(
+                    lambda: not self.closing and (self.idle or not self.engines),
+                    self.cfg["queue_timeout"])
                 if not ready:
                     raise TimeoutError("Request queue timeout / 請求等候逾時")
+                ensure()
                 engine = self.idle.pop()
                 self.active += 1
                 self.peak_active = max(self.peak_active, self.active)
