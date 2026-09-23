@@ -15,12 +15,15 @@ def request(path, body=None):
     req = urllib.request.Request(BASE + path, data=data,
                                  headers={"Content-Type": "application/json"})
     with OPENER.open(req, timeout=30) as response:
-        return json.load(response)
+        body = response.read()
+        return json.loads(body) if body.strip() else None
 
 
-def ready(seconds=900):
+def ready(seconds=900, process=None):
     deadline = time.monotonic() + seconds
     while time.monotonic() < deadline:
+        if process is not None and process.poll() is not None:
+            raise RuntimeError(f"ComfyUI exited {process.returncode}; plugin/data/comfy.log")
         try:
             info = request("/object_info")
             assert "QwenGenerate" in info, "Qwen extension import failed; plugin/data/comfy.log"

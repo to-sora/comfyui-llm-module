@@ -12,6 +12,8 @@ def read(name):
 
 def environment():
     data = APP / "data"
+    for name in ("user", "input", "output"):
+        (data / name).mkdir(parents=True, exist_ok=True)
     locations = {"HF_HOME": "hf", "TORCH_HOME": "torch",
                  "HF_HUB_CACHE": "hf/hub", "HUGGINGFACE_HUB_CACHE": "hf/hub",
                  "XDG_CACHE_HOME": "cache", "TMPDIR": "tmp",
