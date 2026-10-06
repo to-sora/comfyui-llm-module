@@ -41,11 +41,11 @@ class Engine:
     def pending(self, sid):
         return [r for r in flat(self.db, sid, "job") if r["status"] == "pending"]
 
-    def enqueue(self, sid, mode, args, settings):
+    def enqueue(self, sid, mode, args, settings, actor):
         if len(self.pending(sid)) >= read()["max_pending_jobs"]:
             raise ValueError("Pending list is full; submit or cancel jobs")
         return create(self.db, sid, "job", {"mode": mode, "args": args,
-            "settings": settings, "status": "pending", "created": time.time()})
+            "settings": settings, "actor": actor, "status": "pending", "created": time.time()})
 
     def batch(self, sid):
         jobs = self.pending(sid)
@@ -61,6 +61,8 @@ class Engine:
                 await self.cancel(sid, job)
         elif value["kind"] in ("job", "chat") and value["status"] in ("pending", "queued", "running"):
             update(self.db, sid, ident, cancel=True)
+            if value.get("batch") is not None and value["kind"] == "chat":
+                await self.cancel(sid, value["batch"])
             if value.get("prompt_id"):
                 await self.comfy.cancel(value["prompt_id"])
             elif value["status"] != "running":

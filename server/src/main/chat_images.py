@@ -7,7 +7,7 @@ async def attach(e, sid, ids, text):
     content = [{"type": "text", "text": text}]
     for ident in ids[:4]:
         image = await assets.load(e.db, e.comfy, sid, ident)
-        image.thumbnail((1024, 1024))
+        image.thumbnail((512, 512))
         stream = io.BytesIO()
         image.convert("RGB").save(stream, format="JPEG", quality=90)
         url = "data:image/jpeg;base64," + base64.b64encode(stream.getvalue()).decode()

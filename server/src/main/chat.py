@@ -5,24 +5,23 @@ from .chat_request import complete
 from .discovery import llm_settings
 from .records import create, get, update, flat
 from .settings import APP, read
-from .tool_schema import schemas
+from .chat_context import build, brief
+from .chat_memory import summary
 
 
 async def run(e, sid, ident):
     job = get(e.db, sid, ident)
     settings = llm_settings(e.caps, job["settings"])
-    system = (APP / "config/content-config/assistant.txt").read_text()
+    system = (APP / "config/content-config/assistant.txt").read_text() + "\n" + summary(e, sid)
     messages = [{"role": "system", "content": system}]
-    for old in flat(e.db, sid, "message")[-4:]:
-        if old["role"] in ("user", "assistant") and isinstance(old.get("content"), str):
-            messages.append({"role": old["role"], "content": old["content"]})
     user = await attach(e, sid, job.get("images", []), job["text"])
     messages.append(user)
-    create(e.db, sid, "message", {**compact(user), "chat": ident})
+    create(e.db, sid, "message", {"role": "user", "content": job["text"], "images": job.get("images", []), "chat": ident})
     for step in range(read()["max_chat_rounds"]):
         update(e.db, sid, ident, round=step + 1)
-        payload = {**settings, "messages": messages, "tools": schemas(e.caps),
-                   "temperature": 0, "enable_thinking": False}
+        context, schema = build(e, sid, ident, messages)
+        payload = {**settings, "messages": context, "tools": schema,
+                   "temperature": 0, "enable_thinking": False, "parallel_tool_calls": False}
         reply = await complete(e, sid, ident, payload)
         message = reply["choices"][0]["message"]
         messages.append(message)
@@ -37,7 +36,7 @@ async def run(e, sid, ident):
             function = call["function"]
             try:
                 args = json.loads(function["arguments"])
-                result = await tools.invoke(e, sid, function["name"], args, inline=True)
+                result = brief(await tools.invoke(e, sid, function["name"], args, inline=True))
             except Exception as exc:
                 result = create(e.db, sid, "result", {"error": str(exc)})
             content = json.dumps(result, ensure_ascii=False)

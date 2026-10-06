@@ -13,6 +13,9 @@ async def complete(e, sid, ident, payload):
                 await e.comfy.cancel(prompt_id)
             await asyncio.wait([task], timeout=0.25)
         value = await task
+        from .provenance import snapshot
+        status = await e.comfy.request("/llm/status")
+        update(e.db, sid, ident, actual_model=snapshot(status, payload["model"]))
         if get(e.db, sid, ident).get("cancel"):
             raise ValueError("Cancelled")
         return value

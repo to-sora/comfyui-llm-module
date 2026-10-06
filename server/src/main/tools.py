@@ -1,8 +1,9 @@
 from . import assets, batches
-from .records import create, get
+from .records import create, get, update
 from .discovery import llm_settings
 from .image_options import options
 from .edit_schema import validate
+from .provenance import actor
 
 
 async def invoke(e, sid, name, args, inline=False):
@@ -20,16 +21,18 @@ async def invoke(e, sid, name, args, inline=False):
             if value["kind"] not in ("image", "job"):
                 raise ValueError("Source and mask must refer to images")
             values[field] = args[field]
-        return e.enqueue(sid, mode, values, llm_settings(e.caps, settings))
+        return e.enqueue(sid, mode, values, llm_settings(e.caps, settings), actor(e, sid, inline))
     if name.startswith("image_edit_"):
         operation = args.get("operation") if name == "image_edit_basic" else name.removeprefix("image_edit_")
         params = args.get("params", {k: v for k, v in args.items() if k not in ("source", "operation")})
         get(e.db, sid, args["source"])
         return e.enqueue(sid, "cpu", {"source": args["source"], "operation": operation,
-            "params": validate(operation, params)}, llm_settings(e.caps, settings))
+            "params": validate(operation, params)}, llm_settings(e.caps, settings), actor(e, sid, inline))
     if name in ("sent_all_pending", "pending_sent"):
         batch = e.batch(sid)
         if inline:
+            if e.active and e.active["kind"] == "chat":
+                update(e.db, sid, e.active["id"], batch=batch["id"])
             batch = await batches.run(e, sid, batch["id"])
         else:
             e.spawn(batches.scheduled(e, sid, batch["id"]))
@@ -43,6 +46,9 @@ async def invoke(e, sid, name, args, inline=False):
         return await e.cancel(sid, args["id"])
     if name == "list_models":
         return create(e.db, sid, "result", {"models": e.caps["profiles"], "checkpoints": e.caps["checkpoints"]})
+    if name == "image_settings":
+        from .model_tools import select
+        return select(e, sid, args)
     if name == "view_images":
         ids = [assets.resolve(e.db, sid, x)["id"] for x in args["ids"]]
         if not 1 <= len(ids) <= 4:

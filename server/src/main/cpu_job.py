@@ -19,4 +19,5 @@ async def execute(e, sid, job):
     else:
         output = await asyncio.to_thread(edit_color.apply, image, op, params)
     return assets.save(e.db, sid, output, op, parents, parameters=params,
-                       llm=job["settings"], source_settings=source.get("settings"))
+                       requested_llm=job["settings"], actor=job.get("actor"),
+                       source_settings=source.get("settings", source.get("source_settings")))

@@ -16,6 +16,9 @@ def schemas(caps, expanded=False):
         "width": field("integer", maximum=4096), "height": field("integer", maximum=4096),
         "seed": field("integer"), "steps": field("integer"), "cfg": field("number"),
         "denoise": field("number", minimum=0, maximum=1)}
+    if expanded:
+        from .model_tools import schema
+        props.update(schema(caps)["function"]["parameters"]["properties"])
     result = [tool("image_gen_sdxl_text", "Queue a text-to-image job; call sent_all_pending to generate.", props, ["prompt"]),
         tool("image_gen_sdxl_image", "Queue image-to-image using a source image/job ID.",
              {**props, "source": ident}, ["source", "prompt"]),
@@ -41,4 +44,6 @@ def schemas(caps, expanded=False):
             if spec[0] == "enum":
                 args[key]["enum"] = spec[2:]
         result.append(tool("image_edit_" + op, "Queue CPU " + op, args, ["source"]))
+    if expanded:
+        result.append(schema(caps))
     return result

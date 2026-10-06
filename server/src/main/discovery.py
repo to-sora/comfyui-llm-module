@@ -36,4 +36,9 @@ def llm_settings(caps, value):
     if not 128 <= int(result["context_tokens"]) <= 262144:
         raise ValueError("Context must be between 128 and 262144")
     result["context_tokens"] = int(result["context_tokens"])
+    result["max_tokens"] = int(result["max_tokens"])
+    if not 1 <= result["max_tokens"] < result["context_tokens"]:
+        raise ValueError("Reply tokens must be positive and smaller than context")
+    if result["quantization"] not in caps["enums"]["quantization"]:
+        raise ValueError("Unknown weight quantization")
     return result

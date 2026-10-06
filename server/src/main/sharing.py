@@ -1,4 +1,4 @@
-from .records import get
+from .records import get, create
 
 
 def grant(db, sid, ids, enabled):
@@ -8,6 +8,7 @@ def grant(db, sid, ids, enabled):
         get(db, sid, ident, "image")
     for ident in ids:
         db.sql("INSERT OR REPLACE INTO shares VALUES(?,?,?)", (sid, ident, int(enabled)))
+        create(db, sid, "event", {"image": ident, "action": "shared" if enabled else "revoked"})
 
 
 def resolve(db, sid, ident):

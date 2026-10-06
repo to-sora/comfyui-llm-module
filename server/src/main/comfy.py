@@ -34,16 +34,17 @@ class Comfy:
     async def cancel(self, prompt_id):
         return await self.request(f"/api/jobs/{prompt_id}/cancel", {})
 
-    async def events(self, client_id, callback):
+    async def events(self, client_id, callback, ready):
         try:
             async with self.client.ws_connect(self.url + "/ws", params={"clientId": client_id}) as ws:
+                ready.set()
                 async for msg in ws:
                     if msg.type == aiohttp.WSMsgType.TEXT:
                         await callback(json.loads(msg.data))
         except (aiohttp.ClientError, asyncio.TimeoutError):
             pass
 
-    async def history(self, prompt_id, cancelled):
+    async def history(self, prompt_id, cancelled, observe=None):
         deadline = asyncio.get_running_loop().time() + self.timeout
         while asyncio.get_running_loop().time() < deadline:
             if cancelled():
@@ -51,8 +52,10 @@ class Comfy:
             value = await self.request("/history/" + prompt_id)
             if prompt_id in value:
                 return value[prompt_id]
+            q = await self.request("/queue")
+            if observe:
+                await observe(q)
             if cancelled():
-                q = await self.request("/queue")
                 if not any(row[1] == prompt_id for rows in q.values() for row in rows):
                     raise ValueError("Cancelled")
             await asyncio.sleep(0.25)

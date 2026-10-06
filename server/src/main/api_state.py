@@ -44,6 +44,8 @@ def install(routes, e):
             image["shared"] = image["id"] in granted
         size = sum(p.stat().st_size for p in DATA.rglob("*") if p.is_file())
         return web.json_response({"session": e.db.session(sid), "images": own + shared,
+            "lineage": [{k: i[k] for k in ("id", "operation", "parents", "deleted", "final") if k in i}
+                        for i in flat(e.db, sid, "image")], "events": flat(e.db, sid, "event"),
             "jobs": flat(e.db, sid, "job"), "batches": flat(e.db, sid, "batch"),
             "chats": flat(e.db, sid, "chat"), "messages": flat(e.db, sid, "message")[-100:],
             "active": e.active, "busy": bool(e.tasks), "storage_bytes": size,

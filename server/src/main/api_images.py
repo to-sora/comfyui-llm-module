@@ -3,7 +3,7 @@ import json
 import zipfile
 from aiohttp import web
 from . import assets, sharing
-from .records import get, update
+from .records import get, update, create
 from .settings import DATA
 
 
@@ -32,6 +32,7 @@ def install(routes, e):
             for ident in ids:
                 get(e.db, sid, ident, "image")
                 update(e.db, sid, ident, final=bool(body.get("value", True)))
+                create(e.db, sid, "event", {"image": ident, "action": "final" if body.get("value", True) else "draft"})
         elif action == "delete":
             if e.tasks:
                 raise ValueError("Finish active work before deleting images")
