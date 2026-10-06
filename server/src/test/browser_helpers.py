@@ -5,6 +5,7 @@ from client import OUT, call
 
 
 def click(driver, ident):
+    until(lambda: driver.execute_script("return !document.getElementById(arguments[0]).disabled", script_args=[ident]), timeout=30)
     driver.find_element(By.ID, ident).click()
 
 

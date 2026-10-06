@@ -22,6 +22,7 @@ def run(driver):
     state = until(lambda: idle(sid, "jobs", -1))
     assert state["jobs"][-1]["status"] == "done", state["jobs"][-1]
     original = state["jobs"][-1]["image"]
+    print("GUI generated", sid, original, flush=True)
     assert state["images"][0]["settings"]["seed"] == 24680
     driver.refresh()
     until(lambda: driver.execute_script("return document.getElementById('main-image')?.naturalWidth>0"))
@@ -30,6 +31,7 @@ def run(driver):
     click(driver, "check-result")
     state = until(lambda: idle(sid, "chats", -1))
     assert state["chats"][-1]["status"] == "done", state["chats"][-1]
+    print("GUI inspected", flush=True)
     click(driver, "edit-selected")
     select(driver, "edit-operation", "text")
     fill(driver, "edit-text", "RED / 紅")
@@ -39,6 +41,7 @@ def run(driver):
     click(driver, "edit-italic")
     last = state["jobs"][-1]["id"]
     click(driver, "apply-edit")
+    print("GUI edit submitted", flush=True)
     state = until(lambda: idle(sid, "jobs", last))
     assert state["jobs"][-1]["status"] == "done", state["jobs"][-1]
     edited = state["jobs"][-1]["image"]

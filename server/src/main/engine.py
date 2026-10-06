@@ -70,6 +70,8 @@ class Engine:
         return create(self.db, sid, "result", {"target": ident, "status": "cancel_requested"})
 
     async def close(self):
+        from .shutdown import cancel_active
+        await cancel_active(self)
         for task in self.tasks:
             task.cancel()
         await asyncio.gather(*self.tasks, return_exceptions=True)

@@ -54,3 +54,8 @@ See [API](plugin/doc/api.md), [runtime](plugin/doc/runtime.md), [models](plugin/
 Model downloads and dependency caches can exceed 1 GB; model weights may stay in external directories.
 模型下載與依賴快取可超過 1 GB；既有權重可保留在外部目錄。
 模型下载与依赖缓存可超过 1 GB；现有权重可保留在外部目录。
+
+[Image Studio / 圖片工作台 / 图片工作台](server/doc/start.md): HTTPS :8189.
+Manual editing and LLM tools.
+支援手動編輯與 LLM 工具。
+支持手动编辑与 LLM 工具。

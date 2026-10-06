@@ -10,3 +10,7 @@ Fixtures: generated solid-color images and client-supplied tool result; no exter
 Directory inputs: actual HF 27B template and GGUF 9B file selection verified. / 已實測 HF 27B 範本及 GGUF 9B 檔案選擇。
 HTTPS image inputs: HF/GGUF identify actual SDXL image colors through ComfyUI's self-signed endpoint. / HF/GGUF 經 ComfyUI 自簽端點辨識實際 SDXL 圖片顏色。
 Gemma E2B: original weights, completion template, NF4/HQQ4/8, vision, tools, 816-token document, SDXL swap and Firefox passed; no mocked generation. / 原始權重、續寫範本、量化、視覺、工具、文件、切換及 Firefox 通過，無模擬生成。
+
+Workbench API: actual SDXL text/image/inpaint, 20 CPU edits, 4K limit, scoped IDs/sharing/revocation, errors, export and deletion; no mocked generation. / 真實工作台 API 全流程與資料操作。
+Workbench LLM: five original profiles execute queued tools, SDXL batches and actual image reviews; HF NF4/HQQ8 and GGUF KV Q8. / 五個原模型批次與視覺檢查，實測 GPU 切換。
+Workbench Firefox: Generate→Inspect→Text edit, masks, comparison, download, refresh, sharing and upload; desktop/portrait/large/200% zoom. / 真實瀏覽器操作及四種顯示檢查。

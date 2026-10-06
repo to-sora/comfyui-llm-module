@@ -15,7 +15,8 @@ async def complete(e, sid, ident, payload):
         value = await task
         from .provenance import snapshot
         status = await e.comfy.request("/llm/status")
-        update(e.db, sid, ident, actual_model=snapshot(status, payload["model"]))
+        update(e.db, sid, ident, actual_model={**snapshot(status, payload["model"]),
+               "context_tokens": payload["context_tokens"]})
         if get(e.db, sid, ident).get("cancel"):
             raise ValueError("Cancelled")
         return value

@@ -1,0 +1,2 @@
+*{scrollbar-color:#566577 #151c25;scrollbar-width:thin}
+@media(max-width:800px){header .brand{flex:1}header .session-controls{order:3;flex-basis:100%;max-width:none;display:grid;grid-template-columns:1fr 1fr}header .session-controls input,header .session-controls select{max-width:none}header .session-controls button{grid-column:1/-1}header #connection{font-size:11px}header #reconnect{padding:6px 9px}.section-head .muted{overflow-wrap:anywhere}}

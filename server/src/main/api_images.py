@@ -1,6 +1,3 @@
-import io
-import json
-import zipfile
 from aiohttp import web
 from . import assets, sharing
 from .records import get, update, create
@@ -29,8 +26,11 @@ def install(routes, e):
         if action in ("share", "revoke"):
             sharing.grant(e.db, sid, ids, action == "share")
         elif action == "final":
+            if any(type(i) is not int or i > 10000 for i in ids):
+                raise ValueError("Only local images can be marked final")
             for ident in ids:
                 get(e.db, sid, ident, "image")
+            for ident in ids:
                 update(e.db, sid, ident, final=bool(body.get("value", True)))
                 create(e.db, sid, "event", {"image": ident, "action": "final" if body.get("value", True) else "draft"})
         elif action == "delete":
@@ -48,15 +48,8 @@ def install(routes, e):
                         (DATA / folder / value[key]).unlink(missing_ok=True)
                 update(e.db, sid, ident, deleted=True)
         elif action == "export":
-            stream = io.BytesIO()
-            manifest = []
-            with zipfile.ZipFile(stream, "w", zipfile.ZIP_DEFLATED) as archive:
-                for ident in ids:
-                    value = assets.resolve(e.db, sid, ident)
-                    archive.writestr(f"image-{ident}.png", assets.png(await assets.load(e.db, e.comfy, sid, ident)))
-                    manifest.append(value)
-                archive.writestr("images.json", json.dumps(manifest, ensure_ascii=False, indent=2))
-            return web.Response(body=stream.getvalue(), content_type="application/zip")
+            from .export_images import export
+            return await export(e, sid, ids)
         else:
             raise ValueError("Unknown image action")
         return web.json_response({"ok": True})

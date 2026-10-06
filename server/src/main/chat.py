@@ -26,12 +26,13 @@ async def run(e, sid, ident):
                 from .base_review import inspect
                 return await inspect(e, sid, ident, settings, batch["images"])
         context, schema = build(e, sid, ident, messages)
+        if job.get("intent") == "revise":
+            schema = [t for t in schema if t["function"]["name"] != "image_gen_sdxl_text"]
         payload = {**settings, "messages": context, "tools": schema,
                    "temperature": 0, "enable_thinking": False, "parallel_tool_calls": False}
         payload = prepare(e, payload, sid, ident)
-        if job.get("intent") == "inspect":
-            payload.update(tools=[], tool_choice="none")
-            payload["messages"][0]["content"] = "Inspect the actual attached images against the user's requirements. Report visible matches and problems."
+        from .chat_intent import apply
+        payload = apply(payload, job)
         reply = await complete(e, sid, ident, payload)
         message = reply["choices"][0]["message"]
         messages.append(message)

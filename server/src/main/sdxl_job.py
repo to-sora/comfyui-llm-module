@@ -37,7 +37,7 @@ async def execute(e, sid, job):
         image = assets.decode(await e.comfy.request("/view?" + urlencode(remote), binary=True))
         if mask_image:
             image = Image.composite(image.crop((0, 0, *original.size)), original, mask_image)
-        return assets.save(e.db, sid, image, job["mode"], parents,
+        return assets.save(e.db, sid, image, "sdxl_" + job["mode"], parents,
             remote=None if mask_image else remote, settings=p, requested_llm=job["settings"], actor=job.get("actor"),
             comfy_output=remote, prompt_id=prompt_id, mask=p.get("mask"))
     finally:

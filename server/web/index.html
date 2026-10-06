@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Image Studio · ComfyUI</title><link rel="stylesheet" href="/static/base.css"><link rel="stylesheet" href="/static/layout.css"></head>
+<title>Image Studio · ComfyUI</title><link rel="stylesheet" href="/static/base.css"><link rel="stylesheet" href="/static/layout.css"><link rel="stylesheet" href="/static/mobile.css"></head>
 <body><header><div class="brand"><span class="brand-icon">◈</span><div><strong>Image Studio</strong><small>ComfyUI · 圖片工作台</small></div></div>
 <div class="session-controls"><select id="sessions" aria-label="Session"></select><input id="session-name" placeholder="New session name" aria-label="New session name"><button id="new-session">＋ New session</button></div>
 <span id="connection" class="muted">Connecting…</span></header>
 <div id="notice" role="status" hidden></div>
 <main><aside id="settings" class="panel"></aside><section class="workspace">
-<div class="viewer panel"><div class="section-head"><h1 id="image-title">Your next image starts here</h1><span id="image-size" class="muted"></span></div>
-<div id="viewer-toolbar" class="toolbar"><button id="zoom-out" aria-label="Zoom out">−</button><button id="fit">Fit</button><button id="zoom-in" aria-label="Zoom in">＋</button><label><input id="compare" type="checkbox"> Before / After</label><input id="compare-range" type="range" min="0" max="100" value="50" aria-label="Comparison position"></div>
+<div class="viewer panel"><div class="section-head"><h1 id="image-title">Image workspace</h1><span id="image-size" class="muted"></span></div>
+<div id="viewer-toolbar" class="toolbar"><button id="zoom-out" aria-label="Zoom out">−</button><button id="fit">Fit</button><button id="zoom-in" aria-label="Zoom in">＋</button><label><input id="compare" type="checkbox"> Before / After</label><input id="compare-range" type="range" min="0" max="100" value="50" aria-label="Compare"></div>
 <div id="viewport"><div id="empty"><span>◈</span><h2>A canvas for your ideas</h2><p>Generate with SDXL, or upload an image to begin.</p><p>生成、編輯、檢查，每一步都有紀錄。</p></div><div id="stage" hidden><img id="before-image" alt="Previous version"><img id="main-image" alt="Selected result"><canvas id="mask-canvas"></canvas></div></div>
 <div id="image-actions" class="toolbar"></div><div id="mask-tools" class="toolbar" hidden></div><div id="inspection" class="assessment" hidden></div></div>
 <details class="panel" id="edit-panel"><summary>Image edits · 圖片編輯 <span class="muted">20 CPU tools</span></summary><div id="edit-form"></div></details>
@@ -16,5 +16,5 @@
 </section></main>
 <section class="panel history-panel"><div class="section-head"><h2>History <small>歷史</small></h2><span id="storage" class="muted"></span></div><div id="history-tools" class="toolbar"></div><div id="history"></div></section>
 <section class="panel jobs-panel"><div class="section-head"><h2>Queue &amp; pending <small>待處理</small></h2><button id="send-pending">Send all pending</button></div><div id="jobs"></div></section>
-<footer>Single user · 4096 × 4096 maximum · GPU models managed by ComfyUI</footer>
+<footer>4096 × 4096 max · GPU memory managed by ComfyUI</footer>
 <script type="module" src="/static/main.js"></script></body></html>

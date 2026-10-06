@@ -28,7 +28,7 @@ def browser():
     (profile / "user.js").write_text("\n".join(
         f"user_pref({json.dumps(k)}, {json.dumps(v)});" for k, v in prefs.items()))
     process = subprocess.Popen([str(Path.home() / "UAT-firefox/firefox/firefox"),
-        "--headless", "--no-remote", "--marionette", "--profile", str(profile)],
+        "--headless", "--no-remote", "--remote-allow-system-access", "--marionette", "--profile", str(profile)],
         start_new_session=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     driver = Marionette(host="127.0.0.1", port=port, socket_timeout=10)
     try:
