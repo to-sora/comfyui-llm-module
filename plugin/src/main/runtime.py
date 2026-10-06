@@ -60,6 +60,7 @@ def get_handle(cfg):
 
 def status():
     return {"models": [{"model": h.cfg["id"], "loaded": h.engine is not None,
+                        "source": h.cfg["model"], "backend": h.cfg["backend"],
                         "resident_bytes": h.resident_bytes, "loads": h.loads,
                         "quantization": h.cfg["quantization"],
                         "kv_quantization": h.cfg["kv_quantization"],

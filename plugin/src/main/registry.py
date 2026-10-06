@@ -7,7 +7,16 @@ def profiles():
 
 
 def options(model, **overrides):
-    cfg = dict(profiles().get(model, {"model": model}))
+    configured = profiles()
+    profile = configured.get(model)
+    if profile is None and Path(model).exists():
+        requested = Path(model).resolve()
+        for candidate in configured.values():
+            target = Path(candidate["model"]).resolve()
+            if requested == target or (candidate.get("backend") == "gguf" and requested == target.parent):
+                profile = candidate
+                break
+    cfg = dict(profile or {"model": model})
     cfg["id"] = model
     cfg.setdefault("backend", "auto")
     cfg.setdefault("quantization", "bnb_nf4")

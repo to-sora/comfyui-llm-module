@@ -2,13 +2,18 @@ import base64
 import io
 import requests
 from PIL import Image
+from urllib.parse import urlsplit
+from .settings import APP, read
 
 
 def load_image(url):
     if url.startswith("data:image/"):
         content = base64.b64decode(url.split(",", 1)[1], validate=True)
     elif url.startswith(("https://", "http://")):
-        response = requests.get(url, timeout=30)
+        parsed = urlsplit(url)
+        own_server = parsed.hostname in {"127.0.0.1", "localhost"} and parsed.port == read("port-config.yaml")["port"]
+        trust = str(APP / "data/tls/cert.pem") if own_server else True
+        response = requests.get(url, timeout=30, verify=trust)
         response.raise_for_status()
         content = response.content
     else:

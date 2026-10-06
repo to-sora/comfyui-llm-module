@@ -15,9 +15,6 @@ def open_app(browser):
     for button in browser.find_elements(By.CSS_SELECTOR, '[role="dialog"] button[aria-label="Close"]'):
         if button.is_displayed():
             button.click()
-    for button in browser.find_elements(By.CSS_SELECTOR, 'button[aria-label^="Hide Minimap"]'):
-        if button.is_displayed():
-            button.click()
 
 
 def run_graph(browser, graph, output_node):
@@ -65,6 +62,9 @@ def fit(browser):
         if not blocking:
             break
         time.sleep(0.2)
+    for button in browser.find_elements(By.CSS_SELECTOR, 'button[aria-label^="Hide Minimap"]'):
+        if button.is_displayed():
+            button.click()
     buttons = browser.find_elements(By.CSS_SELECTOR, 'button[aria-label^="Fit View"]')
     if buttons:
         buttons[0].click()

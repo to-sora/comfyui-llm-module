@@ -60,10 +60,12 @@ def main():
         terminate(child.pid, group=True)
         return 130
     finally:
-        if STATE.exists():
-            import json
-            if json.loads(STATE.read_text())["pid"] == child.pid:
-                STATE.unlink(missing_ok=True)
+        with lock_path.open("a") as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            if STATE.exists():
+                import json
+                if json.loads(STATE.read_text())["pid"] == child.pid:
+                    STATE.unlink(missing_ok=True)
 
 
 if __name__ == "__main__":
