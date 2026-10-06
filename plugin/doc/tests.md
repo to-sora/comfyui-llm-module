@@ -1,31 +1,22 @@
-# Tests / 測試 / 测试
+# Verification / 驗證 / 验证
+
+Run against the project's active HTTPS service:
+針對專案正在執行的 HTTPS 服務測試：
+针对项目正在运行的 HTTPS 服务测试：
 
 ```bash
-bash plugin/install-test-assets.sh
-plugin/venv/bin/python -m unittest discover -s plugin/src/test -p 'test_*.py' -v
+plugin/.local-tool-app/venv/bin/python -m plugin.src.test.sdxl_smoke
+plugin/.local-tool-app/venv/bin/python -m plugin.src.test.swap_accept
 ```
 
-CPU tensor tests use real Qwen3.5 code, its official processor, and small random weights.
-CPU 張量測試採用真實 Qwen3.5 程式、官方 processor 與小型隨機權重。
-CPU 张量测试采用真实 Qwen3.5 程序、官方 processor 与小型随机权重。
+Tests use actual SDXL and Qwen weights on CUDA, without mocked generation.
+測試使用真實 SDXL 與 Qwen 權重於 CUDA 執行，不模擬模型輸出。
+测试使用真实 SDXL 和 Qwen 权重在 CUDA 执行，不模拟模型输出。
 
-These tests cover cache consistency and text/image state isolation. Trained-model quality and CUDA require the Colab notebook.
-上述測試涵蓋快取一致性及文字／圖片狀態隔離。訓練模型品質與 CUDA 驗收使用 Colab notebook。
-上述测试涵盖缓存一致性及文字／图片状态隔离。训练模型质量与 CUDA 验收使用 Colab notebook。
+The swap test checks repeated LLM serving, SDXL output, measured memory release and correct LLM output after reload.
+切換測試驗證連續 LLM 服務、SDXL 出圖、實測記憶體釋放及重新載入後的正確回答。
+切换测试验证连续 LLM 服务、SDXL 出图、实测内存释放和重新加载后的正确回答。
 
-Missing processor assets produce an explicit tensor-suite skip; the asset installer enables those tests.
-缺少 processor 素材時，張量測試會顯示跳過；安裝上述素材後啟用。
-缺少 processor 素材时，张量测试会显示跳过；安装上述素材后启用。
-
-```bash
-plugin/venv/bin/python -m plugin.src.test.native_accept
-plugin/venv/bin/python -m plugin.src.test.service_accept
-```
-
-The installed ComfyUI provides native lifecycle and HTTPS API checks on CPU, with random Qwen3.5 weights and real inference code.
-已安裝的 ComfyUI 提供 CPU 原生生命週期與 HTTPS API 測試，採用 Qwen3.5 隨機權重及真實推理程式。
-已安装的 ComfyUI 提供 CPU 原生生命周期与 HTTPS API 测试，采用 Qwen3.5 随机权重及真实推理程序。
-
-Service proof: `fan-out/cpu-service-result.json`; log: `plugin/data/comfy-test.log`.
-服務證據及紀錄位於上述路徑；測試結束會停止服務並還原啟動設定。
-服务证据及记录位于上述路径；测试结束会停止服务并还原启动配置。
+Evidence is saved in `fan-out`; detailed scope is in `text-coverage.txt`.
+證據保留於上述目錄；已驗證及待驗證範圍見涵蓋紀錄與 todo.txt。
+证据保留于上述目录；已验证和待验证范围见覆盖记录及 todo.txt。

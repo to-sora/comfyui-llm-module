@@ -1,11 +1,12 @@
 import argparse
 import fcntl
+import os
 import signal
 import subprocess
 import sys
 from .network import hosts, port_config
 from .processes import STATE, listeners, record, stop, terminate
-from .settings import APP, environment, read
+from .settings import APP, environment
 from .tls import certificate
 
 
@@ -36,8 +37,8 @@ def main():
                     raise RuntimeError("Port owner PID requires process visibility")
                 terminate(pid)
         cert, key = certificate()
-        comfy = (APP / read("config.yaml")["comfy_directory"]).resolve()
-        cmd = [sys.executable, "-m", "plugin.src.main.comfy_entry", str(comfy),
+        script = APP.parents[1] / "civit_script" / "start.sh"
+        cmd = ["bash", str(script),
                "--listen", hosts(cfg), "--port", str(cfg["port"]),
                "--tls-keyfile", str(key), "--tls-certfile", str(cert),
                "--disable-auto-launch", "--user-directory", str(APP / "data/user"),
@@ -46,7 +47,9 @@ def main():
                "--temp-directory", str(APP / "data/tmp")]
         if args.cpu:
             cmd.append("--cpu")
-        child = subprocess.Popen(cmd, cwd=APP.parent, start_new_session=True)
+        env = dict(os.environ, COMFY_PYTHON=sys.executable, COMFY_ENABLE_LLM="1",
+                   COMFY_PORT=str(cfg["port"]), COMFY_TLS_DIR=str(cert.parent))
+        child = subprocess.Popen(cmd, cwd=APP.parent, env=env, start_new_session=True)
         record(child.pid)
     try:
         code = child.wait()

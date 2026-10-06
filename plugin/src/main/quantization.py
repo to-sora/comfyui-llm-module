@@ -1,23 +1,16 @@
+import torch
+from transformers import BitsAndBytesConfig
+
+
 def configuration(name, config):
-    import transformers as tr
-    existing = getattr(config, "quantization_config", None)
-    if name == "auto":
+    if name in {"auto", "none"}:
         return {}
-    if existing and name != "auto":
-        raise ValueError("Prequantized checkpoint: select auto / 預量化模型選擇 auto")
-    if name == "none":
-        return {}
-    if name in {"bnb_nf4", "bnb_fp4", "bnb_int8"}:
-        import torch
-        quant = tr.BitsAndBytesConfig(
-            load_in_4bit=name != "bnb_int8", load_in_8bit=name == "bnb_int8",
-            bnb_4bit_quant_type="fp4" if name == "bnb_fp4" else "nf4",
-            bnb_4bit_compute_dtype=torch.float16,
-        )
-    elif name == "hqq_int4":
-        quant = tr.HqqConfig(nbits=4, group_size=64)
-    elif name == "quanto_int8":
-        quant = tr.QuantoConfig(weights="int8")
-    else:
-        raise ValueError(f"Unknown quantization: {name}")
+    if getattr(config, "quantization_config", None):
+        raise ValueError("Prequantized checkpoint: select auto.")
+    if name not in {"bnb_nf4", "bnb_fp4", "bnb_int8"}:
+        raise ValueError(f"Unsupported HF weight quantization: {name}")
+    quant = BitsAndBytesConfig(
+        load_in_4bit=name != "bnb_int8", load_in_8bit=name == "bnb_int8",
+        bnb_4bit_quant_type="fp4" if name == "bnb_fp4" else "nf4",
+        bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_use_double_quant=True)
     return {"quantization_config": quant}

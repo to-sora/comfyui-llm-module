@@ -1,16 +1,18 @@
 import gc
+import torch
+from comfy import model_management as mm
+from .estimate import memory_bytes
 
 
-class QwenPatcher:
+class LLMPatcher:
     parent = None
 
-    def __init__(self, pool):
-        import torch
-        from comfy import model_management as mm
-        self.model = pool
+    def __init__(self, runtime):
+        self.model = runtime
         self.offload_device = torch.device("cpu")
-        requested = pool.cfg["device"]
+        requested = runtime.cfg["device"]
         self.load_device = mm.get_torch_device() if requested == "auto" else torch.device(requested)
+        self.size = memory_bytes(runtime.cfg)
 
     def is_dynamic(self):
         return False
@@ -22,17 +24,16 @@ class QwenPatcher:
         return False
 
     def model_size(self):
-        return sum(e.weight_bytes for e in self.model.engines)
+        return self.size
 
     def loaded_size(self):
-        return self.model_size() if self.load_device.type != "cpu" else 0
+        return self.model.resident_bytes if self.model.engine is not None else 0
 
     def current_loaded_device(self):
-        return self.load_device if self.model.engines else self.offload_device
+        return self.load_device if self.model.engine is not None else self.offload_device
 
     def model_dtype(self):
-        import torch
-        return torch.float16
+        return torch.bfloat16
 
     def model_patches_to(self, device):
         pass
@@ -41,9 +42,11 @@ class QwenPatcher:
         return 0
 
     def partially_load(self, device, extra_memory, force_patch_weights=False):
-        before = self.loaded_size()
-        self.model.load()
-        return self.loaded_size() - before
+        if self.model.engine is not None:
+            return 0
+        self.model.load(str(self.load_device))
+        self.size = max(self.size, self.loaded_size())
+        return self.loaded_size()
 
     def partially_unload(self, device, memory_to_free):
         before = self.loaded_size()
@@ -51,7 +54,6 @@ class QwenPatcher:
         return before
 
     def detach(self, unpatch_all=True):
-        self.model.unload()
+        self.model.close()
         gc.collect()
-        from comfy import model_management as mm
         mm.soft_empty_cache()

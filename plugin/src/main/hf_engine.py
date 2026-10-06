@@ -1,57 +1,47 @@
-from .cache import PrefixCache, nbytes, snapshot
-from .hf_inputs import prefill_inputs, prepare
+import torch
+from comfy import model_management as mm
+from transformers import StoppingCriteria
+from .hf_inputs import prepare
 from .hf_load import load
+from .images import tensor_images
+from .kv_cache import create
+from .tool_calls import parse
+
+
+class Interrupted(StoppingCriteria):
+    def __call__(self, input_ids, scores, **kwargs):
+        mm.throw_exception_if_processing_interrupted()
+        return False
 
 
 class HFEngine:
     def __init__(self, cfg):
         self.cfg = cfg
         self.model, self.processor, self.vision = load(cfg)
-        self.cache = PrefixCache(cfg["cache_mib"] * 1024**2 // cfg["workers"])
-        self.weight_bytes = sum(p.numel() * p.element_size()
-                                for p in self.model.parameters())
 
-    def reset_rope(self):
-        core = getattr(self.model, "model", self.model)
-        if hasattr(core, "rope_deltas"):
-            core.rope_deltas = None
-
-    def warm(self):
-        import torch
-        with torch.inference_mode():
-            for prefix in self.cfg["prefixes"].values():
-                if not prefix or not self.cache.budget:
-                    continue
-                self.reset_rope()
-                inputs = prefill_inputs(self, prefix)
-                if inputs["input_ids"].shape[-1] >= self.cfg["context_tokens"]:
-                    raise ValueError("Prefix exceeds context_tokens")
-                state = self.model(**inputs, use_cache=True).past_key_values
-                cpu = snapshot(state, "cpu")
-                self.cache.put(inputs["input_ids"][0].tolist(), cpu, nbytes(cpu))
-
-    def generate(self, prompt, prefix, images, max_tokens, temperature, prefix_cache=True):
-        import torch
-        with torch.inference_mode():
-            self.reset_rope()
-            inputs = prepare(self, prefix, prompt, images)
-            count = inputs["input_ids"].shape[-1]
-            if count + max_tokens > self.cfg["context_tokens"]:
-                raise ValueError("Prompt + output exceeds context_tokens")
-            state = None if images or not prefix_cache else self.cache.match(
-                inputs["input_ids"][0].tolist())
-            extra = {} if state is None else {
-                "past_key_values": snapshot(state, self.model.device)}
-            if temperature > 0:
-                extra["temperature"] = temperature
-            output = self.model.generate(
-                **inputs, **extra, max_new_tokens=max_tokens,
-                do_sample=temperature > 0, use_cache=True,
-            )
-            text = self.processor.decode(output[0, count:], skip_special_tokens=True)
-            return text
+    def chat(self, request, images=None):
+        inputs = prepare(self.processor, self.vision, request, tensor_images(images))
+        inputs = inputs.to(self.model.device)
+        count = inputs["input_ids"].shape[-1]
+        limit = request.get("max_completion_tokens", request.get("max_tokens", 256))
+        if count + limit > self.cfg["context_tokens"]:
+            raise ValueError("Prompt and max_tokens exceed configured context_tokens.")
+        temperature = request.get("temperature", 0.0)
+        options = {"do_sample": temperature > 0, "max_new_tokens": limit,
+                   "past_key_values": create(self.model.config, self.cfg["kv_quantization"]),
+                   "stopping_criteria": [Interrupted()], "use_cache": True}
+        if temperature > 0:
+            options.update(temperature=temperature, top_p=request.get("top_p", 1.0))
+        if "seed" in request:
+            torch.manual_seed(request["seed"])
+        output = self.model.generate(**inputs, **options)
+        tokens = output[0, count:]
+        raw = self.processor.decode(tokens, skip_special_tokens=False)
+        message = parse(raw, request.get("tools"))
+        reason = "tool_calls" if message.get("tool_calls") else "length" if len(tokens) >= limit else "stop"
+        return {"message": message, "finish_reason": reason,
+                "usage": {"prompt_tokens": count, "completion_tokens": len(tokens),
+                          "total_tokens": count + len(tokens)}}
 
     def close(self):
         self.model = self.processor = None
-        self.cache.entries.clear()
-        self.cache.bytes = 0

@@ -1,8 +1,5 @@
-import logging
 from .ipv4 import enable
-from .settings import environment, options, read
-
-PRELOADED = []
+from .settings import environment
 
 
 def initialize():
@@ -10,21 +7,14 @@ def initialize():
     environment()
     from aiohttp import web
     from server import PromptServer
-    from .runtime import LOCK, get_handle, status
+    from .gateway import install
+    from .memory_policy import install as install_memory_policy
     from .network import install_whitelist
+    from .runtime import status
     install_whitelist(PromptServer.instance.app)
+    install_memory_policy()
+    install()
 
-    @PromptServer.instance.routes.get("/qwen/status")
+    @PromptServer.instance.routes.get("/llm/status")
     async def report(request):
-        import asyncio
-        return web.json_response(await asyncio.to_thread(status))
-
-    for item in read("config.yaml")["startup_models"]:
-        try:
-            handle = get_handle(options(**item))
-            with LOCK:
-                with handle.pool.lease(handle.ensure):
-                    pass
-            PRELOADED.append(handle)
-        except Exception:
-            logging.exception("Qwen startup prefill failed / Qwen 啟動預填失敗")
+        return web.json_response(status())

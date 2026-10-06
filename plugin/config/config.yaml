@@ -1,8 +1,4 @@
-mode: single
-workers: 2
-queue_limit: 16
-queue_timeout: 120
-cache_mib: 256
+comfy_directory: ../../comfyui
 context_tokens: 4096
-startup_models: []
-comfy_directory: .local-tool-app/ComfyUI
+request_timeout: 900
+queue_limit: 64

@@ -1,9 +1,10 @@
-from .nodes_load import QwenModel
-from .nodes_generate import QwenGenerate, QwenBatch
+from comfy import model_management as mm
+from .nodes_load import LLMModel
+from .nodes_generate import LLMChat
 
 
-class QwenUnload:
-    CATEGORY = "Qwen"
+class LLMUnload:
+    CATEGORY = "LLM"
     RETURN_TYPES = ("STRING",)
     FUNCTION = "unload"
     OUTPUT_NODE = True
@@ -17,11 +18,9 @@ class QwenUnload:
         return float("nan")
 
     def unload(self, after):
-        from comfy import model_management as mm
         mm.unload_all_models()
         mm.soft_empty_cache()
         return (after,)
 
 
-NODE_CLASS_MAPPINGS = {c.__name__: c for c in
-                       (QwenModel, QwenGenerate, QwenBatch, QwenUnload)}
+NODE_CLASS_MAPPINGS = {c.__name__: c for c in (LLMModel, LLMChat, LLMUnload)}

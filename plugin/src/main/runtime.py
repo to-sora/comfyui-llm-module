@@ -1,67 +1,71 @@
 import json
-import threading
+import time
 import weakref
-from .pool import Pool
+from collections import deque
+import torch
+from comfy import model_management as mm
+from .patcher import LLMPatcher
 
 HANDLES = weakref.WeakValueDictionary()
-LOCK = threading.RLock()
+EVENTS = deque(maxlen=64)
 
 
-def factory(cfg):
-    backend = cfg["backend"]
-    if backend == "auto":
-        backend = "gguf" if cfg["model"].lower().endswith(".gguf") else "transformers"
-    if backend == "gguf":
-        from .gguf_engine import GGUFEngine
-        return GGUFEngine(cfg)
-    from .hf_engine import HFEngine
-    return HFEngine(cfg)
-
-
-class Handle:
+class LLMRuntime:
     def __init__(self, cfg):
-        from .patcher import QwenPatcher
         self.cfg = cfg
-        self.pool = Pool(cfg, factory)
-        self.patcher = QwenPatcher(self.pool)
-        self.pool.cfg = dict(cfg, device=str(self.patcher.load_device))
+        self.engine = None
+        self.resident_bytes = 0
+        self.loads = 0
+        self.patcher = LLMPatcher(self)
 
-    def ensure(self):
-        from comfy import model_management as mm
-        with LOCK:
-            if self.patcher not in mm.loaded_models() or not self.pool.engines:
-                mm.free_memory(1e30, self.patcher.load_device)
-                mm.load_model_gpu(self.patcher)
+    def load(self, device):
+        before = torch.cuda.mem_get_info()[0] if device.startswith("cuda") else 0
+        cfg = dict(self.cfg, device=device)
+        if cfg["backend"] == "gguf":
+            from .gguf_engine import GGUFEngine
+            self.engine = GGUFEngine(cfg)
+        else:
+            from .hf_engine import HFEngine
+            self.engine = HFEngine(cfg)
+        if device.startswith("cuda"):
+            torch.cuda.synchronize()
+            self.resident_bytes = max(0, before - torch.cuda.mem_get_info()[0])
+        self.loads += 1
+        EVENTS.append({"time": time.time(), "event": "loaded", "model": cfg["id"],
+                       "resident_bytes": self.resident_bytes, "load": self.loads})
 
-    def generate(self, prompt, prefix, images=None, max_tokens=128, temperature=0.0,
-                 prefix_cache=True):
-        if max_tokens < 1 or temperature < 0:
-            raise ValueError("max_tokens >= 1; temperature >= 0")
-        prefix = self.cfg["prefixes"].get(prefix, prefix)
-        with LOCK:
-            lease = self.pool.lease(self.ensure)
-            engine = lease.__enter__()
-        try:
-            return engine.generate(prompt, prefix, images, max_tokens, temperature, prefix_cache)
-        finally:
-            lease.__exit__(None, None, None)
+    def chat(self, request, images=None):
+        if self.engine is None or self.patcher not in mm.loaded_models():
+            mm.load_models_gpu([self.patcher], memory_required=1024**3)
+        mm.throw_exception_if_processing_interrupted()
+        return self.engine.chat(request, images)
+
+    def close(self):
+        if self.engine is None:
+            return
+        self.engine.close()
+        self.engine = None
+        self.resident_bytes = 0
+        EVENTS.append({"time": time.time(), "event": "unloaded", "model": self.cfg["id"]})
 
 
 def get_handle(cfg):
-    key = json.dumps(cfg, sort_keys=True, ensure_ascii=False)
-    with LOCK:
-        handle = HANDLES.get(key)
-        if handle is None:
-            handle = Handle(cfg)
-            HANDLES[key] = handle
-        return handle
+    key = json.dumps(cfg, sort_keys=True)
+    handle = HANDLES.get(key)
+    if handle is None:
+        handle = LLMRuntime(cfg)
+        HANDLES[key] = handle
+    return handle
 
 
 def status():
-    import torch
-    with LOCK:
-        handles = list(HANDLES.values())
-    return {"models": [{"model": h.cfg["model"], "mode": h.cfg["mode"],
-                        **h.pool.status()} for h in handles],
-            "cuda_allocated": torch.cuda.memory_allocated() if torch.cuda.is_available() else 0,
-            "cuda_reserved": torch.cuda.memory_reserved() if torch.cuda.is_available() else 0}
+    return {"models": [{"model": h.cfg["id"], "loaded": h.engine is not None,
+                        "resident_bytes": h.resident_bytes, "loads": h.loads,
+                        "quantization": h.cfg["quantization"],
+                        "kv_quantization": h.cfg["kv_quantization"]}
+                       for h in list(HANDLES.values())],
+            "managed_models": [m.model.__class__.__name__ for m in mm.loaded_models()],
+            "events": list(EVENTS),
+            "cuda_free": torch.cuda.mem_get_info()[0],
+            "cuda_allocated": torch.cuda.memory_allocated(),
+            "cuda_reserved": torch.cuda.memory_reserved()}

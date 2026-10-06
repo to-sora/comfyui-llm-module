@@ -1,42 +1,33 @@
-# Runtime / 執行 / 运行
+# Runtime / 執行 / 执行
 
-Startup settings: `plugin/config/config.yaml`.
-啟動設定：上述檔案。`workers` 控制併發副本數；`cache_mib` 為全部副本的 RAM 快取上限。
-启动设置：上述文件。`workers` 控制并发副本数；`cache_mib` 为全部副本的 RAM 缓存上限。
+OpenAI chat requests become ComfyUI prompt graphs and execute in its existing queue.
+OpenAI 對話請求轉成 ComfyUI 工作流程，於原生佇列執行。
+OpenAI 对话请求转成 ComfyUI 工作流，在原生队列执行。
 
-Content prefixes: `plugin/config/content-config/prefixes.yaml`.
-內容 prefix 儲存在上述檔案；節點接受名稱或自訂系統提示。
-内容 prefix 存储在上述文件；节点接受名称或自定义系统提示。
+The LLM patcher registers with ComfyUI. Its load/unload callbacks own backend resources.
+LLM patcher 向 ComfyUI 登記，由載入及卸載回呼管理後端資源。
+LLM patcher 向 ComfyUI 注册，由加载和卸载回调管理后端资源。
 
-```yaml
-startup_models:
-  - model: Qwen/Qwen3.5-0.8B
-    mode: single
-```
+The extension wraps ComfyUI's model-loading entrypoint to evict the previous workload through its native unload API.
+擴充套件在 ComfyUI 載入模型時，透過原生卸載 API 釋放上一種工作負載。
+扩展在 ComfyUI 加载模型时，通过原生卸载 API 释放上一种工作负载。
 
-This startup list loads weights and prefills configured prefixes into RAM.
-此啟動清單會載入權重並預填 prefix 至 RAM。空清單改於模型節點載入時預填。
-此启动列表会加载权重并预填 prefix 至 RAM。空列表改于模型节点加载时预填。
+LLMs stay loaded between requests. Switching to diffusion releases them; a later LLM request reloads them.
+連續請求保留 LLM；切换至擴散模型時釋放，後續 LLM 請求再載入。
+连续请求保留 LLM；切换至扩散模型时释放，后续 LLM 请求再加载。
 
-Text requests reuse exact token prefixes. Each request receives a cache copy.
-文字請求重用相同 token prefix，請求各自取得快取副本；混合注意力狀態隨副本保存。
-文本请求复用相同 token prefix，请求各自取得缓存副本；混合注意力状态随副本保存。
+`/llm/status` reports model states, CUDA memory and transition measurements.
+上述端點提供模型狀態、CUDA 記憶體及切換量測。
+上述端点提供模型状态、CUDA 内存和切换测量。
 
-QwenBatch executes concurrent requests; ComfyUI schedules workflows through its host queue.
-QwenBatch 執行併發請求；工作流程沿用 ComfyUI 佇列排程。
-QwenBatch 执行并发请求；工作流沿用 ComfyUI 队列调度。
+`/v1/models` lists configured profiles. `/v1/chat/completions` accepts messages, tools and image URLs/data URLs.
+上述端點列出模型，並接收對話、工具及圖片網址或資料網址。
+上述端点列出模型，并接收对话、工具和图片网址或数据网址。
 
-Image requests use full prefill; image-dependent positions require separate state.
-圖片請求使用完整預填，以隔離圖片相關的位置與狀態。
-图片请求使用完整预填，以隔离图片相关的位置与状态。
+Concurrent requests are serialized with SDXL in ComfyUI's queue. Streaming currently sends a buffered final delta.
+並行請求與 SDXL 共用 ComfyUI 佇列；串流目前在完成後傳送整段結果。
+并发请求与 SDXL 共用 ComfyUI 队列；流式响应目前在完成后发送整段结果。
 
-Native ComfyUI unload, `/free`, and QwenUnload release engines and caches.
-ComfyUI 原生卸載、`/free` 與 QwenUnload 釋放引擎及快取；後續推理重載磁碟權重。
-ComfyUI 原生卸载、`/free` 与 QwenUnload 释放引擎及缓存；后续推理重载磁盘权重。
-Offload means complete eviction. Layerwise CPU offload remains in `todo.txt`.
-此 offload 為完整釋放；逐層 CPU offload 列於待辦。
-此 offload 为完整释放；逐层 CPU offload 列于待办。
-
-Public policy binds 0.0.0.0; local binds 127.0.0.1; standard binds wg*/tails* IPv4.
-連接埠與可選白名單位於 `port-config.yaml`，開發預設 public。
-端口与可选白名单位于 `port-config.yaml`，开发默认 public。
+Runtime data stays under `plugin/data`; dependencies under `plugin/.local-tool-app`.
+執行資料與依賴分別保留在上述目錄，支援資料目錄符號連結。
+运行数据和依赖分别保留在上述目录，支持数据目录符号链接。

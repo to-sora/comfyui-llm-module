@@ -1,11 +1,4 @@
-test_cache: tested PrefixCache; mocks none / 測試 PrefixCache；模擬：無。
-test_pool: tested Pool and Python threads; mocked Engine / 測試 Pool 與執行緒；模擬 Engine。
-test_pool_shutdown: tested Pool and Python threads; mocked Engine / 測試 Pool 與執行緒；模擬 Engine。
-test_nodes: tested QwenBatch and gguf_files; mocked Handle / 測試 QwenBatch 與 gguf_files；模擬 Handle。
-test_hf_tensors: real HFEngine, Qwen3.5, official processor; random weights, mocks none / 真實引擎、模型及官方 processor；隨機權重，模擬：無。
-hf_accept: HFEngine, AutoProcessor and Qwen weights; pending / HFEngine、AutoProcessor 與 Qwen 權重；待執行。
-Colab acceptance: ComfyUI, Qwen, CUDA and HTTPS; pending / ComfyUI、Qwen、CUDA 及 HTTPS；待執行。
-Service smoke: launcher, psutil, OpenSSL and HTTPS; mocked ComfyUI backend / launcher、psutil、OpenSSL 及 HTTPS；ComfyUI 後端模擬。
-native_accept: real ComfyUI manager, Pool, HFEngine; random Qwen3.5 weights, mocks none / 原生管理器與引擎；隨機權重，模擬：無。
-service_accept: real ComfyUI HTTPS, nodes, Qwen3.5; random weights, mocks none / 真實服務、節點與模型；隨機權重，模擬：無。
-test_colab_report: real report files; mocked inference callback and destination / 真實報告檔案；模擬推理回呼及儲存路徑。
+ComfyUI core + SDXL: actual workspace server and trained checkpoint; no mocks. / 真實工作區服務及 SDXL 權重，無模擬。
+HF Qwen3.5-9B: actual CUDA model, NF4 weights and HQQ 8-bit KV; no mocks. / 真實 CUDA 模型、NF4 權重及 HQQ 8 位元 KV，無模擬。
+Memory integration: actual ComfyUI model manager and SDXL; acceptance in progress. / 真實 ComfyUI 記憶體管理及 SDXL，驗收中。
+GGUF, 27B, Gemma, concurrency and browser: pending trained-weight verification. / GGUF、27B、Gemma、並行請求及瀏覽器待驗證。
