@@ -1,4 +1,12 @@
-ComfyUI core + SDXL: actual workspace server and trained checkpoint; no mocks. / 真實工作區服務及 SDXL 權重，無模擬。
-HF Qwen3.5-9B: actual CUDA model, NF4 weights and HQQ 8-bit KV; no mocks. / 真實 CUDA 模型、NF4 權重及 HQQ 8 位元 KV，無模擬。
-Memory integration: actual ComfyUI model manager and SDXL; acceptance in progress. / 真實 ComfyUI 記憶體管理及 SDXL，驗收中。
-GGUF, 27B, Gemma, concurrency and browser: pending trained-weight verification. / GGUF、27B、Gemma、並行請求及瀏覽器待驗證。
+ComfyUI + SDXL: actual workspace HTTPS server and trained checkpoint; no mocked generation. / 真實工作區 HTTPS 服務及 SDXL 權重，無模擬生成。
+HF Qwen 9B/27B: actual CUDA NF4; KV HQQ 4/8-bit checked with storage diagnostics. / 真實 CUDA NF4，KV 4/8 位元有儲存量診斷。
+HF Qwen 9B: FP4, INT8 and unquantized text/vision verified. / FP4、INT8 及未量化文字與視覺已驗證。
+GGUF Qwen 9B/27B: actual CUDA, vision projector and KV Q4/Q8. / 真實 CUDA、視覺投影器及 KV Q4/Q8。
+Memory: actual LLM reuse, SDXL swap and LLM reload for four Qwen profiles. / 四個 Qwen 設定已實測重用、SDXL 切換與重新載入。
+HF repository: Qwen/Qwen3.5-0.8B downloaded and runtime NF4/HQQ4 verified. / 已驗證儲存庫下載及執行時 NF4/HQQ4。
+Gateway: five concurrent requests, SSE text/tools, invalid requests and launcher lifecycle passed. / 五個並行請求、SSE 文字與工具、錯誤請求及啟動生命週期已通過。
+Firefox: real Run-button text, image, tool, SDXL and LLM-return workflow; three viewport sizes. / 真實 Run 按鈕工作流程及三種畫面尺寸。
+Fixtures: generated solid-color images and client-supplied tool result; no external weather service. / 固定色塊圖片及客戶端工具結果，無外部天氣服務。
+Directory inputs: actual HF 27B template and GGUF 9B file selection verified. / 已實測 HF 27B 範本及 GGUF 9B 檔案選擇。
+HTTPS image inputs: HF/GGUF identify actual SDXL image colors through ComfyUI's self-signed endpoint. / HF/GGUF 經 ComfyUI 自簽端點辨識實際 SDXL 圖片顏色。
+Gemma E2B: actual supplied weights tested; unquantized and NF4 chat correctness FAILED. / 已測試指定權重；未量化與 NF4 對話正確性未通過。

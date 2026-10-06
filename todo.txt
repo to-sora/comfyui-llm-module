@@ -1,14 +1,4 @@
-PENDING / 待完成: Start workspace ComfyUI through civit_script; verify SDXL API generation.
-透過 civit_script 啟動工作區 ComfyUI，驗證 SDXL API 出圖。
-PENDING / 待完成: Text, image, conversation and structured tool-call responses through ComfyUI queue.
-經 ComfyUI 佇列處理文字、圖片、對話及結構化工具呼叫。
-PENDING / 待完成: HF runtime weight quantization; configurable KV quantization; GGUF vision.
-HF 執行時權重量化、可設定 KV 量化及 GGUF 視覺。
-PENDING / 待完成: ComfyUI owns LLM loading/unloading; verify LLM → SDXL → LLM with measured memory.
-由 ComfyUI 管理載入及卸載，以實測記憶體驗證 LLM → SDXL → LLM。
-PENDING / 待完成: Verify all five supplied model directories with trained weights and correct outputs.
-使用真實權重驗證指定的五個模型目錄及輸出正確性。
-PENDING / 待完成: OpenAI request gateway, HTTPS/IPv4, concurrent queue and lifecycle verification.
-OpenAI 請求閘道、HTTPS/IPv4、並行請求佇列及生命週期驗證。
-PENDING / 待完成: Browser UAT, bilingual reports, trilingual docs, commits and final requirement audit.
-瀏覽器驗收、雙語報告、三語文件、提交及最終逐項驗證。
+PENDING / 待完成: Gemma E2B correctness. Supplied pretrained weights fail chat, image and tools even without quantization; acceptance against E2B-it requires the user's target-change decision.
+Gemma E2B 正確性：指定預訓練權重在未量化時仍未通過對話、圖片及工具測試；改以 E2B-it 驗收需使用者決定變更目標。
+PENDING / 待完成: Complete the five-model requirement audit after Gemma is resolved. No overall success claim yet.
+Gemma 解決後完成五個模型的逐項驗收；目前尚未宣稱整體完成。
