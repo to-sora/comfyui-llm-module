@@ -27,6 +27,8 @@ async def stream_response(request, result):
 
 def install():
     routes = PromptServer.instance.routes
+    from .capabilities import install as install_capabilities
+    install_capabilities(routes)
 
     @routes.get("/v1/models")
     async def models(request):

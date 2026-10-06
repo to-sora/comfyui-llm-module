@@ -1,0 +1,8 @@
+{
+ "crop":{"x":["number",0,0,4095],"y":["number",0,0,4095],"width":["number",512,1,4096],"height":["number",512,1,4096]},
+ "resize":{"width":["number",1024,1,4096],"height":["number",1024,1,4096]},
+ "rotate":{"angle":["number",90,-360,360],"expand":["boolean",false]},
+ "flip":{"direction":["enum","horizontal","horizontal","vertical"]},
+ "pad":{"left":["number",20,0,4096],"top":["number",20,0,4096],"right":["number",20,0,4096],"bottom":["number",20,0,4096],"color":["string","#ffffff"]},
+ "overlay":{"overlay":["number",0,0,20000],"x":["number",0,-4096,4096],"y":["number",0,-4096,4096],"opacity":["number",1,0,1]}
+}

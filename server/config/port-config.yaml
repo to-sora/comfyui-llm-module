@@ -1,0 +1,5 @@
+port: 8189
+purpose: Image workbench HTTPS
+policy: public
+enable_whitelist: false
+whitelist: ""

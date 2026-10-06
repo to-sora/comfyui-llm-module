@@ -16,7 +16,10 @@ async def execute(body):
     connector = aiohttp.TCPConnector(family=socket.AF_INET, ssl=False)
     async with aiohttp.ClientSession(connector=connector,
                                      timeout=aiohttp.ClientTimeout(total=timeout)) as client:
-        async with client.post(base + "/prompt", json={"prompt": graph(body)}) as reply:
+        payload = {"prompt": graph(body)}
+        if body.get("comfy_prompt_id"):
+            payload["prompt_id"] = body["comfy_prompt_id"]
+        async with client.post(base + "/prompt", json=payload) as reply:
             submitted = await reply.json()
             if reply.status != 200:
                 raise ValueError(json.dumps(submitted))

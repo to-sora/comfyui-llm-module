@@ -1,2 +1,4 @@
-No outstanding implementation or model-acceptance tasks in the requested scope.
-要求範圍內沒有待完成的實作或模型驗收項目。
+Image workbench / 圖片工作台
+MVP: sessions, images, pending batches, tools, chat and WebUI / 工作階段、圖片、批次、工具、聊天與介面。
+Refine: lineage, sharing/revocation, editing and recovery / 版本、分享撤回、編輯及恢復。
+Accept: five-model workflow, memory swaps and Firefox UAT / 五模型實測、記憶體交接及 Firefox 驗收。
