@@ -1,5 +1,6 @@
 gateway_url: https://127.0.0.1:8188
 request_timeout: 1200
 max_chat_rounds: 12
+max_revision_batches: 2
 max_pending_jobs: 32
 upload_mb: 80

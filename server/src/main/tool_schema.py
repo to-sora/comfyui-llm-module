@@ -46,4 +46,6 @@ def schemas(caps, expanded=False):
         result.append(tool("image_edit_" + op, "Queue CPU " + op, args, ["source"]))
     if expanded:
         result.append(schema(caps))
+        from .queue_batch import schema as batch_schema
+        result.append(batch_schema())
     return result

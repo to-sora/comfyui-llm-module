@@ -30,7 +30,9 @@ async def run(e, sid, ident):
         memory.append({"phase": "job", "job": jid, "state": await e.comfy.request("/llm/status")})
     statuses = [get(e.db, sid, j)["status"] for j in batch["jobs"]]
     status = "failed" if "failed" in statuses else "cancelled" if "cancelled" in statuses else "done"
-    return update(e.db, sid, ident, status=status, images=images, memory=memory)
+    parents = {p for i in images for p in get(e.db, sid, i).get("parents", [])}
+    finals = [i for i in images if i not in parents]
+    return update(e.db, sid, ident, status=status, images=finals, produced_images=images, memory=memory)
 
 
 async def scheduled(e, sid, ident):

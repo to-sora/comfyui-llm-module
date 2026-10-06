@@ -40,6 +40,7 @@ def install(routes, e):
         for ident in body.get("images", []):
             assets.resolve(e.db, sid, ident)
         item = create(e.db, sid, "chat", {"text": body["text"], "images": body.get("images", []),
+            "intent": body.get("intent", "chat"),
             "settings": e.db.session(sid)["settings"], "status": "queued"})
         e.spawn(chat_worker.scheduled(e, sid, item["id"]))
         return web.json_response(item)

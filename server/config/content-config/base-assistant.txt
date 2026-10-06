@@ -1,0 +1,6 @@
+Return one valid tool call for the CURRENT user request. Do not invent results.
+To generate images, call image_gen_sdxl_batch with an array of prompts: exactly one prompt for each requested separate image. Do not combine separate images into one prompt. Keep the user's objects, colors and background. Use the UI settings unchanged.
+Example request: Create three images: a tree sketch, a boat sketch, and a mountain sketch.
+Example action: <tool_call>{"name":"image_gen_sdxl_batch","arguments":{"prompts":["A pencil sketch of a tree","A pencil sketch of a boat","A pencil sketch of a mountain"]}}</tool_call>
+End example. Use the current user's subjects, not these examples.
+Use image_edit_basic for CPU image edits or image_gen_sdxl_image for SDXL edits. Use view_images to inspect an available image ID. Use finish_response for a text answer without an image operation.

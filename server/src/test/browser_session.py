@@ -18,6 +18,10 @@ def browser():
         listener.bind(("127.0.0.1", 0))
         port = listener.getsockname()[1]
     prefs = {"marionette.port": port, "network.dns.disableIPv6": True,
+             "browser.download.folderList": 2,
+             "browser.download.dir": str(root / "server/data/tmp/downloads"),
+             "browser.download.useDownloadDir": True,
+             "browser.helperApps.neverAsk.saveToDisk": "image/png,application/zip",
              "browser.shell.checkDefaultBrowser": False,
              "datareporting.policy.dataSubmissionEnabled": False}
     import json

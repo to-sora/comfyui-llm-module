@@ -29,5 +29,6 @@ if result.get("memory"):
 save("memory-" + model, measurements)
 print(summary, flush=True)
 assert result["status"] == "done", summary
+assert result.get("response") and all(c in result["response"].lower() for c in ("red", "blue")), summary
 assert len(summary["images"]) == 2, summary
 assert "sent_all_pending" in summary["tools"], summary
