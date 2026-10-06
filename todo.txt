@@ -1,4 +1,5 @@
-Image workbench / 圖片工作台
-MVP: sessions, images, pending batches, tools, chat and WebUI / 工作階段、圖片、批次、工具、聊天與介面。
-Refine: lineage, sharing/revocation, editing and recovery / 版本、分享撤回、編輯及恢復。
-Accept: five-model workflow, memory swaps and Firefox UAT / 五模型實測、記憶體交接及 Firefox 驗收。
+Image workbench: implemented and accepted; no outstanding feature tasks.
+圖片工作台：實作及驗收完成，無待完成的功能項目。
+Real evidence / 實測證據：fan-out/workbench/index.html
+Limits: simple CPU background removal; VLM observations require human review.
+限制：CPU 去背採簡單演算法；VLM 觀察結果需由使用者判斷。

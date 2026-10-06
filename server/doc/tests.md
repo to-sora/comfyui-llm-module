@@ -2,8 +2,7 @@
 
 EN: Start ComfyUI and the workbench, then run `bash server/install-test-tools.sh`.
 Run scripts with `server/.local-tool-app/venv/bin/python server/src/test/NAME.py`.
-The tests use the real local HTTPS gateway, original model weights and SDXL.
-They create named sessions and real output files. No inference is mocked.
+Tests use the real HTTPS gateway, original weights and SDXL; no mocked inference.
 
 繁中：啟動 ComfyUI 與工作台後執行 `bash server/install-test-tools.sh`。
 以 `server/.local-tool-app/venv/bin/python server/src/test/NAME.py` 執行測試。
@@ -21,6 +20,7 @@ They create named sessions and real output files. No inference is mocked.
 | sharing_accept | isolation, aliases, revoke / 隔離、別名、撤回 / 隔离、别名、撤回 |
 | jobs_accept | retry, progress, cancel / 重試、進度、取消 / 重试、进度、取消 |
 | failure_accept | failures, export, delete / 失敗、匯出、刪除 / 失败、导出、删除 |
+| chain_accept | generation → text → background → share / 生成 → 加字 → 去背 → 分享 |
 | chat_accept MODEL | real model tool loop / 真實模型工具流程 / 真实模型工具流程 |
 | browser_accept | generate → inspect → edit / 生成 → 檢查 → 編輯 / 生成 → 检查 → 编辑 |
 | browser_extra | share, upload, final / 分享、上傳、最終版 / 分享、上传、最终版 |
@@ -29,10 +29,9 @@ They create named sessions and real output files. No inference is mocked.
 | lifecycle_accept | stop, force, restart / 啟停與重啟 / 启停与重启 |
 | evidence | recorded CUDA transitions / 實測 CUDA 交接 / 实测 CUDA 交接 |
 
-EN: Run tests sequentially: there is one active session. Firefox uses a disposable
-profile and is always terminated in cleanup. Browser scripts depend on the
-browser_accept report. Lifecycle tests leave the workbench stopped; start it again.
-Evidence is stored in ignored `fan-out/workbench`.
+EN: Run sequentially: one active session. Firefox profiles/processes are cleaned up.
+Browser scripts depend on browser_accept. Restart the server after lifecycle tests.
+Evidence is in ignored `fan-out/workbench`; open index.html for the offline report.
 
 繁中：單一使用中階段，測試須循序執行。Firefox 使用暫存設定並於結束清除。
 後續瀏覽器測試依賴 browser_accept 報告；生命週期測試後須重啟工作台。

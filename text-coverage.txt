@@ -14,3 +14,6 @@ Gemma E2B: original weights, completion template, NF4/HQQ4/8, vision, tools, 816
 Workbench API: actual SDXL text/image/inpaint, 20 CPU edits, 4K limit, scoped IDs/sharing/revocation, errors, export and deletion; no mocked generation. / 真實工作台 API 全流程與資料操作。
 Workbench LLM: five original profiles execute queued tools, SDXL batches and actual image reviews; HF NF4/HQQ8 and GGUF KV Q8. / 五個原模型批次與視覺檢查，實測 GPU 切換。
 Workbench Firefox: Generate→Inspect→Text edit, masks, comparison, download, refresh, sharing and upload; desktop/portrait/large/200% zoom. / 真實瀏覽器操作及四種顯示檢查。
+Workbench lifecycle: actual port conflict, force/stop/restart and interruption recovery; no mocked processes. / 真實程序啟停及恢復。
+Workbench lineage: one real batch generates, adds text, removes background and shares the final image. / 單批生成、加字、去背及分享。
+Workbench model UI: actual alternate SDXL, GGUF 8192-context/Q4-KV and feedback revision. / 實際切換模型與量化後修訂。
