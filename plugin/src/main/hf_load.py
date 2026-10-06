@@ -19,7 +19,7 @@ def load(cfg):
         cfg["model"], config=config, dtype=dtype,
         device_map={"": cfg["device"]}, attn_implementation="sdpa",
         **configuration(cfg["quantization"], config), **common).eval()
-    if config.model_type == "gemma4" and cfg["chat_template"]:
+    if config.model_type == "gemma4" and cfg["chat_template"] and not cfg.get("base_completion"):
         tokenizer = processor.tokenizer
         model.generation_config.eos_token_id = [tokenizer.eos_token_id,
             tokenizer.convert_tokens_to_ids("<turn|>"),

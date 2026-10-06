@@ -25,4 +25,5 @@ def prepare(processor, vision, request, images):
     return processor.apply_chat_template(
         messages, tools=tools, tokenize=True, add_generation_prompt=True,
         return_dict=True, return_tensors="pt",
-        enable_thinking=request.get("enable_thinking", False))
+        enable_thinking=request.get("enable_thinking", False),
+        tool_choice=request.get("tool_choice", "auto"))

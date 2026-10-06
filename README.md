@@ -4,9 +4,9 @@ HF/GGUF language and vision models run through ComfyUI's queue and memory manage
 HF/GGUF 語言及視覺模型透過 ComfyUI 佇列與記憶體管理執行。
 HF/GGUF 语言及视觉模型通过 ComfyUI 队列与内存管理执行。
 
-Four supplied Qwen profiles pass acceptance. The supplied Gemma E2B still fails chat, image and tool correctness; the overall goal is incomplete.
-四個指定 Qwen 設定已通過；現有 Gemma E2B 的對話、圖片及工具正確性仍未通過，整體目標尚未完成。
-四个指定 Qwen 配置已通过；现有 Gemma E2B 的对话、图片及工具正确性仍未通过，整体目标尚未完成。
+All five supplied model profiles pass text, image, tool and LLM → SDXL → LLM checks with their original weights.
+五個指定模型均以原始權重通過文字、圖片、工具及 LLM → SDXL → LLM 切換測試。
+五个指定模型均以原始权重通过文字、图片、工具及 LLM → SDXL → LLM 切换测试。
 
 ## Setup / 安裝 / 安装
 
@@ -48,7 +48,7 @@ curl -k https://127.0.0.1:8188/v1/chat/completions \
   -d '{"model":"Qwen3.5-9B","messages":[{"role":"user","content":"What is 17+25?"}]}'
 ```
 
-See [API](plugin/doc/api.md), [runtime](plugin/doc/runtime.md), [models](plugin/doc/formats.md), [tests](plugin/doc/tests.md).
+See [API](plugin/doc/api.md), [runtime](plugin/doc/runtime.md), [models](plugin/doc/formats.md), [Gemma](plugin/doc/gemma.md), [tests](plugin/doc/tests.md).
 詳細設定、模型限制及驗證狀態見上述文件。
 详细配置、模型限制和验证状态见上述文档。
 Model downloads and dependency caches can exceed 1 GB; model weights may stay in external directories.

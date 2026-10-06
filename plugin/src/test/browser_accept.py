@@ -1,4 +1,5 @@
 import json
+import sys
 import time
 from pathlib import Path
 from PIL import Image
@@ -13,8 +14,10 @@ def main():
     started = time.monotonic()
     root = Path(__file__).resolve().parents[3]
     out = root / "fan-out"
+    name, kv = sys.argv[1:3] if len(sys.argv) > 2 else ("Qwen3.5-9B", "hqq_4")
+    prefix = "gui-" + name if len(sys.argv) > 2 else "gui"
     Image.new("RGB", (256, 256), "blue").save(root / "plugin/data/input/uat-blue.png")
-    body = {"model": "Qwen3.5-9B", "kv_quantization": "hqq_4", "max_tokens": 96,
+    body = {"model": name, "kv_quantization": kv, "max_tokens": 96,
             "parallel_tool_calls": False,
             "messages": [user("What is 17 + 25? Reply with only the number.")]}
     proof = {}
@@ -32,11 +35,11 @@ def main():
         proof["image"] = chat(vision)["content"]
         assert "blue" in proof["image"].lower()
         fit(b)
-        (out / "gui-image.png").write_bytes(b.screenshot(format="binary"))
+        (out / f"{prefix}-image.png").write_bytes(b.screenshot(format="binary"))
         tool = chat(graph(dict(body, tools=[TOOL], messages=[user("Use get_weather for Hong Kong.")])))
         proof["tool"] = tool["tool_calls"][0]["function"]
         assert json.loads(proof["tool"]["arguments"])["city"] == "Hong Kong"
-        (out / "gui-tool.png").write_bytes(b.screenshot(format="binary"))
+        (out / f"{prefix}-tool.png").write_bytes(b.screenshot(format="binary"))
         proof["sdxl"] = run_graph(b, sdxl(seed=int(time.time())), 7)["images"][0]
         proof["after_sdxl"] = chat(graph(body))["content"]
         assert proof["after_sdxl"].strip() == "42"
@@ -45,9 +48,9 @@ def main():
             b.execute_script("window.comfyAPI.app.app.graph._nodes.forEach((n,i)=>"
                 "{n.pos=arguments[0] ? [100,100+i*680] : [100+i*500,140]})", [width < height], sandbox=None)
             fit(b)
-            (out / f"gui-{name}.png").write_bytes(b.screenshot(format="binary"))
-    proof.update(status="PASS", seconds=time.monotonic() - started)
-    (out / "gui.json").write_text(json.dumps(proof, indent=2))
+            (out / f"{prefix}-{name}.png").write_bytes(b.screenshot(format="binary"))
+    proof.update(status="PASS", model=body["model"], seconds=time.monotonic() - started)
+    (out / f"{prefix}.json").write_text(json.dumps(proof, indent=2))
     print(json.dumps(proof))
 
 

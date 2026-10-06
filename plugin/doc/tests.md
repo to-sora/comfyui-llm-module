@@ -35,3 +35,7 @@ Firefox 验收通过 Run 按钮执行节点，检查三种画面尺寸，并清�
 `plugin.src.test.lifecycle_accept` stops this service, checks port conflicts and `--force`, then stops its test service.
 生命週期測試會停止本服務，驗證連接埠衝突與強制啟動；結束後需重新啟動服務。
 生命周期测试会停止本服务，验证端口冲突与强制启动；结束后需重新启动服务。
+
+Gemma: run `gemma_accept hqq_8` and `browser_accept gemma-4-E2B hqq_8` as modules in `plugin.src.test`. `gemma_reference` unloads ComfyUI models for a standalone diagnostic; it is not acceptance.
+Gemma 指令如上；reference 會卸載 ComfyUI 模型再執行獨立診斷，不算驗收。
+Gemma 命令如上；reference 会卸载 ComfyUI 模型再执行独立诊断，不算验收。

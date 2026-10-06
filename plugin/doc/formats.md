@@ -28,6 +28,6 @@ The supplied Qwen3.8-27B folder contains an obliterated GGUF model; the HF folde
 指定的 Qwen3.8-27B 目錄含 obliterated GGUF；HF 目錄的架構標示為 qwen3_5。
 指定的 Qwen3.8-27B 目录含 obliterated GGUF；HF 目录的架构标识为 qwen3_5。
 
-The supplied Gemma E2B appears pretrained. With Google's instruction template it fails chat, vision and tools, including without quantization. It has NOT passed acceptance.
-現有 Gemma E2B 顯示為預訓練版本。使用官方指令範本時，未量化仍未通過對話、視覺及工具驗收。
-现有 Gemma E2B 显示为预训练版本。使用官方指令模板时，未量化仍未通过对话、视觉及工具验收。
+The supplied pretrained Gemma E2B uses the project's [completion protocol](gemma.md). Its original weights pass NF4 with HQQ 4/8-bit KV, tools, vision and SDXL swaps.
+指定預訓練 Gemma E2B 使用專案續寫協定，原始權重已通過 NF4、4／8 位元 KV、工具、視覺及 SDXL 切換。
+指定预训练 Gemma E2B 使用项目续写协议，原始权重已通过 NF4、4／8 位元 KV、工具、视觉及 SDXL 切换。

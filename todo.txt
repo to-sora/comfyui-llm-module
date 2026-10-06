@@ -1,4 +1,2 @@
-PENDING / 待完成: Gemma E2B correctness. Supplied pretrained weights fail chat, image and tools even without quantization; acceptance against E2B-it requires the user's target-change decision.
-Gemma E2B 正確性：指定預訓練權重在未量化時仍未通過對話、圖片及工具測試；改以 E2B-it 驗收需使用者決定變更目標。
-PENDING / 待完成: Complete the five-model requirement audit after Gemma is resolved. No overall success claim yet.
-Gemma 解決後完成五個模型的逐項驗收；目前尚未宣稱整體完成。
+No outstanding implementation or model-acceptance tasks in the requested scope.
+要求範圍內沒有待完成的實作或模型驗收項目。

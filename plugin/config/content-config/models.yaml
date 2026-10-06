@@ -12,7 +12,8 @@ gemma-4-E2B:
   model: /mnt/DATA9/LLM_model/d/gemma-4-E2B
   backend: transformers
   quantization: bnb_nf4
-  chat_template: .local-tool-app/templates/gemma4.jinja
+  chat_template: config/content-config/gemma-base.jinja
+  base_completion: true
 Qwen3.5-9B:
   model: /mnt/DATA9/LLM_model/d/Qwen3.5-9B
   backend: transformers

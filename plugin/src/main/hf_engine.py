@@ -7,6 +7,7 @@ from .images import tensor_images
 from .kv_cache import create
 from .tool_calls import parse
 from .gemma_tools import parse as parse_gemma
+from . import gemma_base
 
 
 class HFEngine:
@@ -25,11 +26,15 @@ class HFEngine:
             raise ValueError("Prompt and max_tokens exceed configured context_tokens.")
         temperature = request.get("temperature", 0.0)
         tokenizer = getattr(self.processor, "tokenizer", self.processor)
-        marker = "<tool_call|>" if self.model.config.model_type == "gemma4" else "</tool_call>"
+        base = self.cfg.get("base_completion", False)
+        native_gemma = self.model.config.model_type == "gemma4" and not base
+        marker = "<tool_call|>" if native_gemma else "</tool_call>"
         options = {"do_sample": temperature > 0, "max_new_tokens": limit,
                    "past_key_values": create(self.model.config, self.cfg["kv_quantization"]),
                    "stopping_criteria": [StopGeneration(tokenizer, marker if single_tool(request) else None)],
                    "use_cache": True}
+        if base:
+            options["stopping_criteria"].append(gemma_base.stopping(tokenizer))
         if temperature > 0:
             options.update(temperature=temperature, top_p=request.get("top_p", 1.0))
         if "seed" in request:
@@ -38,8 +43,8 @@ class HFEngine:
         self.diagnostics["kv"] = describe(options["past_key_values"])
         tokens = output[0, count:]
         raw = self.processor.decode(tokens, skip_special_tokens=False)
-        parser = parse_gemma if self.model.config.model_type == "gemma4" else parse
-        message = parser(raw, request.get("tools"))
+        parser = parse_gemma if native_gemma else parse
+        message = gemma_base.response(raw, request) if base else parser(raw, request.get("tools"))
         reason = "tool_calls" if message.get("tool_calls") else "length" if len(tokens) >= limit else "stop"
         return {"message": message, "finish_reason": reason,
                 "usage": {"prompt_tokens": count, "completion_tokens": len(tokens),

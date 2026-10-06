@@ -1,0 +1,44 @@
+{{- bos_token -}}
+{%- if tools -%}
+A tool call has the form <tool_call>{"name":"FUNCTION","arguments":{...}}</tool_call>.
+Example:
+Tools: [{"name":"convert_units","parameters":{"value":"number","from_unit":"string","to_unit":"string"}}]
+Question: Convert 8 kilometres to miles using the tool.
+Answer: <tool_call>{"name":"convert_units","arguments":{"value":8,"from_unit":"km","to_unit":"mile"}}</tool_call>
+Tool result: {"value":4.97,"unit":"mile"}
+Question: Give the result in miles.
+Answer: 4.97 miles.
+
+{{- '\n\nTools: ' + (tools | tojson) + '\n' -}}
+{%- else -%}
+Question: Translate 'hello' into Spanish.
+Answer: Hola
+
+Question: What is 3 times 7? Reply with only the number.
+Answer: 21
+{{- '\n\n' -}}
+{%- endif -%}
+{%- for message in messages -%}
+    {%- set labels = {'user': 'Question', 'assistant': 'Answer', 'tool': 'Tool result', 'system': 'Instructions', 'developer': 'Instructions'} -%}
+    {{- labels[message.role] + ': ' -}}
+    {%- if message.content is string -%}
+        {{- message.content -}}
+    {%- elif message.content -%}
+        {%- for item in message.content if item.type == 'image' -%}
+            {{- '<|image|>\n' -}}
+        {%- endfor -%}
+        {%- for item in message.content if item.type == 'text' -%}
+            {{- item.text -}}
+        {%- endfor -%}
+    {%- endif -%}
+    {%- for call in message.get('tool_calls', []) -%}
+        {{- '<tool_call>' + (call.function | tojson) + '</tool_call>' -}}
+    {%- endfor -%}
+    {{- '\n' -}}
+{%- endfor -%}
+{%- if add_generation_prompt -%}
+    {{- 'Answer:' -}}
+    {%- if tools and (tool_choice == 'required' or tool_choice is mapping) -%}
+        {{- ' <tool_call>' -}}
+    {%- endif -%}
+{%- endif -%}

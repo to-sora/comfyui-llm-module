@@ -9,4 +9,4 @@ Firefox: real Run-button text, image, tool, SDXL and LLM-return workflow; three 
 Fixtures: generated solid-color images and client-supplied tool result; no external weather service. / 固定色塊圖片及客戶端工具結果，無外部天氣服務。
 Directory inputs: actual HF 27B template and GGUF 9B file selection verified. / 已實測 HF 27B 範本及 GGUF 9B 檔案選擇。
 HTTPS image inputs: HF/GGUF identify actual SDXL image colors through ComfyUI's self-signed endpoint. / HF/GGUF 經 ComfyUI 自簽端點辨識實際 SDXL 圖片顏色。
-Gemma E2B: actual supplied weights tested; unquantized and NF4 chat correctness FAILED. / 已測試指定權重；未量化與 NF4 對話正確性未通過。
+Gemma E2B: original weights, completion template, NF4/HQQ4/8, vision, tools, 816-token document, SDXL swap and Firefox passed; no mocked generation. / 原始權重、續寫範本、量化、視覺、工具、文件、切換及 Firefox 通過，無模擬生成。
