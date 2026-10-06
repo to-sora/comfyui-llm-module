@@ -1,4 +1,5 @@
 import json
+import sys
 import time
 from pathlib import Path
 from .api_client import execute, request
@@ -7,7 +8,8 @@ from .sdxl_graph import graph
 
 def main():
     started = time.monotonic()
-    body = {"model": "Qwen3.5-9B", "kv_quantization": "hqq_8",
+    name, kv = sys.argv[1:3] if len(sys.argv) > 2 else ("Qwen3.5-9B", "hqq_8")
+    body = {"model": name, "kv_quantization": kv,
             "messages": [{"role": "user", "content": "What is 17 + 25? Reply with only the number."}],
             "max_tokens": 32, "temperature": 0}
     def chat():
@@ -22,7 +24,7 @@ def main():
     assert loaded["model"] == body["model"]
     second = chat()
     assert next(m for m in second["models"] if m["loaded"])["loads"] == loaded["loads"]
-    prompt_id, outputs = execute(graph(seed=43))
+    prompt_id, outputs = execute(graph(seed=int(time.time())))
     assert outputs["7"]["images"]
     middle = request("/llm/status")
     assert all(not m["loaded"] for m in middle["models"]), middle
@@ -32,13 +34,13 @@ def main():
     final = chat()
     reloaded = next(m for m in final["models"] if m["loaded"])
     assert load_events(final) > load_events(first), final
-    evidence = {"status": "PASS", "model": body["model"], "quantization": "bnb_nf4",
-                "kv_quantization": "hqq_8", "answer_before_and_after": "42",
+    evidence = {"status": "PASS", "model": body["model"], "quantization": loaded["quantization"],
+                "kv_quantization": kv, "answer_before_and_after": "42",
                 "llm_resident_bytes": loaded["resident_bytes"], "bytes_freed_for_sdxl": freed,
                 "sdxl_prompt": prompt_id, "sdxl_image": outputs["7"]["images"][0],
                 "loads_before": load_events(first), "loads_after": load_events(final),
                 "reused_between_requests": True, "seconds": time.monotonic() - started}
-    output = Path(__file__).resolve().parents[3] / "fan-out/swap-qwen9.json"
+    output = Path(__file__).resolve().parents[3] / "fan-out" / f"swap-{name}-{kv}.json"
     output.write_text(json.dumps(evidence, indent=2))
     print(json.dumps(evidence))
 

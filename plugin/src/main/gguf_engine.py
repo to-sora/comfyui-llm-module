@@ -1,14 +1,8 @@
 import llama_cpp as lc
 from llama_cpp.llama_chat_format import MTMDChatHandler
-from comfy import model_management as mm
-from .images import data_url, tensor_images
-from .messages import normalize
+from .gguf_inputs import prepare
+from .generation_controls import gguf_controls
 from .tool_calls import parse
-
-
-def interrupt(tokens, scores):
-    mm.throw_exception_if_processing_interrupted()
-    return scores
 
 
 class GGUFEngine:
@@ -30,6 +24,9 @@ class GGUFEngine:
             flash_attn=True, type_k=types[cfg["kv_quantization"]],
             type_v=types[cfg["kv_quantization"]], chat_handler=self.handler,
             verbose=False)
+        self.diagnostics = {"kv_type_k": self.model.context_params.type_k,
+                            "kv_type_v": self.model.context_params.type_v,
+                            "context_tokens": self.model.n_ctx()}
         if self.handler:
             try:
                 self.handler._init_mtmd_context(self.model)
@@ -38,16 +35,11 @@ class GGUFEngine:
                 raise
 
     def chat(self, request, images=None):
-        messages, tools = normalize(request)
-        pictures = tensor_images(images)
-        if pictures:
-            user = next(m for m in reversed(messages) if m["role"] == "user")
-            if isinstance(user["content"], str):
-                user["content"] = [{"type": "text", "text": user["content"]}]
-            user["content"] += [{"type": "image_url", "image_url": {"url": data_url(p)}} for p in pictures]
+        messages, tools = prepare(request, images)
         args = dict(messages=messages, tools=tools, temperature=request.get("temperature", 0),
                     max_tokens=request.get("max_completion_tokens", request.get("max_tokens", 256)),
-                    logits_processor=lc.LogitsProcessorList([interrupt]))
+                    seed=request.get("seed"), top_p=request.get("top_p", 1.0),
+                    logits_processor=lc.LogitsProcessorList([gguf_controls(self.model, request)]))
         self.model.reset()
         if self.handler:
             result = self.handler(llama=self.model, **args, enable_thinking=request.get("enable_thinking", False))

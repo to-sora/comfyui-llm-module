@@ -62,10 +62,11 @@ def status():
     return {"models": [{"model": h.cfg["id"], "loaded": h.engine is not None,
                         "resident_bytes": h.resident_bytes, "loads": h.loads,
                         "quantization": h.cfg["quantization"],
-                        "kv_quantization": h.cfg["kv_quantization"]}
+                        "kv_quantization": h.cfg["kv_quantization"],
+                        "diagnostics": getattr(h.engine, "diagnostics", {})}
                        for h in list(HANDLES.values())],
             "managed_models": [m.model.__class__.__name__ for m in mm.loaded_models()],
             "events": list(EVENTS),
-            "cuda_free": torch.cuda.mem_get_info()[0],
+            "cuda_free": torch.cuda.mem_get_info()[0] if torch.cuda.is_available() else 0,
             "cuda_allocated": torch.cuda.memory_allocated(),
             "cuda_reserved": torch.cuda.memory_reserved()}

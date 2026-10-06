@@ -9,7 +9,8 @@ from .model_cases import TOOL, image_message, user
 def main():
     name, kv = sys.argv[1:3]
     started = time.monotonic()
-    base = {"model": name, "kv_quantization": kv, "max_tokens": 128, "temperature": 0}
+    base = {"model": name, "kv_quantization": kv, "max_tokens": 128, "temperature": 0,
+            "parallel_tool_calls": False}
     responses = {}
     def chat(messages, **kwargs):
         result = request("/v1/chat/completions", dict(base, messages=messages, **kwargs))
@@ -24,6 +25,7 @@ def main():
         assert color in answer.lower(), answer
     prompt = user("Use get_weather to check the weather in Hong Kong.")
     assistant = chat([prompt], tools=[TOOL])
+    assert len(assistant["tool_calls"]) == 1, assistant
     call = assistant["tool_calls"][0]
     assert call["function"]["name"] == "get_weather"
     args = json.loads(call["function"]["arguments"])
@@ -40,8 +42,9 @@ def main():
     live = next(m for m in state["models"] if m["loaded"] and m["model"] == name)
     evidence = {"status": "PASS", "model": name, "kv_quantization": kv,
                 "quantization": live["quantization"], "responses": responses,
+                "diagnostics": live["diagnostics"],
                 "resident_bytes": live["resident_bytes"], "seconds": time.monotonic() - started}
-    path = Path(__file__).resolve().parents[3] / "fan-out" / f"model-{name}-{kv}.json"
+    path = Path(__file__).resolve().parents[3] / "fan-out" / f"model-{name.replace('/', '_')}-{kv}.json"
     path.write_text(json.dumps(evidence, indent=2, ensure_ascii=False))
 
 

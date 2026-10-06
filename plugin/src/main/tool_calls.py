@@ -29,9 +29,18 @@ def parse(text, tools):
                 args[key] = value
         if name not in schemas:
             raise ValueError(f"Model requested an undeclared tool: {name}")
+        if isinstance(args, str):
+            args = json.loads(args)
+        if not isinstance(args, dict):
+            raise ValueError("Tool arguments must be an object.")
+        missing = set(schemas[name].get("parameters", {}).get("required", [])) - args.keys()
+        if missing:
+            raise ValueError(f"Missing required tool arguments: {sorted(missing)}")
         calls.append({"id": "call_" + uuid.uuid4().hex, "type": "function",
                       "function": {"name": name, "arguments": json.dumps(args, ensure_ascii=False)}})
     content = re.sub(r"<tool_call>.*?</tool_call>", "", text, flags=re.S)
+    if "<tool_call>" in content:
+        raise ValueError("Incomplete tool call; increase max_tokens.")
     content = re.sub(r"<think>.*?</think>", "", content, flags=re.S)
     for token in ("<|im_end|>", "<|endoftext|>", "<|fim_suffix|>", "<eos>"):
         content = content.replace(token, "")

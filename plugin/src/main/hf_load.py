@@ -13,10 +13,15 @@ def load(cfg):
     processor_cls = tr.AutoProcessor if vision else tr.AutoTokenizer
     processor = processor_cls.from_pretrained(cfg["model"], **common)
     if cfg["chat_template"]:
-        processor.chat_template = Path(cfg["chat_template"]).read_text()
+        processor.chat_template = (APP / cfg["chat_template"]).read_text()
     dtype = torch.float32 if cfg["device"] == "cpu" else torch.bfloat16
     model = cls.from_pretrained(
         cfg["model"], config=config, dtype=dtype,
         device_map={"": cfg["device"]}, attn_implementation="sdpa",
         **configuration(cfg["quantization"], config), **common).eval()
+    if config.model_type == "gemma4" and cfg["chat_template"]:
+        tokenizer = processor.tokenizer
+        model.generation_config.eos_token_id = [tokenizer.eos_token_id,
+            tokenizer.convert_tokens_to_ids("<turn|>"),
+            tokenizer.convert_tokens_to_ids("<tool_call|>")]
     return model, processor, vision

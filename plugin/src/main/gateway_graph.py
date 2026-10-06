@@ -1,4 +1,5 @@
 import json
+from .settings import read
 
 
 def graph(body):
@@ -6,7 +7,7 @@ def graph(body):
                ("quantization", "kv_quantization", "context_tokens", "backend", "mmproj")
                if key in body}
     inputs = dict(model=body["model"], quantization="default",
-                  kv_quantization="none", context_tokens=4096)
+                  kv_quantization="none", context_tokens=read("config.yaml")["context_tokens"])
     inputs.update(options)
     return {
         "1": {"class_type": "LLMModel", "inputs": inputs},
