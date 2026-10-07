@@ -28,7 +28,7 @@ class LLMPatcher:
         return []
 
     def is_clone(self, other):
-        return False
+        return self is other
 
     def model_size(self):
         engine = self.model.engine
@@ -63,4 +63,5 @@ class LLMPatcher:
         return 0
 
     def detach(self, unpatch_all=True):
-        self.model.offload()
+        if unpatch_all:
+            self.model.offload()
