@@ -4,7 +4,7 @@ from .settings import read
 
 def graph(body):
     options = {key: body[key] for key in
-               ("quantization", "kv_quantization", "context_tokens", "backend", "mmproj")
+               ("quantization", "kv_quantization", "context_tokens", "backend", "precision")
                if key in body}
     inputs = dict(model=body["model"], quantization="default",
                   kv_quantization="none", context_tokens=read("config.yaml")["context_tokens"])
@@ -16,5 +16,5 @@ def graph(body):
             "max_tokens": body.get("max_completion_tokens", body.get("max_tokens", 256)),
             "temperature": body.get("temperature", 0),
             "tools": json.dumps(body.get("tools", [])),
-            "request_json": json.dumps(body)}},
+            "request_json": json.dumps({k: v for k, v in body.items() if k not in ("messages", "tools")})}},
     }

@@ -1,12 +1,12 @@
 # ComfyUI LLM
 
-HF/GGUF language and vision models run through ComfyUI's queue and memory manager.
-HF/GGUF 語言及視覺模型透過 ComfyUI 佇列與記憶體管理執行。
-HF/GGUF 语言及视觉模型通过 ComfyUI 队列与内存管理执行。
+Language and vision models use transformers through ComfyUI's queue and native memory manager. GGUF is an offline import format.
+語言及視覺模型透過 transformers、ComfyUI 原生佇列與記憶體管理執行；GGUF 先離線匯入。
+语言和视觉模型通过 transformers、ComfyUI 原生队列与内存管理运行；GGUF 先离线导入。
 
-All five supplied model profiles pass text, image, tool and LLM → SDXL → LLM checks with their original weights.
-五個指定模型均以原始權重通過文字、圖片、工具及 LLM → SDXL → LLM 切換測試。
-五个指定模型均以原始权重通过文字、图片、工具及 LLM → SDXL → LLM 切换测试。
+Converted 9B/27B models passed six parity gates. The pretrained Gemma profile is replaced by a local instruction model. The chat UI rebuild remains in progress; see `todo.txt` and `text-coverage.txt`.
+匯入模型通過六關，Gemma 改用本機指令模型；聊天介面重建仍在進行，詳見待辦及驗證紀錄。
+导入模型通过六关，Gemma 改用本地指令模型；聊天界面重建仍在进行，详见待办和验证记录。
 
 ## Setup / 安裝 / 安装
 
@@ -17,13 +17,8 @@ Use this workspace's sibling `comfyui` and `civit_script` directories.
 ```bash
 bash install-local-build.sh
 bash plugin/install-app-dep.sh
-bash plugin/install-gguf.sh
 bash plugin/start.sh
 ```
-
-Existing Python: `COMFY_BOOTSTRAP_PYTHON` may select its executable.
-使用既有 Python，可透過上述環境變數指定執行檔。
-使用现有 Python，可通过上述环境变量指定执行文件。
 
 HTTPS: https://127.0.0.1:8188; trust the project's self-signed certificate manually.
 HTTPS 自簽憑證位於 `plugin/data/tls`，瀏覽器需手動信任。

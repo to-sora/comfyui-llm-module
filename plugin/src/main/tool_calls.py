@@ -42,7 +42,7 @@ def parse(text, tools):
     if "<tool_call>" in content:
         raise ValueError("Incomplete tool call; increase max_tokens.")
     content = re.sub(r"<think>.*?</think>", "", content, flags=re.S)
-    for token in ("<|im_end|>", "<|endoftext|>", "<|fim_suffix|>", "<eos>"):
+    for token in ("<|im_end|>", "<|endoftext|>", "<|fim_suffix|>", "<eos>", "<end_of_turn>"):
         content = content.replace(token, "")
     message = {"role": "assistant", "content": content.strip() or None}
     if calls:

@@ -1,4 +1,5 @@
-from .errors import UserError
+from .errors import json_body
+from .errors import UserError, required
 from aiohttp import web
 from . import assets, sharing
 from .records import get, update, create
@@ -25,8 +26,10 @@ def install(routes, e):
     async def action(request):
         sid = request.match_info["sid"]
         e.check_active(sid)
-        body = await request.json()
-        ids, action = body["ids"], body["action"]
+        body = await json_body(request)
+        ids, action = required(body, "ids"), required(body, "action")
+        if not isinstance(ids, list) or any(type(i) is not int for i in ids):
+            raise UserError("Image IDs must be a list of integers")
         if action in ("share", "revoke"):
             sharing.grant(e.db, sid, ids, action == "share")
         elif action == "final":

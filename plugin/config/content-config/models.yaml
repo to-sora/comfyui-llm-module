@@ -4,22 +4,18 @@ Qwen3.8-27B-OBLITERATED:
   quantization: bnb_nf4
   chat_template: /mnt/DATA9/LLM_model/d/Qwen3.5-9B/chat_template.jinja
 Qwen3.8-27B:
-  model: /mnt/DATA9/LLM_model/d/Qwen3.8-27B/Qwen3.8-27B-OBLITERATED-Q4_K_M.gguf
-  mmproj: /mnt/DATA9/LLM_model/d/Qwen3.8-27B/mmproj-model-bf16.gguf
-  backend: gguf
-  quantization: auto
-gemma-4-E2B:
-  model: /mnt/DATA9/LLM_model/d/gemma-4-E2B
+  model: data/imported/Qwen3.8-27B
   backend: transformers
   quantization: bnb_nf4
-  chat_template: config/content-config/gemma-base.jinja
-  base_completion: true
+gemma-3-12b-it:
+  model: /mnt/DATA9/LLM_model/d/gemma-3-12b-it
+  backend: transformers
+  quantization: bnb_nf4
 Qwen3.5-9B:
   model: /mnt/DATA9/LLM_model/d/Qwen3.5-9B
   backend: transformers
   quantization: bnb_nf4
 Qwen3.5-9B-gguf:
-  model: /mnt/DATA9/LLM_model/d/Qwen3.5-9B-gguf/Qwen3.5-9B-Uncensored-HauhauCS-Aggressive-Q6_K.gguf
-  mmproj: /mnt/DATA9/LLM_model/d/Qwen3.5-9B-gguf/mmproj-Qwen3.5-9B-Uncensored-HauhauCS-Aggressive-BF16.gguf
-  backend: gguf
-  quantization: auto
+  model: data/imported/Qwen3.5-9B-gguf
+  backend: transformers
+  quantization: bnb_nf4

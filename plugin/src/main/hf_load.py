@@ -5,6 +5,7 @@ from .quantization import configuration
 from .settings import APP
 from . import weight_cache
 from .estimate import weights
+from .offload_budget import weight_budget
 
 
 def processor(cfg):
@@ -25,11 +26,16 @@ def load(cfg, proc, vision, budget):
     cls = tr.AutoModelForImageTextToText if vision else tr.AutoModelForCausalLM
     dtype = getattr(torch, cfg.get("precision", "bfloat16"))
     device = cfg["device"]
-    options = {} if source != cfg["model"] else configuration(cfg["quantization"], config)
+    options = {} if source != cfg["model"] else configuration(cfg["quantization"], config, dtype)
+    saved = getattr(config, "quantization_config", {})
+    if saved.get("quant_method") == "bitsandbytes":
+        quant = tr.BitsAndBytesConfig.from_dict(saved)
+        quant.bnb_4bit_compute_dtype = dtype
+        options["quantization_config"] = quant
     mapping = {"": device}
     if device != "cpu" and weights(cfg) > budget:
         mapping = "auto"
-        options["max_memory"] = {torch.device(device).index or 0: int(budget),
+        options["max_memory"] = {torch.device(device).index or 0: weight_budget(config, budget),
                                  "cpu": int(psutil.virtual_memory().available * .85)}
         quant = options.get("quantization_config")
         if quant:
@@ -39,4 +45,5 @@ def load(cfg, proc, vision, budget):
     if "disk" in getattr(model, "hf_device_map", {}).values():
         raise MemoryError("The model requires more RAM than is available")
     weight_cache.save(cfg, model, proc)
+    model._llm_weight_source = source
     return model

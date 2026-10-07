@@ -1,3 +1,4 @@
+from .errors import json_body
 from .errors import UserError
 import json
 from aiohttp import web
@@ -27,7 +28,7 @@ def install(routes, e):
     async def sessions(request):
         if e.tasks:
             raise UserError("Wait for work to finish or cancel it before switching sessions")
-        data = await request.json()
+        data = await json_body(request)
         if data.get("id"):
             e.db.activate(data["id"])
         else:
@@ -56,7 +57,7 @@ def install(routes, e):
     async def settings(request):
         sid = request.match_info["sid"]
         e.check_active(sid)
-        value = {**e.db.session(sid)["settings"], **await request.json()}
+        value = {**e.db.session(sid)["settings"], **await json_body(request)}
         llm_settings(e.caps, value)
         e.db.sql("UPDATE sessions SET settings=? WHERE id=?", (json.dumps(value), sid))
         return web.json_response(value)

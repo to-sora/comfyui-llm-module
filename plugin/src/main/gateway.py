@@ -1,3 +1,4 @@
+from .errors import json_body
 import json
 import logging
 from aiohttp import web
@@ -7,24 +8,7 @@ from .protocol import validate
 from .registry import profiles
 from .settings import read
 from .errors import UserError, message
-
-
-async def stream_response(request, result):
-    response = web.StreamResponse(headers={"Content-Type": "text/event-stream",
-                                           "Cache-Control": "no-cache"})
-    await response.prepare(request)
-    choice = result["choices"][0]
-    delta = dict(choice["message"])
-    for i, call in enumerate(delta.get("tool_calls", [])):
-        call["index"] = i
-    chunk = {k: result[k] for k in ("id", "created", "model")}
-    chunk.update(object="chat.completion.chunk",
-                 choices=[{"index": 0, "delta": delta, "finish_reason": None}])
-    await response.write(("data: " + json.dumps(chunk) + "\n\n").encode())
-    chunk["choices"] = [{"index": 0, "delta": {}, "finish_reason": choice["finish_reason"]}]
-    await response.write(("data: " + json.dumps(chunk) + "\n\ndata: [DONE]\n\n").encode())
-    await response.write_eof()
-    return response
+from .gateway_stream import stream_response
 
 
 def install():
@@ -42,11 +26,12 @@ def install():
     @routes.post("/v1/chat/completions")
     async def chat(request):
         try:
-            body = validate(await request.json())
+            body = validate(await json_body(request))
             if PromptServer.instance.prompt_queue.get_tasks_remaining() >= read("config.yaml")["queue_limit"]:
                 return web.json_response({"error": {"message": "ComfyUI queue is full."}}, status=429)
-            result = await execute(body, request)
-            return await stream_response(request, result) if body.get("stream") else web.json_response(result)
+            if body.get("stream"):
+                return await stream_response(request, body)
+            return web.json_response(await execute(body, request))
         except UserError as exc:
             return web.json_response({"error": {"message": message(exc), "type": "invalid_request_error"}}, status=400)
         except Exception as exc:

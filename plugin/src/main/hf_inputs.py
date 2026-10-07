@@ -4,6 +4,9 @@ from .messages import normalize
 
 def prepare(processor, vision, request, images):
     messages, tools = normalize(request)
+    if processor.chat_template and "tools" not in processor.chat_template:
+        from .plain_template import adapt
+        messages = adapt(messages, tools)
     for message in messages:
         content = message.get("content")
         if content is None:

@@ -44,9 +44,8 @@ def install(routes):
     async def capabilities(request):
         result = await asyncio.to_thread(checkpoints)
         result["profiles"] = [{"id": name, "backend": p["backend"],
-            "base_completion": bool(p.get("base_completion")),
             "quantization": p.get("quantization", "auto"), "kv_quantization": "none",
-            "vision": p["backend"] != "gguf" or bool(p.get("mmproj"))}
+            "vision": True}
             for name, p in profiles().items()]
         result["scoped_cancel"] = True
         return web.json_response(result)

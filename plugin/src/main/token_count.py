@@ -1,3 +1,4 @@
+from .errors import json_body
 import asyncio
 from aiohttp import web
 from .registry import options
@@ -27,7 +28,7 @@ def install(routes):
     @routes.post("/llm/token_count")
     async def tokens(request):
         try:
-            body = validate(await request.json())
+            body = validate(await json_body(request))
             return web.json_response(await asyncio.to_thread(count, body))
         except UserError as exc:
             return web.json_response({"error": message(exc)}, status=400)

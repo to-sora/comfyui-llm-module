@@ -6,7 +6,7 @@ Run against the project's active HTTPS service:
 
 ```bash
 plugin/.local-tool-app/venv/bin/python -m plugin.src.test.sdxl_smoke
-plugin/.local-tool-app/venv/bin/python -m plugin.src.test.swap_accept
+plugin/.local-tool-app/venv/bin/python -m plugin.src.test.ram_accept
 plugin/.local-tool-app/venv/bin/python -m plugin.src.test.model_accept Qwen3.5-9B hqq_4
 plugin/.local-tool-app/venv/bin/python -m plugin.src.test.concurrent_accept
 plugin/.local-tool-app/venv/bin/python -m plugin.src.test.api_accept
@@ -36,6 +36,6 @@ Firefox 验收通过 Run 按钮执行节点，检查三种画面尺寸，并清�
 生命週期測試會停止本服務，驗證連接埠衝突與強制啟動；結束後需重新啟動服務。
 生命周期测试会停止本服务，验证端口冲突与强制启动；结束后需重新启动服务。
 
-Gemma: run `gemma_accept hqq_8` and `browser_accept gemma-4-E2B hqq_8` as modules in `plugin.src.test`. `gemma_reference` unloads ComfyUI models for a standalone diagnostic; it is not acceptance.
-Gemma 指令如上；reference 會卸載 ComfyUI 模型再執行獨立診斷，不算驗收。
-Gemma 命令如上；reference 会卸载 ComfyUI 模型再执行独立诊断，不算验收。
+Engine checks: `stream_accept`, `fault_accept` and `import_workflow` in `plugin.src.test` verify streaming, cancellation and actual model/image/tool/SDXL round trips. Gemma uses the local instruction profile, `gemma-3-12b-it`.
+引擎測試涵蓋串流、取消及真實模型／圖片／工具／SDXL 流程；Gemma 使用本機指令模型。
+引擎测试覆盖流式输出、取消和真实模型／图片／工具／SDXL 流程；Gemma 使用本地指令模型。

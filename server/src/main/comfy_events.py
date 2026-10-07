@@ -20,6 +20,7 @@ class Events:
         except TimeoutError as exc:
             raise RuntimeError(self.failure) from exc
         future = asyncio.get_running_loop().create_future()
+        future.terminal = asyncio.Event()
         self.pending[ident] = (future, callback)
         return future
 
@@ -29,10 +30,16 @@ class Events:
         if not item:
             return
         future, callback = item
-        if callback:
-            await callback(value)
+        if kind == "executing" and data.get("node") is None:
+            future.terminal.set()
         if future.done():
             return
+        if callback:
+            try:
+                await callback(value)
+            except Exception as exc:
+                future.set_exception(exc)
+                return
         if kind in ("execution_error", "execution_interrupted"):
             future.set_exception(RuntimeError(data.get("exception_message") or "ComfyUI generation was interrupted"))
         elif kind == "executing" and data.get("node") is None:

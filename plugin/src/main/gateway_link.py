@@ -1,4 +1,5 @@
 import asyncio
+import json
 import socket
 import aiohttp
 from .gateway_events import Events
@@ -18,14 +19,19 @@ class Link:
 
     async def request(self, path, body=None):
         async with self.client.request("POST" if body is not None else "GET", self.url+path, json=body) as response:
-            value = await response.json()
+            raw = await response.text()
             if response.status >= 400:
-                raise RuntimeError(f"ComfyUI {response.status}: {value}")
-            return value
+                raise RuntimeError(f"ComfyUI {response.status}: {raw or response.reason}")
+            return json.loads(raw) if raw.strip() else None
 
     async def close(self):
         await self.events.close()
         await self.client.close()
+
+    async def cancel(self, prompt_id):
+        async with self.client.post(self.url + f"/api/jobs/{prompt_id}/cancel", json={}) as response:
+            if response.status not in (200, 404, 409):
+                raise RuntimeError(f"ComfyUI cancellation failed: HTTP {response.status}")
 
 
 def get():

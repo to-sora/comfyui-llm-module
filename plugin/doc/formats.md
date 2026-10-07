@@ -1,33 +1,29 @@
 # Models / 模型 / 模型
 
-Profiles: `plugin/config/content-config/models.yaml`.
-模型路徑、格式及量化預設值設定於上述檔案。
-模型路径、格式和量化默认值配置于上述文件。
+All five profiles in `config/content-config/models.yaml` run on transformers.
+五個設定模型均透過 transformers 執行。
+五个配置模型均通过 transformers 运行。
 
-Configured directories inherit their profile's template and projector. Restart after changing profiles; select an explicit GGUF file for an unconfigured directory.
-指定目錄會沿用設定中的範本與投影器；修改設定後需重啟，未設定的目錄應指定 GGUF 檔案。
-指定目录沿用配置中的模板与投影器；修改配置后需重启，未配置的目录应指定 GGUF 文件。
+HF accepts local folders or repository IDs; remote Python code is disabled.
+HF 接收本機目錄或儲存庫 ID，停用遠端 Python 程式碼。
+HF 接收本地目录或仓库 ID，禁用远程 Python 代码。
 
-HF accepts a local model directory or Hugging Face repository ID. Remote Python code is disabled.
-HF 接收本機目錄或 Hugging Face 儲存庫 ID，停用遠端 Python 程式碼。
-HF 接收本地目录或 Hugging Face 仓库 ID，禁用远程 Python 代码。
+Weights: `bnb_nf4`, `bnb_fp4`, `bnb_int8`, `none`, `auto`. Compute precision: `bfloat16` or `float16`. NF4 is saved once under `data/quantized`; aliases reuse the same source cache.
+權重量化及計算精度可分別設定；NF4 保存在上述目錄，相同來源的別名共用快取。
+权重量化和计算精度可分别设置；NF4 保存在上述目录，相同来源的别名共享缓存。
 
-Weight quantization: `bnb_nf4`, `bnb_fp4`, `bnb_int8`, `none`, `auto`.
-權重量化於載入時執行；auto 沿用模型既有量化設定。
-权重量化在加载时执行；auto 沿用模型已有量化配置。
+KV: `none`, `hqq_8`, `hqq_4`. Attention caches are quantized; recurrent states retain their native precision.
+注意力 KV 可不量化、8 或 4 位元；循環狀態保留原生精度。
+注意力 KV 可不量化、8 或 4 位元；循环状态保留原生精度。
 
-HF KV: `none`, `hqq_8`, `hqq_4`. Attention caches are quantized; recurrent states retain their native precision.
-HF KV 可設定不量化、8 或 4 位元。注意力快取會量化，循環狀態保留原生精度。
-HF KV 可配置不量化、8 或 4 位元。注意力缓存会量化，循环状态保留原生精度。
+GGUF is an offline import format. See [import instructions](import.md). Original GGUF and mmproj files remain untouched. llama.cpp is used only as a parity reference, never for serving.
+GGUF 先離線匯入；原始模型及投影器保持不變，llama.cpp 僅作一致性參考。
+GGUF 先离线导入；原始模型和投影器保持不变，llama.cpp 仅作一致性参考。
 
-GGUF weights use their stored quantization; KV supports `none`, `q8_0`, `q4_0`.
-GGUF 沿用檔案內權重量化，KV 可設定上述精度；視覺模型需要配對 mmproj。
-GGUF 沿用文件内权重量化，KV 可配置上述精度；视觉模型需要配对 mmproj。
+The converted 9B/27B profiles passed strict tensors, tokenizer, template, logits, vision and FP16/NF4 tool–SDXL workflows before switching. Imported repos live in `data/imported` and exceed the 1 GB storage target.
+9B／27B 通過張量、分詞、範本、數值、視覺及兩種精度工作流程後才切換；匯入權重超過 1 GB 目標。
+9B／27B 通过张量、分词、模板、数值、视觉和两种精度工作流后才切换；导入权重超过 1 GB 目标。
 
-The supplied Qwen3.8-27B folder contains an obliterated GGUF model; the HF folder identifies its architecture as qwen3_5.
-指定的 Qwen3.8-27B 目錄含 obliterated GGUF；HF 目錄的架構標示為 qwen3_5。
-指定的 Qwen3.8-27B 目录含 obliterated GGUF；HF 目录的架构标识为 qwen3_5。
-
-The supplied pretrained Gemma E2B uses the project's [completion protocol](gemma.md). Its original weights pass NF4 with HQQ 4/8-bit KV, tools, vision and SDXL swaps.
-指定預訓練 Gemma E2B 使用專案續寫協定，原始權重已通過 NF4、4／8 位元 KV、工具、視覺及 SDXL 切換。
-指定预训练 Gemma E2B 使用项目续写协议，原始权重已通过 NF4、4／8 位元 KV、工具、视觉及 SDXL 切换。
+The supplied 27B GGUF identifies itself as obliterated; the profile name does not change its weights. The pretrained Gemma profile was replaced by the existing local `gemma-3-12b-it` instruction model.
+指定 27B GGUF 本身為 obliterated，名稱不改變權重；Gemma 改用本機既有指令模型。
+指定 27B GGUF 本身为 obliterated，名称不改变权重；Gemma 改用本地已有指令模型。

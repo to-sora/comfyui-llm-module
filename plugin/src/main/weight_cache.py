@@ -5,15 +5,17 @@ from .settings import APP
 
 
 def location(cfg):
-    name = re.sub(r"[^\w.-]", "-", cfg["id"])[:100]
+    name = re.sub(r"[^\w.-]", "-", cfg["model"])[:200]
     return APP / "data/quantized" / (name + "-" + cfg["quantization"])
 
 
 def source(cfg):
     path = location(cfg)
-    if cfg["quantization"] == "bnb_nf4" and (path / "source.txt").is_file():
-        if (path / "source.txt").read_text() == cfg["model"]:
-            return str(path)
+    if cfg["quantization"] == "bnb_nf4":
+        candidates = [path / "source.txt", *(APP / "data/quantized").glob("*/source.txt")]
+        for marker in candidates:
+            if marker.is_file() and marker.read_text() == cfg["model"]:
+                return str(marker.parent)
     return cfg["model"]
 
 

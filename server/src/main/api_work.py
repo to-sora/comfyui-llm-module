@@ -1,7 +1,9 @@
+from .errors import json_body
 from .errors import UserError
 import asyncio
 import json
 from aiohttp import web
+from PIL import Image, UnidentifiedImageError
 from . import tools, chat_worker, assets
 from .records import create
 from .errors import required
@@ -14,7 +16,7 @@ def install(routes, e):
     async def tool(request):
         sid = request.match_info["sid"]
         e.check_active(sid)
-        body = await request.json()
+        body = await json_body(request)
         async with commands:
             key = sid + ":" + str(body.get("request_id", ""))
             saved = e.db.sql("SELECT value FROM meta WHERE key=?", (key,)).fetchone() if body.get("request_id") else None
@@ -29,7 +31,7 @@ def install(routes, e):
     async def chat(request):
         sid = request.match_info["sid"]
         e.check_active(sid)
-        body = await request.json()
+        body = await json_body(request)
         if any(not task.done() for task in e.tasks):
             raise UserError("A request is already running; wait or cancel it")
         if not e.caps:
@@ -53,7 +55,10 @@ def install(routes, e):
         if not part or part.name != "image":
             raise UserError("Upload an image field")
         content = await part.read()
-        image = await asyncio.to_thread(assets.decode, content, upload=not request.query.get("mask"))
+        try:
+            image = await asyncio.to_thread(assets.decode, content, upload=not request.query.get("mask"))
+        except (UnidentifiedImageError, OSError, Image.DecompressionBombError) as exc:
+            raise UserError("This file could not be decoded as an image") from exc
         item = assets.save(e.db, sid, image, "mask" if request.query.get("mask") else "upload",
                            original_name=part.filename)
         return web.json_response(item)

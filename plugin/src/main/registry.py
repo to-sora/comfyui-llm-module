@@ -1,9 +1,13 @@
 from pathlib import Path
-from .settings import read
+from .settings import APP, read
 
 
 def profiles():
-    return read("content-config/models.yaml")
+    values = read("content-config/models.yaml")
+    for cfg in values.values():
+        if cfg["model"].startswith("data/"):
+            cfg["model"] = str(APP / cfg["model"])
+    return values
 
 
 def options(model, **overrides):
@@ -23,6 +27,7 @@ def options(model, **overrides):
     cfg.setdefault("mmproj", "")
     cfg.setdefault("chat_template", "")
     cfg.setdefault("device", "auto")
+    cfg.setdefault("precision", "bfloat16")
     cfg.setdefault("kv_quantization", "none")
     cfg.setdefault("context_tokens", read("config.yaml")["context_tokens"])
     cfg.update({k: v for k, v in overrides.items() if v not in (None, "", "default")})

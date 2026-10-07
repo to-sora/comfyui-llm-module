@@ -13,12 +13,12 @@ Supported options / 支援選項 / 支持选项:
 | Generation / 生成 / 生成 | max_tokens, max_completion_tokens, temperature, top_p, seed |
 | Tools / 工具 / 工具 | tools, tool_choice, parallel_tool_calls |
 | HF reasoning / HF 推理 / HF 推理 | enable_thinking |
-| Runtime / 執行 / 执行 | quantization, kv_quantization, context_tokens, backend, mmproj |
+| Runtime / 執行 / 执行 | quantization, kv_quantization, context_tokens, precision |
 | Response / 回應 / 响应 | stream, n=1 |
 
-Images use OpenAI `image_url` content parts with an HTTPS URL or data URL. Native nodes also accept ComfyUI IMAGE tensors.
-圖片使用上述內容格式，支援 HTTPS 或資料網址；原生節點也接收 IMAGE 張量。
-图片使用上述内容格式，支持 HTTPS 或数据网址；原生节点也接收 IMAGE 张量。
+Images use `image_url` parts: data URLs or this ComfyUI service's loopback HTTPS URLs, with a 16 MB cap. Native nodes accept IMAGE tensors.
+圖片限資料網址或此 ComfyUI 的迴路 HTTPS，最大 16 MB；原生節點接收 IMAGE 張量。
+图片限数据网址或此 ComfyUI 的环回 HTTPS，最大 16 MB；原生节点接收 IMAGE 张量。
 
 Loopback image URLs on this service's port trust its project certificate.
 本服務連接埠的迴路位址圖片網址會信任專案憑證。
@@ -28,8 +28,8 @@ Tools are returned to the client for execution; send their results back as `role
 工具呼叫交由客戶端執行，再以工具訊息及對應識別碼回傳結果。
 工具调用交由客户端执行，再以工具消息及对应标识码回传结果。
 
-Streaming buffers generation and emits final SSE chunks; it does not stream tokens during inference. Unsupported OpenAI features are not promised.
-串流會先完成生成，再輸出 SSE 結果；目前不提供即時逐 token 串流，亦不承諾其他 OpenAI 功能。
-流式响应先完成生成，再输出 SSE 结果；目前不提供实时逐 token 流，亦不承诺其他 OpenAI 功能。
+`stream: true` emits text during inference and structured tool calls when complete. `stream_options.include_usage` adds usage. Closing the connection cancels the native prompt. Other OpenAI features are not promised.
+串流於推理中輸出文字，完成時輸出結構化工具呼叫；可附用量。關閉連線會取消原生工作。
+流式输出在推理中发送文字，完成时发送结构化工具调用；可附用量。关闭连接会取消原生任务。
 
 Errors / 錯誤 / 错误: 400 invalid request, 429 queue full, 500 execution failure.

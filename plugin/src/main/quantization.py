@@ -2,7 +2,7 @@ import torch
 from transformers import BitsAndBytesConfig
 
 
-def configuration(name, config):
+def configuration(name, config, dtype=torch.bfloat16):
     if name in {"auto", "none"}:
         return {}
     if getattr(config, "quantization_config", None):
@@ -12,5 +12,5 @@ def configuration(name, config):
     quant = BitsAndBytesConfig(
         load_in_4bit=name != "bnb_int8", load_in_8bit=name == "bnb_int8",
         bnb_4bit_quant_type="fp4" if name == "bnb_fp4" else "nf4",
-        bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_use_double_quant=True)
+        bnb_4bit_compute_dtype=dtype, bnb_4bit_use_double_quant=True)
     return {"quantization_config": quant}

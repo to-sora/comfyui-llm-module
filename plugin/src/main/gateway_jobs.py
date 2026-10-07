@@ -5,11 +5,13 @@ import uuid
 from .gateway_graph import graph
 from .gateway_link import get, disconnect
 from .settings import read
+from .gateway_cleanup import cleanup
 
 
 async def execute(body, request=None, on_event=None):
     link = get()
     prompt_id = body.get("comfy_prompt_id") or str(uuid.uuid4())
+    body = {**body, "comfy_prompt_id": prompt_id, "comfy_client_id": link.events.client_id}
     future = None
     gone = asyncio.create_task(disconnect(request))
     completed = False
@@ -36,14 +38,4 @@ async def execute(body, request=None, on_event=None):
     finally:
         gone.cancel()
         await asyncio.gather(gone, return_exceptions=True)
-        try:
-            if not completed:
-                await asyncio.shield(link.request(f"/api/jobs/{prompt_id}/cancel", {}))
-            await asyncio.shield(link.request("/history", {"delete": [prompt_id]}))
-        except Exception:
-            logging.exception("ComfyUI prompt cleanup failed: %s", prompt_id)
-        link.events.pending.pop(prompt_id, None)
-        if future and not future.done():
-            future.cancel()
-        elif future and not future.cancelled():
-            future.exception()
+        await asyncio.shield(cleanup(link, prompt_id, completed, future))

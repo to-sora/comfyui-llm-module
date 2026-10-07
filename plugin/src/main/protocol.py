@@ -40,4 +40,6 @@ def validate(body):
     limit = body.get("max_completion_tokens", body.get("max_tokens", 256))
     if type(limit) is not int or limit <= 0:
         raise UserError("max_tokens must be a positive integer.")
+    from .request_options import validate as validate_options
+    validate_options(body)
     return body

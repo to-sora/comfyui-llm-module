@@ -17,6 +17,7 @@ class HFEngine:
             self.model = load({**self.cfg, "device": device}, self.processor, self.vision, budget)
             self.diagnostics["weight_modules"] = sum(type(m).__name__ in {"Linear4bit", "Linear8bitLt"}
                                                       for m in self.model.modules())
+            self.diagnostics["weight_source"] = self.model._llm_weight_source
         else:
             move(self.model, device, budget)
         self.diagnostics["storage"] = sizes(self.model)

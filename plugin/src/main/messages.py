@@ -21,5 +21,11 @@ def normalize(request):
         if not tools:
             raise ValueError("Requested function is not in tools.")
     if choice == "required" or isinstance(choice, dict):
-        messages.insert(0, {"role": "system", "content": "You must call one of the provided tools."})
+        instruction = "You must call one of the provided tools."
+        if messages[0]["role"] == "system":
+            content = messages[0]["content"]
+            messages[0]["content"] = (content + "\n" + instruction if isinstance(content, str)
+                else [*content, {"type": "text", "text": instruction}])
+        else:
+            messages.insert(0, {"role": "system", "content": instruction})
     return messages, tools

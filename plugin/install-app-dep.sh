@@ -5,7 +5,6 @@ source ./env.sh
 export COMFY_VENV="$QWEN_APP/.local-tool-app/venv"
 bash "$QWEN_APP/../../civit_script/install.sh"
 "$COMFY_VENV/bin/python" src/main/pip_ipv4.py install -r requirements.txt
-bash install-templates.sh
 target="$QWEN_APP/../../comfyui/custom_nodes/comfyui-llm-module"
 mkdir -p -- "$(dirname -- "$target")"
 if [[ ! -e "$target" ]]; then

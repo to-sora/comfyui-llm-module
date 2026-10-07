@@ -27,6 +27,9 @@ def generate(engine, request, inputs):
                        top_k=request.get("top_k", 0), min_p=request.get("min_p", 0.0))
     if "seed" in request:
         torch.manual_seed(request["seed"])
+    if request.get("stream") and request.get("comfy_prompt_id"):
+        from .hf_stream import TokenStream
+        options["streamer"] = TokenStream(tokenizer, request)
     output = model.generate(**inputs, **options)
     engine.diagnostics["kv"] = describe(cache)
     tokens = output[0, count:]

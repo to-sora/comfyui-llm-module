@@ -4,8 +4,7 @@ from pathlib import Path
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, GgufConfig
 from transformers.integrations.gguf import kernels
-from ..main.registry import profiles
-from ..main.settings import APP, environment
+from ..main.settings import APP, environment, read
 from .assemble import assemble
 
 
@@ -14,11 +13,15 @@ def main():
     parser.add_argument("profile")
     parser.add_argument("--base", required=True, help="Matching HF architecture and processor repository")
     parser.add_argument("--precision", choices=("float16", "bfloat16"), default="float16")
+    parser.add_argument("--source")
+    parser.add_argument("--mmproj")
     args = parser.parse_args()
     environment()
     torch.set_num_threads(8)
     kernels._gguf_kernel = False
-    cfg = profiles()[args.profile]
+    cfg = read("content-config/imports.yaml").get(args.profile, {})
+    cfg = {**cfg, **({"model": args.source} if args.source else {}),
+           **({"mmproj": args.mmproj} if args.mmproj else {})}
     source = Path(cfg["model"])
     target = APP / "data/imported" / args.profile
     if target.exists():

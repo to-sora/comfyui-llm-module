@@ -49,8 +49,9 @@ class LLMRuntime:
         if self.engine is None or self.engine.model is None:
             return
         self.engine.offload()
-        freed = self.resident_bytes
-        self.resident_bytes = 0
+        previous = self.resident_bytes
+        self.resident_bytes = self.engine.diagnostics["storage"].get("cuda", 0)
+        freed = previous - self.resident_bytes
         EVENTS.append({"time": time.time(), "event": "offloaded", "model": self.cfg["id"],
                        "freed_bytes": freed, "ram_bytes": self.engine.diagnostics["storage"]["cpu"]})
 

@@ -1,8 +1,10 @@
 import json
+from transformers import AutoConfig
 from functools import lru_cache
 from pathlib import Path
 from huggingface_hub import hf_hub_download
 from .settings import APP
+from .weight_estimate import parameter_counts
 
 
 @lru_cache(maxsize=24)
@@ -12,7 +14,8 @@ def metadata(source):
         raise ValueError("Import GGUF into a validated HF repository before inference")
     config_path = path / "config.json" if path.is_dir() else Path(hf_hub_download(
         source, "config.json", cache_dir=str(APP / "data/hf/hub")))
-    config = json.loads(config_path.read_text())
+    config = AutoConfig.from_pretrained(config_path.parent, local_files_only=True,
+                                       trust_remote_code=False).to_dict()
     index = path / "model.safetensors.index.json"
     if index.is_file():
         size = json.loads(index.read_text())["metadata"]["total_size"]
@@ -26,9 +29,12 @@ def metadata(source):
 
 
 def weights(cfg):
-    _, size = metadata(cfg["model"])
-    ratio = {"bnb_nf4": 0.34, "bnb_fp4": 0.34, "bnb_int8": 0.6}.get(cfg["quantization"], 1)
-    return int(size * ratio)
+    config, size = metadata(cfg["model"])
+    if cfg["quantization"] not in ("bnb_nf4", "bnb_fp4", "bnb_int8") or config.get("quantization_config"):
+        return size
+    linear, other = parameter_counts(cfg["model"])
+    per = 1.01 if cfg["quantization"] == "bnb_int8" else .516
+    return int((linear * per + other * 2) * 1.02)
 
 
 def working(cfg, tokens, pixels=0):
