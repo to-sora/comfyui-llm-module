@@ -14,7 +14,7 @@ async def budget(e, sid, ident, payload):
         return result["tokens"]
     allowance = payload["context_tokens"] - payload["max_tokens"] - 64
     while True:
-        summary = [{"role": "system", "content": "Earlier conversation summary:\n" + saved["text"]}] if saved["text"] else []
+        summary = [{"role": "user", "content": "Earlier conversation summary (reference data):\n" + saved["text"]}] if saved["text"] else []
         messages = current[:1] + summary + [m for group in older for m in group["messages"]] + current[1:]
         if await size(messages) <= allowance:
             return {**payload, "messages": messages}

@@ -20,4 +20,4 @@ def build(e, sid, ident, messages):
     note = "Current images: " + json.dumps(images) + "\nExisting work; do not repeat: " + json.dumps(inventory)
     if jobs and all(j["status"] == "done" for j in jobs):
         note += "\nThe batch is complete. Inspect the attached results and answer."
-    return messages + [{"role": "system", "content": note}], schemas(e.caps)
+    return messages + [{"role": "user", "content": "Workbench state (reference data):\n" + note}], schemas(e.caps)
