@@ -1,3 +1,4 @@
+from .errors import UserError
 import json
 import sqlite3
 import time
@@ -31,7 +32,7 @@ class Store:
     def session(self, sid):
         row = self.sql("SELECT * FROM sessions WHERE id=?", (sid,)).fetchone()
         if not row:
-            raise ValueError("Session not found")
+            raise UserError("Session not found")
         return {**dict(row), "settings": json.loads(row["settings"])}
 
     def new_session(self, name, settings):

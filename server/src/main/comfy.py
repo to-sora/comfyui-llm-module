@@ -1,8 +1,8 @@
 import asyncio
-import json
 import socket
 import aiohttp
 from .settings import read
+from .comfy_events import Events
 
 
 class Comfy:
@@ -15,12 +15,14 @@ class Comfy:
         self.client = aiohttp.ClientSession(
             connector=aiohttp.TCPConnector(family=socket.AF_INET, ssl=False),
             timeout=aiohttp.ClientTimeout(total=self.timeout))
+        self.events = Events(self)
+        self.cancelled = set()
 
     async def request(self, path, body=None, method=None, binary=False, **kw):
         async with self.client.request(method or ("POST" if body is not None else "GET"),
                 self.url + path, json=body, **kw) as response:
             if response.status >= 400:
-                raise ValueError(f"ComfyUI {response.status}: {(await response.text())[:1200]}")
+                raise RuntimeError(f"ComfyUI {response.status}: {(await response.text())[:1200]}")
             return await response.read() if binary else await response.json()
 
     async def upload(self, data, name):
@@ -32,31 +34,28 @@ class Comfy:
         return "/".join(p for p in (reply.get("subfolder"), reply["name"]) if p)
 
     async def cancel(self, prompt_id):
-        return await self.request(f"/api/jobs/{prompt_id}/cancel", {})
-
-    async def events(self, client_id, callback, ready):
+        if prompt_id in self.cancelled:
+            return
+        self.cancelled.add(prompt_id)
         try:
-            async with self.client.ws_connect(self.url + "/ws", params={"clientId": client_id}) as ws:
-                ready.set()
-                async for msg in ws:
-                    if msg.type == aiohttp.WSMsgType.TEXT:
-                        await callback(json.loads(msg.data))
-        except (aiohttp.ClientError, asyncio.TimeoutError):
-            pass
+            async with self.client.post(self.url + f"/api/jobs/{prompt_id}/cancel", json={},
+                                        timeout=aiohttp.ClientTimeout(total=10)) as response:
+                if response.status not in (200, 404, 409):
+                    raise RuntimeError(f"Cannot cancel ComfyUI prompt: HTTP {response.status}")
+        except BaseException:
+            self.cancelled.discard(prompt_id)
+            raise
 
-    async def history(self, prompt_id, cancelled, observe=None):
-        deadline = asyncio.get_running_loop().time() + self.timeout
-        while asyncio.get_running_loop().time() < deadline:
-            if cancelled():
-                await self.cancel(prompt_id)
-            value = await self.request("/history/" + prompt_id)
-            if prompt_id in value:
-                return value[prompt_id]
-            q = await self.request("/queue")
-            if observe:
-                await observe(q)
-            if cancelled():
-                if not any(row[1] == prompt_id for rows in q.values() for row in rows):
-                    raise ValueError("Cancelled")
-            await asyncio.sleep(0.25)
-        raise TimeoutError("ComfyUI job timed out; inspect its prompt ID before retrying")
+    async def history(self, prompt_id, future):
+        try:
+            await asyncio.wait_for(asyncio.shield(future), self.timeout)
+        except TimeoutError as exc:
+            raise TimeoutError(f"ComfyUI prompt {prompt_id} exceeded {self.timeout}s") from exc
+        value = await self.request("/history/" + prompt_id)
+        if prompt_id not in value:
+            raise RuntimeError("ComfyUI finished without recording the result")
+        return value[prompt_id]
+
+    async def close(self):
+        await self.events.close()
+        await self.client.close()

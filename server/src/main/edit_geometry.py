@@ -1,3 +1,4 @@
+from .errors import UserError
 import math
 from PIL import Image, ImageOps
 from .assets import check_size
@@ -7,7 +8,7 @@ def apply(image, operation, p, overlay=None):
     if operation == "crop":
         x, y, w, h = (int(p[k]) for k in ("x", "y", "width", "height"))
         if x + w > image.width or y + h > image.height:
-            raise ValueError("Crop lies outside the image")
+            raise UserError("Crop lies outside the image")
         return image.crop((x, y, x + w, y + h))
     if operation == "resize":
         size = (int(p["width"]), int(p["height"]))
@@ -34,4 +35,4 @@ def apply(image, operation, p, overlay=None):
         overlay.putalpha(overlay.getchannel("A").point(lambda x: round(x * p["opacity"])))
         out.alpha_composite(overlay, (int(p["x"]), int(p["y"])))
         return out
-    raise ValueError("Unknown geometry operation")
+    raise UserError("Unknown geometry operation")

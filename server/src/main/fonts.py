@@ -1,3 +1,4 @@
+from .errors import UserError
 import functools
 import subprocess
 from PIL import ImageFont
@@ -16,7 +17,7 @@ def catalog():
 def load(p):
     choices = catalog().get(p["font"])
     if not choices:
-        raise ValueError("Unknown font family; select an installed font")
+        raise UserError("Unknown font family; select an installed font")
     def score(item):
         style = item[0]
         return (int(("bold" in style) == p["bold"]) +

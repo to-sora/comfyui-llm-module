@@ -1,3 +1,5 @@
+import logging
+from .errors import message
 import json
 from . import tools
 from .chat_images import attach
@@ -11,7 +13,8 @@ async def execute(e, sid, ident, call):
         args = json.loads(function["arguments"])
         result = brief(await tools.invoke(e, sid, function["name"], args, inline=True))
     except Exception as exc:
-        result = create(e.db, sid, "result", {"error": str(exc)})
+        logging.exception("Worker failed")
+        result = create(e.db, sid, "result", {"error": message(exc)})
     content = json.dumps(result, ensure_ascii=False)
     msg = {"role": "tool", "tool_call_id": call["id"], "content": content}
     messages = [msg]

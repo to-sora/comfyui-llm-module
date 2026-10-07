@@ -1,3 +1,5 @@
+import logging
+from .errors import message
 from .chat import run
 from .records import get, update
 
@@ -11,7 +13,8 @@ async def scheduled(e, sid, ident):
         try:
             await run(e, sid, ident)
         except Exception as exc:
+            logging.exception("Worker failed")
             update(e.db, sid, ident, status="cancelled" if get(e.db, sid, ident).get("cancel")
-                   else "failed", error=str(exc))
+                   else "failed", error=message(exc))
         finally:
             e.active = None

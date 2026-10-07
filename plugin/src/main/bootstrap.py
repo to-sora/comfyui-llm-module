@@ -5,14 +5,16 @@ from .settings import environment
 def initialize():
     enable()
     environment()
+    from .diagnostics import install as install_diagnostics
+    install_diagnostics()
     from aiohttp import web
     from server import PromptServer
     from .gateway import install
-    from .memory_policy import install as install_memory_policy
+    from .gateway_link import close
+    PromptServer.instance.app.on_cleanup.append(close)
     from .network import install_whitelist
     from .runtime import status
     install_whitelist(PromptServer.instance.app)
-    install_memory_policy()
     install()
 
     @PromptServer.instance.routes.get("/llm/status")

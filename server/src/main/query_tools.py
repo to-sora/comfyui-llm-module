@@ -1,3 +1,4 @@
+from .errors import UserError
 from . import assets
 from .records import create, get
 
@@ -18,6 +19,6 @@ async def invoke(e, sid, name, args):
     if name == "view_images":
         ids = [assets.resolve(e.db, sid, x)["id"] for x in args["ids"]]
         if not 1 <= len(ids) <= 4:
-            raise ValueError("View 1–4 images per call")
+            raise UserError("View 1–4 images per call")
         return create(e.db, sid, "result", {"images": ids, "status": "attached"})
-    raise ValueError("Unknown tool")
+    raise UserError("Unknown tool")

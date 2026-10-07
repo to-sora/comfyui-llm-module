@@ -1,5 +1,23 @@
-Image workbench: implemented and accepted; no outstanding feature tasks.
-圖片工作台：實作及驗收完成，無待完成的功能項目。
-Real evidence / 實測證據：fan-out/workbench/index.html
-Limits: simple CPU background removal; VLM observations require human review.
-限制：CPU 去背採簡單演算法；VLM 觀察結果需由使用者判斷。
+Studio redesign / 聊天工作台重建
+Scope: attachment 315da509-7b32-4ff8-ae60-b9d674db7071 and ../studio-ui-redesign.
+範圍：新目標檔全部修正、階段與驗收；八個本地設計畫面。
+Phase 0 pending: generation defaults, diagnostics, cancellation, RAM offload,
+accurate accounting, one transformers engine, GGUF conversion with six parity
+gates, quantized weight cache, local immutable images, default-prompt tests.
+階段零待辦：預設值、日誌、取消、RAM 卸載、記憶體估算、單一引擎、
+GGUF 六項一致性驗證、量化快取、本地圖片及自然提示測試。
+Phase 1 pending: ULID chats/messages/runs/images, legacy migration, one GPU queue,
+token SSE, reconnect, budgeted transcript and rolling summary, prefix/vision cache,
+five tools/catalog, multi-call batches, exact chat/viewer/library/debug screens,
+uploads/HEIC, Markdown, settings/language/a11y. Gate: five unaided human tasks.
+階段一待辦：新資料結構及遷移、GPU 佇列、串流、長對話記憶、快取、
+五工具與模型目錄、完整新介面、附件與設定；真人獨立完成五任務。
+Phase 2 pending: area edits, variations/upscale, regeneration/branches, search,
+export, phone/PWA, safe-image option, feedback, drafts, resume/retry, instructions,
+notifications, storage cleanup, shortcuts and rate limits.
+階段二待辦：局部編輯、變化與放大、分支重生成、搜尋匯出、手機、
+圖片模糊選項、回饋草稿、恢復、指示通知、清理快捷鍵與請求限制。
+Later items remain tracked: pin/archive, outpaint, backup/restore, documents.
+後續項目持續追蹤：釘選封存、擴圖、備份還原、文件問答。
+Final: requirement audit, Firefox UAT, offline evidence, Git publication.
+最終：逐項驗收、Firefox 實測、離線證據及 Git 發布。

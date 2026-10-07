@@ -1,4 +1,7 @@
+from .errors import UserError
 import asyncio
+import logging
+from .errors import message
 import time
 from .comfy import Comfy
 from .store import Store
@@ -22,7 +25,8 @@ class Engine:
         try:
             self.caps = await discover(self.comfy)
         except Exception as exc:
-            self.connection_error = str(exc)
+            logging.exception("Gateway connection failed")
+            self.connection_error = message(exc)
         if not self.db.active():
             self.db.new_session("Studio 1", self.caps["defaults"] if self.caps else {})
         from .recovery import recover
@@ -36,14 +40,14 @@ class Engine:
 
     def check_active(self, sid):
         if sid != self.db.active():
-            raise ValueError("Select this session before using it")
+            raise UserError("Select this session before using it")
 
     def pending(self, sid):
         return [r for r in flat(self.db, sid, "job") if r["status"] == "pending"]
 
     def enqueue(self, sid, mode, args, settings, actor):
         if len(self.pending(sid)) >= read()["max_pending_jobs"]:
-            raise ValueError("Pending list is full; submit or cancel jobs")
+            raise UserError("Pending list is full; submit or cancel jobs")
         return create(self.db, sid, "job", {"mode": mode, "args": args,
             "settings": settings, "actor": actor, "status": "pending", "created": time.time()})
 
@@ -55,19 +59,8 @@ class Engine:
         return batch
 
     async def cancel(self, sid, ident):
-        value = get(self.db, sid, ident)
-        if value["kind"] == "batch":
-            for job in value["jobs"]:
-                await self.cancel(sid, job)
-        elif value["kind"] in ("job", "chat") and value["status"] in ("pending", "queued", "running"):
-            update(self.db, sid, ident, cancel=True)
-            if value.get("batch") is not None and value["kind"] == "chat":
-                await self.cancel(sid, value["batch"])
-            if value.get("prompt_id"):
-                await self.comfy.cancel(value["prompt_id"])
-            elif value["status"] != "running":
-                update(self.db, sid, ident, status="cancelled")
-        return create(self.db, sid, "result", {"target": ident, "status": "cancel_requested"})
+        from .job_cancel import cancel
+        return await cancel(self, sid, ident)
 
     async def close(self):
         from .shutdown import cancel_active
@@ -75,5 +68,5 @@ class Engine:
         for task in self.tasks:
             task.cancel()
         await asyncio.gather(*self.tasks, return_exceptions=True)
-        await self.comfy.client.close()
+        await self.comfy.close()
         self.db.db.close()

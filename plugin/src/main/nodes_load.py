@@ -14,7 +14,7 @@ class LLMModel:
             "model": ("STRING", {"default": "Qwen3.5-9B"}),
             "quantization": (["default", "auto", "none", "bnb_nf4", "bnb_fp4", "bnb_int8"],),
             "kv_quantization": (["none", "hqq_8", "hqq_4", "q8_0", "q4_0"],),
-            "context_tokens": ("INT", {"default": 4096, "min": 128, "max": 262144}),
+            "context_tokens": ("INT", {"default": 16384, "min": 128, "max": 262144}),
         }, "optional": {
             "backend": (["auto", "transformers", "gguf"],),
             "mmproj": ("STRING", {"default": ""}),

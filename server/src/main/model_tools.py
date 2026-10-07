@@ -1,3 +1,4 @@
+from .errors import UserError
 import json
 from .records import create
 from .image_options import options
@@ -13,7 +14,7 @@ def schema(caps):
 
 def select(e, sid, args):
     if set(args) - {"checkpoint", "sampler_name", "scheduler"}:
-        raise ValueError("Unknown model setting")
+        raise UserError("Unknown model setting")
     current = e.db.session(sid)["settings"]
     values = options(e.caps, current, args)
     current.update({k: values[k] for k in args})

@@ -1,19 +1,7 @@
-ComfyUI + SDXL: actual workspace HTTPS server and trained checkpoint; no mocked generation. / 真實工作區 HTTPS 服務及 SDXL 權重，無模擬生成。
-HF Qwen 9B/27B: actual CUDA NF4; KV HQQ 4/8-bit checked with storage diagnostics. / 真實 CUDA NF4，KV 4/8 位元有儲存量診斷。
-HF Qwen 9B: FP4, INT8 and unquantized text/vision verified. / FP4、INT8 及未量化文字與視覺已驗證。
-GGUF Qwen 9B/27B: actual CUDA, vision projector and KV Q4/Q8. / 真實 CUDA、視覺投影器及 KV Q4/Q8。
-Memory: actual LLM reuse, SDXL swap and LLM reload for four Qwen profiles. / 四個 Qwen 設定已實測重用、SDXL 切換與重新載入。
-HF repository: Qwen/Qwen3.5-0.8B downloaded and runtime NF4/HQQ4 verified. / 已驗證儲存庫下載及執行時 NF4/HQQ4。
-Gateway: five concurrent requests, SSE text/tools, invalid requests and launcher lifecycle passed. / 五個並行請求、SSE 文字與工具、錯誤請求及啟動生命週期已通過。
-Firefox: real Run-button text, image, tool, SDXL and LLM-return workflow; three viewport sizes. / 真實 Run 按鈕工作流程及三種畫面尺寸。
-Fixtures: generated solid-color images and client-supplied tool result; no external weather service. / 固定色塊圖片及客戶端工具結果，無外部天氣服務。
-Directory inputs: actual HF 27B template and GGUF 9B file selection verified. / 已實測 HF 27B 範本及 GGUF 9B 檔案選擇。
-HTTPS image inputs: HF/GGUF identify actual SDXL image colors through ComfyUI's self-signed endpoint. / HF/GGUF 經 ComfyUI 自簽端點辨識實際 SDXL 圖片顏色。
-Gemma E2B: original weights, completion template, NF4/HQQ4/8, vision, tools, 816-token document, SDXL swap and Firefox passed; no mocked generation. / 原始權重、續寫範本、量化、視覺、工具、文件、切換及 Firefox 通過，無模擬生成。
-
-Workbench API: actual SDXL text/image/inpaint, 20 CPU edits, 4K limit, scoped IDs/sharing/revocation, errors, export and deletion; no mocked generation. / 真實工作台 API 全流程與資料操作。
-Workbench LLM: five original profiles execute queued tools, SDXL batches and actual image reviews; HF NF4/HQQ8 and GGUF KV Q8. / 五個原模型批次與視覺檢查，實測 GPU 切換。
-Workbench Firefox: Generate→Inspect→Text edit, masks, comparison, download, refresh, sharing and upload; desktop/portrait/large/200% zoom. / 真實瀏覽器操作及四種顯示檢查。
-Workbench lifecycle: actual port conflict, force/stop/restart and interruption recovery; no mocked processes. / 真實程序啟停及恢復。
-Workbench lineage: one real batch generates, adds text, removes background and shares the final image. / 單批生成、加字、去背及分享。
-Workbench model UI: actual alternate SDXL, GGUF 8192-context/Q4-KV and feedback revision. / 實際切換模型與量化後修訂。
+Current redesign / 本次重建（feat/studio-chat-engine）
+HF 9B + SDXL: real GPU coexistence, ComfyUI Free→CPU RAM→GPU restore, unchanged disk-load count; no mocks. / 真實共存及 RAM 恢復，未重新讀取權重。
+Generation defaults: real SDXL, two identical prompts get distinct random seeds and 1 MP output; no mocked images. / 預設真實生圖，種子不同及約 1 MP。
+GGUF importer: real Qwen 9B/27B and projectors converted in CPU RAM; strict keys/shapes passed. Tokenizer/template/logits/vision/workflow parity pending. / 已轉換，完整一致性尚待驗證。
+Logs/cancellation/context: implementation in progress; full fault and long-conversation acceptance pending. / 故障及長對話驗收待辦。
+Chat UI/SSE/new data model: pending; prior workbench UAT does not validate the redesign. / 新介面與資料結構待辦，舊驗收不代表本次通過。
+Historical evidence in fan-out/workbench and older plugin tests describes fc0177e only. / 舊報告僅證明先前版本。

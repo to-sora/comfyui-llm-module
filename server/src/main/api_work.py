@@ -1,8 +1,10 @@
+from .errors import UserError
 import asyncio
 import json
 from aiohttp import web
 from . import tools, chat_worker, assets
 from .records import create
+from .errors import required
 
 
 def install(routes, e):
@@ -18,10 +20,7 @@ def install(routes, e):
             saved = e.db.sql("SELECT value FROM meta WHERE key=?", (key,)).fetchone() if body.get("request_id") else None
             if saved:
                 return web.json_response(json.loads(saved[0]))
-            try:
-                result = await tools.invoke(e, sid, body["name"], body.get("arguments", {}))
-            except Exception as exc:
-                result = create(e.db, sid, "result", {"error": str(exc)})
+            result = await tools.invoke(e, sid, required(body, "name"), body.get("arguments", {}))
             if body.get("request_id"):
                 e.db.sql("INSERT INTO meta VALUES(?,?)", (key, json.dumps(result)))
             return web.json_response(result)
@@ -32,11 +31,11 @@ def install(routes, e):
         e.check_active(sid)
         body = await request.json()
         if any(not task.done() for task in e.tasks):
-            raise ValueError("A request is already running; wait or cancel it")
+            raise UserError("A request is already running; wait or cancel it")
         if not e.caps:
-            raise ValueError("Gateway is unavailable")
+            raise UserError("Gateway is unavailable")
         if not str(body.get("text", "")).strip():
-            raise ValueError("Enter a message or inspection requirement")
+            raise UserError("Enter a message or inspection requirement")
         for ident in body.get("images", []):
             assets.resolve(e.db, sid, ident)
         item = create(e.db, sid, "chat", {"text": body["text"], "images": body.get("images", []),
@@ -52,9 +51,9 @@ def install(routes, e):
         reader = await request.multipart()
         part = await reader.next()
         if not part or part.name != "image":
-            raise ValueError("Upload an image field")
+            raise UserError("Upload an image field")
         content = await part.read()
-        image = await asyncio.to_thread(assets.decode, content)
+        image = await asyncio.to_thread(assets.decode, content, upload=not request.query.get("mask"))
         item = assets.save(e.db, sid, image, "mask" if request.query.get("mask") else "upload",
                            original_name=part.filename)
         return web.json_response(item)

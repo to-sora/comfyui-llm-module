@@ -1,18 +1,25 @@
-import gc
+import weakref
 import torch
 from comfy import model_management as mm
-from .estimate import memory_bytes
+from .estimate import memory_bytes, working
 
 
 class LLMPatcher:
     parent = None
 
     def __init__(self, runtime):
-        self.model = runtime
+        self._runtime = weakref.ref(runtime)
         self.offload_device = torch.device("cpu")
         requested = runtime.cfg["device"]
         self.load_device = mm.get_torch_device() if requested == "auto" else torch.device(requested)
         self.size = memory_bytes(runtime.cfg)
+
+    @property
+    def model(self):
+        value = self._runtime()
+        if value is None:
+            raise RuntimeError("LLM handle has been released")
+        return value
 
     def is_dynamic(self):
         return False
@@ -24,16 +31,20 @@ class LLMPatcher:
         return False
 
     def model_size(self):
+        engine = self.model.engine
+        if engine and engine.model is not None:
+            storage = engine.diagnostics["storage"]
+            return sum(storage.values()) + working(self.model.cfg, self.model.cfg["context_tokens"])
         return self.size
 
     def loaded_size(self):
-        return self.model.resident_bytes if self.model.engine is not None else 0
+        return self.model.resident_bytes
 
     def current_loaded_device(self):
-        return self.load_device if self.model.engine is not None else self.offload_device
+        return self.load_device if self.loaded_size() else self.offload_device
 
     def model_dtype(self):
-        return torch.bfloat16
+        return getattr(torch, self.model.cfg.get("precision", "bfloat16"))
 
     def model_patches_to(self, device):
         pass
@@ -42,18 +53,14 @@ class LLMPatcher:
         return 0
 
     def partially_load(self, device, extra_memory, force_patch_weights=False):
-        if self.model.engine is not None:
+        if self.loaded_size():
             return 0
-        self.model.load(str(self.load_device))
-        self.size = max(self.size, self.loaded_size())
+        budget = min(extra_memory, mm.get_free_memory(self.load_device) * .95)
+        self.model.load(str(self.load_device), budget)
         return self.loaded_size()
 
     def partially_unload(self, device, memory_to_free):
-        before = self.loaded_size()
-        self.detach()
-        return before
+        return 0
 
     def detach(self, unpatch_all=True):
-        self.model.close()
-        gc.collect()
-        mm.soft_empty_cache()
+        self.model.offload()

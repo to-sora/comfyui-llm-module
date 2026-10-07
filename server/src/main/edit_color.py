@@ -1,3 +1,4 @@
+from .errors import UserError
 import numpy as np
 from PIL import Image, ImageColor, ImageEnhance, ImageFilter, ImageOps
 
@@ -35,6 +36,6 @@ def apply(image, operation, p):
         alpha = Image.fromarray((np.asarray(alpha) * strength).astype("uint8"))
         out = rgb
     else:
-        raise ValueError("Unknown color operation")
+        raise UserError("Unknown color operation")
     out.putalpha(alpha)
     return out

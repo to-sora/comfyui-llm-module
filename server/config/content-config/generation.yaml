@@ -1,0 +1,14 @@
+steps: 28
+cfg: 5.5
+sampler_name: dpmpp_2m
+scheduler: karras
+aspect: square
+strengths:
+  low: 0.35
+  medium: 0.5
+  high: 0.7
+aspects:
+  square: [1024, 1024]
+  portrait: [832, 1216]
+  landscape: [1216, 832]
+  wide: [1344, 768]

@@ -1,4 +1,4 @@
 comfy_directory: ../../comfyui
-context_tokens: 4096
+context_tokens: 16384
 request_timeout: 900
 queue_limit: 64

@@ -1,3 +1,5 @@
+import logging
+from .errors import message
 import time
 from . import cpu_job, sdxl_job
 from .records import get, update
@@ -25,8 +27,9 @@ async def run(e, sid, ident):
             images.append(asset["id"])
             update(e.db, sid, jid, status="done", image=asset["id"], finished=time.time())
         except Exception as exc:
+            logging.exception("Worker failed")
             cancelled = get(e.db, sid, jid).get("cancel")
-            update(e.db, sid, jid, status="cancelled" if cancelled else "failed", error=str(exc))
+            update(e.db, sid, jid, status="cancelled" if cancelled else "failed", error=message(exc))
         memory.append({"phase": "job", "job": jid, "state": await e.comfy.request("/llm/status")})
     statuses = [get(e.db, sid, j)["status"] for j in batch["jobs"]]
     status = "failed" if "failed" in statuses else "cancelled" if "cancelled" in statuses else "done"
@@ -41,6 +44,7 @@ async def scheduled(e, sid, ident):
         try:
             await run(e, sid, ident)
         except Exception as exc:
-            update(e.db, sid, ident, status="failed", error=str(exc))
+            logging.exception("Worker failed")
+            update(e.db, sid, ident, status="failed", error=message(exc))
         finally:
             e.active = None

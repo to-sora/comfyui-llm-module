@@ -1,3 +1,4 @@
+from .errors import UserError
 from .records import create
 from .settings import read
 
@@ -12,8 +13,8 @@ async def queue(e, sid, args, inline):
     from .tools import invoke
     prompts = args.get("prompts")
     if not isinstance(prompts, list) or not prompts or any(not isinstance(p, str) or not p.strip() for p in prompts):
-        raise ValueError("prompts must be a nonempty array of image descriptions")
+        raise UserError("prompts must be a nonempty array of image descriptions")
     if len(prompts) + len(e.pending(sid)) > read()["max_pending_jobs"]:
-        raise ValueError("Too many pending images")
+        raise UserError("Too many pending images")
     jobs = [await invoke(e, sid, "image_gen_sdxl_text", {"prompt": p}, inline) for p in prompts]
     return create(e.db, sid, "result", {"status": "pending", "jobs": [j["id"] for j in jobs]})

@@ -1,3 +1,4 @@
+from .errors import UserError
 from aiohttp import web
 from . import assets, sharing
 from .records import get, update, create
@@ -10,12 +11,15 @@ def install(routes, e):
         sid, ident = request.match_info["sid"], int(request.match_info["ident"])
         e.check_active(sid)
         value = assets.resolve(e.db, sid, ident)
-        raw = (DATA / "thumbs" / value["thumb"]).read_bytes() if request.query.get("thumb") else assets.png(
-            await assets.load(e.db, e.comfy, sid, ident))
-        headers = {"Cache-Control": "no-store"}
+        headers = {"Cache-Control": "public, max-age=31536000, immutable"}
         if request.query.get("download"):
             headers["Content-Disposition"] = f'attachment; filename="image-{ident}.png"'
-        return web.Response(body=raw, content_type="image/png", headers=headers)
+        if request.query.get("thumb"):
+            return web.FileResponse(DATA / "thumbs" / value["thumb"], headers=headers)
+        if value.get("file"):
+            return web.FileResponse(DATA / "assets" / value["file"], headers=headers)
+        return web.Response(body=assets.png(await assets.load(e.db, e.comfy, sid, ident)),
+                            content_type="image/png", headers=headers)
 
     @routes.post("/api/session/{sid}/images")
     async def action(request):
@@ -27,7 +31,7 @@ def install(routes, e):
             sharing.grant(e.db, sid, ids, action == "share")
         elif action == "final":
             if any(type(i) is not int or i > 10000 for i in ids):
-                raise ValueError("Only local images can be marked final")
+                raise UserError("Only local images can be marked final")
             for ident in ids:
                 get(e.db, sid, ident, "image")
             for ident in ids:
@@ -35,10 +39,10 @@ def install(routes, e):
                 create(e.db, sid, "event", {"image": ident, "action": "final" if body.get("value", True) else "draft"})
         elif action == "delete":
             if e.tasks:
-                raise ValueError("Finish active work before deleting images")
+                raise UserError("Finish active work before deleting images")
             for ident in ids:
                 if ident > 10000:
-                    raise ValueError("Shared images are read-only")
+                    raise UserError("Shared images are read-only")
                 get(e.db, sid, ident, "image")
             for ident in ids:
                 value = get(e.db, sid, ident)
@@ -51,5 +55,5 @@ def install(routes, e):
             from .export_images import export
             return await export(e, sid, ids)
         else:
-            raise ValueError("Unknown image action")
+            raise UserError("Unknown image action")
         return web.json_response({"ok": True})

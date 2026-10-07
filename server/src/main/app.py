@@ -7,21 +7,22 @@ from .engine import Engine
 from .network import hosts, port_config, install_whitelist
 from .settings import APP, DATA, prepare, read
 from .tls import certificate
+from .errors import UserError, message
 
 
 @web.middleware
 async def errors(request, handler):
     try:
         response = await handler(request)
-        response.headers["Cache-Control"] = "no-store"
+        response.headers.setdefault("Cache-Control", "no-cache")
         return response
-    except (ValueError, KeyError, TypeError) as exc:
-        return web.json_response({"error": str(exc)}, status=400)
+    except UserError as exc:
+        return web.json_response({"error": message(exc)}, status=400)
     except web.HTTPException:
         raise
     except Exception as exc:
         logging.exception("Request failed")
-        return web.json_response({"error": str(exc)}, status=500)
+        return web.json_response({"error": message(exc)}, status=500)
 
 
 async def build():
@@ -44,7 +45,7 @@ async def build():
 
 def main():
     prepare()
-    handler = logging.handlers.RotatingFileHandler(DATA / "service.log", maxBytes=2800, backupCount=4)
+    handler = logging.handlers.RotatingFileHandler(DATA / "service.log", maxBytes=10*1024**2, backupCount=4)
     logging.basicConfig(level=logging.INFO, handlers=[handler, logging.StreamHandler()])
     cert, key = certificate()
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)

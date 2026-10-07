@@ -1,3 +1,4 @@
+from .errors import UserError
 import json
 from aiohttp import web
 from .records import flat
@@ -25,7 +26,7 @@ def install(routes, e):
     @routes.post("/api/sessions")
     async def sessions(request):
         if e.tasks:
-            raise ValueError("Wait for work to finish or cancel it before switching sessions")
+            raise UserError("Wait for work to finish or cancel it before switching sessions")
         data = await request.json()
         if data.get("id"):
             e.db.activate(data["id"])
