@@ -1,4 +1,4 @@
-"""Additional real-model checks for the pretrained completion protocol."""
+"""Additional real-model checks for the instruction model."""
 import json
 import sys
 from pathlib import Path
@@ -9,7 +9,7 @@ from .model_cases import TOOL, image_message, user
 def main():
     kv = sys.argv[1] if len(sys.argv) > 1 else "hqq_8"
     root = Path(__file__).resolve().parents[3]
-    evidence = {"model": "gemma-4-E2B", "kv_quantization": kv}
+    evidence = {"model": "gemma-3-12b-it", "kv_quantization": kv}
     def chat(messages, **extra):
         body = dict(model=evidence["model"], kv_quantization=kv, messages=messages,
                     max_tokens=128, temperature=0, parallel_tool_calls=False)
@@ -32,7 +32,7 @@ def main():
         assert len(calls) == 1 and calls[0]["function"]["name"] == "multiply", message
         assert json.loads(calls[0]["function"]["arguments"]) == {"a": 4, "b": 13}, message
         evidence[str(choice)] = calls[0]["function"]
-    prompt = (root / "README.md").read_text() + "\nWhat is the HTTPS port in this document? Reply with only the number."
+    prompt = (root / "README.md").read_text() + "\nWhich port serves the LLM gateway? Reply with only the number."
     message, usage = chat([user(prompt)])
     assert usage["prompt_tokens"] > 512, usage
     assert message["content"].strip().rstrip(".") == "8188", message

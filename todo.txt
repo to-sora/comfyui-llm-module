@@ -1,11 +1,10 @@
 Studio redesign / 聊天工作台重建
 Scope: attachment 315da509-7b32-4ff8-ae60-b9d674db7071 and ../studio-ui-redesign.
 範圍：新目標檔全部修正、階段與驗收；八個本地設計畫面。
-Phase 0 pending: generation defaults, diagnostics, cancellation, RAM offload,
-accurate accounting, one transformers engine, GGUF conversion with six parity
-gates, quantized weight cache, local immutable images, default-prompt tests.
-階段零待辦：預設值、日誌、取消、RAM 卸載、記憶體估算、單一引擎、
-GGUF 六項一致性驗證、量化快取、本地圖片及自然提示測試。
+Phase 0 core implemented and real checks passed: default text/image settings,
+logs, timeout/disconnect cancellation, RAM offload, transformer-only profiles,
+six-gate GGUF conversion, NF4 disk cache and immutable local images.
+階段零核心已通過真實測試，含修正後 INT8 原生 Free／RAM 恢復及零 CUDA 殘留。
 Phase 1 pending: ULID chats/messages/runs/images, legacy migration, one GPU queue,
 token SSE, reconnect, budgeted transcript and rolling summary, prefix/vision cache,
 five tools/catalog, multi-call batches, exact chat/viewer/library/debug screens,

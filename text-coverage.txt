@@ -1,8 +1,11 @@
 Current redesign / 本次重建（feat/studio-chat-engine）
-HF 9B + SDXL: real GPU coexistence, ComfyUI Free→CPU RAM→GPU restore, unchanged disk-load count; no mocks. / 真實共存及 RAM 恢復，未重新讀取權重。
-Generation defaults: real SDXL, two identical prompts get distinct random seeds and 1 MP output; no mocked images. / 預設真實生圖，種子不同及約 1 MP。
-GGUF importer: real Qwen 9B/27B strict keys/shapes and tokenizer/template parity passed. Logits/vision/workflow parity pending. / 結構、分詞與模板通過；數值、視覺及流程待驗證。
-Firefox UAT: real plain-prompt default generation, image review, text edit, original preservation, odd-size inpaint, 48 MP upload, mask tools, download, refresh and responsive/200% layouts passed; no mocks. / 真實瀏覽器流程通過，完整重建未完成。
-Logs/cancellation/context: implementation in progress; full fault and long-conversation acceptance pending. / 故障及長對話驗收待辦。
-Chat UI/SSE/new data model: pending; prior workbench UAT does not validate the redesign. / 新介面與資料結構待辦，舊驗收不代表本次通過。
-Historical evidence in fan-out/workbench and older plugin tests describes fc0177e only. / 舊報告僅證明先前版本。
+9B/27B GGUF: strict keys/shapes, identical tokenizer/template, numeric logits and greedy text, matched vision, FP16/NF4 text/tools/SDXL workflows passed; llama.cpp only an offline reference. / 六關真實測試通過，參考引擎不服務使用者。
+Native 27B and Gemma 3 IT: actual NF4, HQQ8, images/tools and SDXL return passed without disk reload. Gemma also recovered one naturally malformed tool call. / 原生模型及一次格式修復通過。
+9B NF4/INT8 RAM: repeated calls keep one registry entry; native Free releases CUDA to CPU RAM and restores without disk reload. NF4 restart loads the saved quantized copy. / 原生 RAM 恢復及持久量化快取通過。
+Gateway SSE: 76 text chunks arrived during inference, exact nonstreaming reply, structured tools, disconnect cancellation and following request passed. / 真實逐段串流、工具、斷線取消及後續工作通過。
+Gateway faults: invalid JSON 400; real inference deadline 500 with traceback; native prompt/history removed and following reply correct. No mocks. / 真實逾時錯誤及清理通過。
+Defaults: actual random seeds, about 1 MP, CFG5.5; img2img uses 0.5 and preserves a 3:2 source near 1 MP. / 預設生圖及來源比例通過。
+Firefox UAT: plain prompt generates/reviews two images; text edit, original preservation, odd-size inpaint, mask tools, 48 MP upload, download, refresh, responsive and 200% layouts passed. Offline originals/ETag/WebP passed. / 真實瀏覽器及離線圖片通過。
+Pending: long-conversation summary acceptance, prefix caching, chat data migration, new five-tool batching, browser SSE and all redesigned screens. Human Phase 1 gate is not yet available. / 長對話、新資料與工具、快取及重建介面待驗證，真人關卡尚未就緒。
+Historical fan-out/workbench and older tests describe fc0177e only. / 舊證據僅代表先前版本。
+INT8 state leak fixed: post-offload CUDA storage zero and restored weight size unchanged. / INT8 狀態殘留已修正，卸載後 CUDA 為零且恢復大小不變。

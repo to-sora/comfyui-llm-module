@@ -1,10 +1,12 @@
 import json
 import time
+import sys
 from pathlib import Path
 from .api_client import request, execute
 from .sdxl_graph import graph
 
-body = {"model": "Qwen3.5-9B", "kv_quantization": "hqq_8", "max_tokens": 32,
+mode = sys.argv[1] if len(sys.argv) > 1 else "bnb_nf4"
+body = {"quantization": mode, "model": "Qwen3.5-9B", "kv_quantization": "hqq_8", "max_tokens": 32,
         "messages": [{"role": "user", "content": "What is 17 + 25? Reply with only the number."}]}
 
 def chat():
@@ -13,7 +15,7 @@ def chat():
     return request("/llm/status")
 
 def model(state):
-    return next(m for m in state["models"] if m["model"] == body["model"])
+    return next(m for m in state["models"] if m["model"] == body["model"] and m["quantization"] == mode)
 
 before = chat()
 for _ in range(8):
@@ -33,11 +35,13 @@ for _ in range(60):
     time.sleep(.25)
 else:
     raise AssertionError("ComfyUI did not offload the model")
+assert model(offloaded)["diagnostics"]["storage"]["cuda"] == 0, model(offloaded)
 assert model(offloaded)["in_ram"] and model(offloaded)["diagnostics"]["storage"]["cpu"] > 0
 final = chat()
 assert model(final)["loads"] == model(before)["loads"]
 assert model(final)["transfers"] > model(before)["transfers"]
 assert model(final)["registry_entries"] == 1
+assert model(final)["resident_bytes"] <= model(before)["resident_bytes"] * 1.01, model(final)
 assert not any(e["event"] == "switch" for e in final["events"])
 output = Path(__file__).resolve().parents[3] / "fan-out/studio-engine"
 output.mkdir(exist_ok=True)
@@ -46,5 +50,5 @@ data = {"status": "PASS", "answer": "42", "sdxl_prompt": image,
         "coexists_with_sdxl": True, "repeated_chat_calls": 9,
         "models": [{k: model(s)[k] for k in ("model", "loaded", "in_ram", "resident_bytes", "loads", "transfers", "registry_entries")}
                    for s in (before, middle, offloaded, final)]}
-(output / "ram.json").write_text(json.dumps(data, indent=2))
+(output / ("ram.json" if mode == "bnb_nf4" else "ram-"+mode+".json")).write_text(json.dumps(data, indent=2))
 print("Real 9B+SDXL coexistence, ComfyUI Free→CPU RAM→GPU restore without reload PASS")
