@@ -40,7 +40,7 @@ class LLMRuntime:
         if length > self.cfg["context_tokens"]:
             raise ValueError("Prompt and reply exceed context capacity")
         pixels = sum(v.numel() for k, v in inputs.items() if k.startswith("pixel_values"))
-        required = working(self.cfg, length, pixels)
+        required = working(self.cfg, length, pixels, request.get('diagnostic_prefix'))
         mm.load_models_gpu([self.patcher], memory_required=required)
         mm.throw_exception_if_processing_interrupted()
         return self.engine.chat(request, inputs)

@@ -1,4 +1,5 @@
 import ssl
+import sys
 import time
 import urllib.request
 from marionette_driver.by import By
@@ -7,6 +8,7 @@ from browser_helpers import until
 from studio_helpers import call, record, snapshot, console_errors, OUT
 from studio_recovery_helpers import finished
 
+name = sys.argv[1] if len(sys.argv)>1 else 'engine-recheck'
 started = time.monotonic()
 with browser() as d:
     d.set_window_rect(width=1440,height=1000)
@@ -28,11 +30,12 @@ with browser() as d:
         any(p['type']=='image_url' for p in m['content']) for m in requests[-1]['messages'])
     until(lambda:d.execute_script("return !!document.querySelector('.image-card img')"),30)
     d.find_element(By.CSS_SELECTOR,'.image-card').click()
-    snapshot(d,'engine-recheck')
+    until(lambda:d.execute_script("const i=document.querySelector('#viewer .picture-plane img');return i?.complete&&i.naturalWidth>0"),30)
+    snapshot(d,name)
     assert not console_errors(d)
     with urllib.request.urlopen('https://127.0.0.1:8189/api/images/'+image['id'],
             context=ssl._create_unverified_context()) as response:
-        (OUT/'engine-recheck-image.png').write_bytes(response.read())
-    record('engine-recheck',{'status':'PASS','chat':chat,'run':run,'image':image,
+        (OUT/(name+'-image.png')).write_bytes(response.read())
+    record(name,{'status':'PASS','chat':chat,'run':run,'image':image,
         'seconds':time.monotonic()-started,'actual_pixels_reviewed':True})
     print('Firefox LLM → SDXL → actual-image review PASS',chat,flush=True)

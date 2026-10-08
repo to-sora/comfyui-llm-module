@@ -8,7 +8,7 @@ Phase 1 agent checks passed: five actual model workflows, batches/queue/masks,
 long memory, recovery/retry, downloads, settings, layouts, focus and real migration.
 階段一代理驗收：五模型、批次佇列遮罩、長記憶、恢復重試、下載設定及遷移通過。
 All 25 reported bug paths addressed; 13 optimizations applied, #8 partial:
-hybrid Qwen vision retains full prefill after a measured numerical mismatch.
+Qwen vision retains full prefill: tested alternatives failed correctness or speed.
 原報告二十五項問題有對應修正；十三項最佳化已套用，第八項混合視覺保留完整預填。
 Next required input: non-technical human completes five tasks unaided.
 Checklist: fan-out/studio-chat/human-check.html. Agent UAT cannot replace it.
@@ -23,5 +23,6 @@ notifications, storage cleanup, shortcuts/rate limits and PWA/phone polish.
 自訂指示、通知、清理、快捷鍵、流量限制與手機 PWA。
 Later: pin/archive, outpaint, plain backup/restore and document uploads.
 其後：釘選封存、擴圖、未加密備份還原及文件上傳。
-Evidence: fan-out/studio-chat/continuation.html and fan-out/studio-engine/cache.html.
+Latest: fan-out/studio-chat/races.html and fan-out/studio-engine/prefix-decode.html.
+最新七項時序修正及解碼研究見上述報告；正常瀏覽器生圖再驗收通過。
 證據：上述可攜報告；生成品質與模型判斷仍需人核對。

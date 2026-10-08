@@ -1,17 +1,35 @@
 # Prefix diagnostic / 前綴診斷 / 前缀诊断
 
-Optimization 8 remains partial. Qwen image requests use full prefill because split prefill changed a near-tied token and caused an unrelated tool call. Text/tool prefix reuse and Gemma vision reuse remain enabled.
-最佳化第八項仍部分完成。Qwen 圖片請求維持完整預填，因分段運算改變接近分數的 token 並造成無關工具呼叫；文字、工具及 Gemma 視覺仍重用前綴。
-优化第八项仍部分完成。Qwen 图片请求保持完整预填，因分段运算改变接近分数的 token 并造成无关工具调用；文字、工具及 Gemma 视觉仍复用前缀。
+Optimization 8 remains partial. Production Qwen vision uses full prefill after split prefill added an unrelated tool call. Text/tool and Gemma vision prefix reuse remain enabled.
+最佳化第八項仍部分完成；Qwen 視覺分段預填曾產生無關工具呼叫，因此正式路徑保留完整預填。文字、工具及 Gemma 視覺仍重用前綴。
+优化第八项仍部分完成；Qwen 视觉分段预填曾产生无关工具调用，因此正式路径保留完整预填。文字、工具及 Gemma 视觉仍复用前缀。
 
-For development, add `diagnostic_prefix` to a completion request: `default`, `full_accumulation`, `math_attention`, or `fixed_reduction`. It compares full/split prefill inside the ComfyUI-owned engine; results appear under `/llm/status` → `diagnostics.prefix_probe`. It adds several forward passes, requires Qwen, a 64-token system prefix and at most 1024 input tokens. The returned answer still uses normal inference.
-開發時可加入上述診斷選項；ComfyUI 管理的引擎執行完整／分段比較，結果見狀態 API。額外執行數次前向運算，限 Qwen、至少 64-token 系統前綴及最多 1024 輸入 token；回覆仍走一般推論。
-开发时可加入上述诊断选项；ComfyUI 管理的引擎执行完整／分段比较，结果见状态 API。额外执行数次前向运算，限 Qwen、至少 64-token 系统前缀及最多 1024 输入 token；回复仍走正常推理。
+Development modes / 開發模式 / 开发模式 (`diagnostic_prefix`):
 
-Run `server/.local-tool-app/venv/bin/python -m plugin.src.test.prefix_diagnostic Qwen3.5-9B-gguf`, or use `Qwen3.5-9B`. Evidence goes to `fan-out/studio-engine`. Native/imported NF4 BF16 both diverged before snapshot restoration; stricter math did not eliminate the difference. Probe hooks and backend settings are restored on exit.
-以上命令重現原生／匯入 NF4 BF16 差異；快照還原前已不同，較嚴格數學設定亦未消除。離開診斷時清理掛鉤並還原設定。
-以上命令重现原生／导入 NF4 BF16 差异；快照恢复前已不同，更严格的数学设置也未消除。退出诊断时清理钩子并恢复设置。
+- `default`, `full_accumulation`, `math_attention`, `fixed_reduction`
+- `fp32_projection`: FP32 quantized projections with math attention.
+- `fp32_default_attention`: FP32 projections with normal attention.
+- `prefix_fp32`: FP32 only while preparing the saved prefix.
+- `prefill_fp32`: FP32 prefill; normal single-token decoding.
+- `dense_prefill`: dense prefill; normal token decoding.
 
-[PyTorch numerical accuracy](https://docs.pytorch.org/docs/2.14/notes/numerical_accuracy.html) explains why sliced and full floating-point operations need not be bit-identical.
-PyTorch 說明切片與完整浮點運算不保證逐位相同。
-PyTorch 说明切片与完整浮点运算不保证逐位相同。
+FP32 模式調整注意力與前綴／預填精度。
+FP32 模式调整注意力与前缀／预填精度。
+
+ComfyUI compares full/split states and full/restored/reused decoding. Limits: Qwen, at least 64 prefix tokens, at most 2048 input tokens and 64 diagnostic reply tokens. Extra workspace is reserved through ComfyUI. The API answer still uses normal inference. Hooks, math flags, projection precision and bias dtype are restored on exit.
+ComfyUI 管理模型、工作記憶體及完整／還原／重用比較；限制如上。API 仍回傳一般推論結果；離開時還原掛鉤、運算旗標、投影精度及偏置型別。
+ComfyUI 管理模型、工作内存及完整／还原／复用比较；限制如上。API 仍返回正常推理结果；退出时恢复钩子、运算标志、投影精度及偏置类型。
+
+Read `/llm/status` → `diagnostics.prefix_probe.decode`: tokens, text, tool calls and timings. `timing_includes_cache_setup` identifies timings including CPU snapshot restoration. Equal outputs alone do not prove correctness: two paths can make the same wrong tool call.
+狀態 API 記錄 token、文字、工具及時間；上述旗標標示包含 CPU 快照還原。輸出一致不代表正確，兩條路徑可能同樣誤用工具。
+状态 API 记录 token、文字、工具及时间；上述标志表示包含 CPU 快照恢复。输出一致不代表正确，两条路径可能同样误用工具。
+
+Run from the repo / 於儲存庫執行 / 在仓库执行：
+
+```sh
+server/.local-tool-app/venv/bin/python -m plugin.src.test.prefix_decode_research Qwen3.5-9B-gguf
+server/.local-tool-app/venv/bin/python -m plugin.src.test.prefix_studio_research
+```
+
+Evidence / 證據 / 证据: `fan-out/studio-engine`.
+[PyTorch numerics](https://docs.pytorch.org/docs/2.14/notes/numerical_accuracy.html) · [HF caching](https://huggingface.co/docs/transformers/cache_explanation)
