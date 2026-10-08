@@ -34,7 +34,8 @@ class LLMPatcher:
         engine = self.model.engine
         if engine and engine.model is not None:
             storage = engine.diagnostics["storage"]
-            return sum(storage.values()) + working(self.model.cfg, self.model.cfg["context_tokens"])
+            return sum(storage.values()) + working(self.model.cfg, self.model.cfg["context_tokens"],
+                                                  512**2 if engine.vision else 0)
         return self.size
 
     def loaded_size(self):

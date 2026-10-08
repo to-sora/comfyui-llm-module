@@ -12,6 +12,7 @@ kv = sys.argv[2] if len(sys.argv)>2 else 'none'
 color = sys.argv[3] if len(sys.argv)>3 else 'yellow'
 system = 'You are a concise, accurate assistant. Answer the user using the conversation and actual image contents. Use an available tool when current information is needed. Never invent tool results. Follow the requested reply format, and distinguish visible facts from guesses.'
 body = {'model':model,'kv_quantization':kv,'quantization':'bnb_nf4','max_tokens':64,
+        'prefix_cache':False,
         'temperature':0,'tools':[TOOL],'enable_thinking':False,
         'messages':[{'role':'system','content':system},input_message(color)]}
 rows = []

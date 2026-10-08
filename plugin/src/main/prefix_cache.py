@@ -23,19 +23,14 @@ def boundary(engine, request, inputs):
 
 
 @torch.no_grad()
-def cached(engine, request, inputs):
+def cached(engine, inputs, ids, policy='default', bypass=None):
     stats = engine.diagnostics.setdefault('prefix',{'hits':0,'misses':0,'reused_tokens':0})
     stats['last_reused_tokens'] = 0
-    hybrid = 'linear_attention' in getattr(engine.model.config.get_text_config(),'layer_types',[])
-    vision = any(key.startswith('pixel_values') for key in inputs)
-    stats['bypass_reason'] = 'hybrid_vision_full_prefill' if hybrid and vision else None
-    if stats['bypass_reason']:
-        return create(engine.model.config,engine.cfg['kv_quantization'])
-    ids = boundary(engine, request, inputs) if request.get('prefix_cache',True) else ()
+    stats['bypass_reason'], stats['math_policy'] = bypass, policy
     if not ids:
         return create(engine.model.config,engine.cfg['kv_quantization'])
     entries = engine.prefixes
-    hit = next((entry for entry in entries if entry['ids']==ids),None)
+    hit = next((entry for entry in entries if entry['ids']==ids and entry['math_policy']==policy),None)
     started = time.monotonic()
     if hit:
         entries.remove(hit)
@@ -48,7 +43,7 @@ def cached(engine, request, inputs):
                   if key in ('input_ids','attention_mask','token_type_ids','mm_token_type_ids')}
         state = create(engine.model.config,'none')
         engine.model(**prefix,past_key_values=state,use_cache=True,logits_to_keep=1)
-        hit = {'ids':ids,'state':clone(state,'cpu')}
+        hit = {'ids':ids,'math_policy':policy,'state':clone(state,'cpu')}
         del state
     entries.append(hit)
     del entries[:-2]

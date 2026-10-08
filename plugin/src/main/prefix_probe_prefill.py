@@ -1,5 +1,5 @@
 from contextlib import nullcontext
-from .prefix_probe_modes import mode
+from .hf_math import mode
 
 
 def prefill(engine, request, inputs, **options):

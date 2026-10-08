@@ -1,8 +1,9 @@
 GGUF 9B/27B: six parity gates, precision/NF4, text/tools/vision/SDXL passed; no runtime llama.cpp. / 六關與模型流程通過。
 Five profiles: real generation, pixel review and image follow-up passed; no inference mocks. / 五模型真實流程通過。
 Memory: NF4/INT8 fresh SDXL execution, co-residency, CPU offload, one disk load and exact restored sizes passed; native cache clear releases every handle. / 原生記憶體實測通過。
-Prefix: seven profile/KV comparisons pass; Qwen text/tools and Gemma vision reuse; hybrid vision bypassed after measured numeric divergence. / 前綴部分適用，限制明確。
-Prefix research: nine math/precision variants, native/imported 9B and actual Studio replay; wrong-tool or speed regressions remain. / 九種運算研究仍有工具或速度退步。
+Prefix: four Qwen NF4/BF16/HQQ8 profiles, 40 image/tool cases repeated with actual hits; HQQ4 fallback passes. / 四款預設視覺快取與文字分離通過。
+Research: 15 numerical modes; fixed Studio replay median 2.917→2.724s (five warm samples); other modes remain partial. / 量測及限制已記錄。
+EOS: native Qwen stops at the tokenizer turn end; parallel tools and Gemma calls pass. / 結束回合及平行工具通過。
 Gateway: real token SSE, structured tools, deadline/disconnect cancellation, history cleanup and following reply passed. / 串流及失敗清理通過。
 Studio defaults: random seeds, about 1 MP, CFG 5.5, .5 edits and source aspect; same-prompt native batch differs. / 預設及原生批次通過。
 Firefox: create/review, actual painted mask, all unmasked pixels exact, 48 MP and HEIC, viewer/compare, three languages/themes and model settings passed. / 瀏覽器生成編輯與設定通過。
@@ -12,7 +13,6 @@ Duplicate batch: actual captured model failure reproduced; validation prevents i
 Offline engine: stored original hash unchanged, plain error, native restart and retry answer 42. / 實際引擎離線仍可看原圖。
 History: ten-turn rolling summary retains four requirements; real database copy covers 34 old chats, structured content and valid chain cursors. / 長對話及舊資料通過。
 Layouts/focus: 392px, desktop, large, 200%, fullscreen/mobile Escape and 44px targets passed. / 多比例與焦點通過。
-Paste/drop handlers: actual PNGs via browser events passed. Native PNG clipboard was empty in headless Firefox; headed-browser paste and five unaided tasks require a human. / 原生圖片貼上與五任務待真人。
-Phase 2 waits for human acceptance. / 階段二等待真人驗收。
-Startup: real delayed HTTPS, early Send retains text; reply 42 and live title pass. / 慢載入保留輸入及即時標題通過。
+Paste/drop handlers: actual PNGs via browser events passed. Native clipboard and five unaided tasks need human evidence. / 原生圖片貼上與五任務待真人。
+Startup: delayed HTTPS preserves early text; reply 42 and title pass. / 慢載入通過。
 Timing: seven real Firefox before/after cases: duplicate Send, late routes, uploads and painted edits; other-chat drafts and unmasked pixels preserved. / 七項時序修復通過，沒有模擬推論。

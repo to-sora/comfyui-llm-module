@@ -1,7 +1,7 @@
 import torch
-from .generation_controls import StopGeneration, single_tool
+from .generation_controls import StopGeneration, single_tool, end_tokens
 from .cache_stats import describe
-from .prefix_cache import cached
+from .prefix_context import prepared
 from .tool_calls import parse
 from .gemma_tools import parse as parse_gemma
 from .model_response import parse as parse_response
@@ -21,9 +21,9 @@ def generate(engine, request, inputs):
     tokenizer = getattr(processor, "tokenizer", processor)
     native_gemma = model.config.model_type == "gemma4"
     marker = "<tool_call|>" if native_gemma else "</tool_call>"
-    cache = cached(engine, request, inputs)
     options = {"do_sample": temperature > 0, "max_new_tokens": limit,
-               "past_key_values": cache, "use_cache": True,
+               "use_cache": True,
+               **end_tokens(model, tokenizer),
                "stopping_criteria": [StopGeneration(tokenizer, marker if single_tool(request) else None)]}
     if temperature > 0:
         options.update(temperature=temperature, top_p=request.get("top_p", 1.0),
@@ -36,7 +36,8 @@ def generate(engine, request, inputs):
     if request.get("stream") and request.get("comfy_prompt_id"):
         from .hf_stream import TokenStream
         options["streamer"] = TokenStream(tokenizer, request)
-    output = model.generate(**inputs, **options)
+    with prepared(engine, request, inputs) as cache:
+        output = model.generate(**inputs, past_key_values=cache, **options)
     engine.diagnostics["kv"] = describe(cache)
     tokens = output[0, count:]
     raw = processor.decode(tokens, skip_special_tokens=False)

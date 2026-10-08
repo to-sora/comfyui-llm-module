@@ -1,6 +1,6 @@
 """Compare actual decoding without changing the production prefix cache."""
 import time
-from .generation_controls import StopGeneration, single_tool
+from .generation_controls import StopGeneration, single_tool, end_tokens
 from .kv_cache import create
 from .prefix_state import clone, restore
 from .tool_calls import parse
@@ -14,6 +14,7 @@ def compare(engine, request, inputs, length):
     count = inputs['input_ids'].shape[-1]
     limit = min(64, request.get('max_completion_tokens', request.get('max_tokens', 64)))
     options = {'do_sample':False, 'max_new_tokens':limit, 'use_cache':True,
+               **end_tokens(model, tokenizer),
                'stopping_criteria':[StopGeneration(tokenizer,
                     '</tool_call>' if single_tool(request) else None)]}
     mode = engine.cfg['kv_quantization']

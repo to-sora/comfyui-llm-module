@@ -7,12 +7,17 @@ GGUF parity gates, RAM ownership/offload, NF4 disk cache and local originals.
 Phase 1 agent checks passed: five actual model workflows, batches/queue/masks,
 long memory, recovery/retry, downloads, settings, layouts, focus and real migration.
 階段一代理驗收：五模型、批次佇列遮罩、長記憶、恢復重試、下載設定及遷移通過。
-All 25 reported bug paths addressed; 13 optimizations applied, #8 partial:
-Qwen vision retains full prefill: tested alternatives failed correctness or speed.
-原報告二十五項問題有對應修正；十三項最佳化已套用，第八項混合視覺保留完整預填。
-Next required input: non-technical human completes five tasks unaided.
-Checklist: fan-out/studio-chat/human-check.html. Agent UAT cannot replace it.
-必需下一關：非技術真人獨立完成五項任務；代理驗收不能代替。
+All 25 reported bug paths and seven browser races are addressed; tokenizer EOS now
+also stops invented continuation turns. Optimization 8 now includes Qwen vision
+on CUDA with NF4/BF16/HQQ8. All four Qwen profiles passed ten actual API cases,
+repeated cache hits and separate text/vision states. Other hybrid vision settings
+retain full prefill; HQQ4 split prefill still makes a wrong tool call.
+原有二十五問題及七項瀏覽器時序已修正；新增 EOS 修正，防止虛構後續回合。
+四款 Qwen 預設 NF4／BF16／HQQ8 視覺前綴已啟用並實測；其他設定仍完整預填。
+Engineering continues on remaining prefix modes and independent fixes.
+Non-technical human acceptance is still unrecorded; its five-task checklist is
+fan-out/studio-chat/human-check.html. Agent UAT cannot replace that evidence.
+繼續處理其他前綴設定與獨立修正；真人五任務驗收仍未記錄，不能由代理代替。
 Native image paste needs that human check: headless Firefox clipboard was empty;
 file-bearing paste/drop handlers passed with real PNG uploads.
 原生圖片貼上待真人驗證；無頭瀏覽器剪貼簿為空，圖片事件上傳已通過。
@@ -23,6 +28,6 @@ notifications, storage cleanup, shortcuts/rate limits and PWA/phone polish.
 自訂指示、通知、清理、快捷鍵、流量限制與手機 PWA。
 Later: pin/archive, outpaint, plain backup/restore and document uploads.
 其後：釘選封存、擴圖、未加密備份還原及文件上傳。
-Latest: fan-out/studio-chat/races.html and fan-out/studio-engine/prefix-decode.html.
-最新七項時序修正及解碼研究見上述報告；正常瀏覽器生圖再驗收通過。
+Latest: fan-out/studio-engine/prefix-live.html and fan-out/studio-chat/latest.html.
+最新視覺前綴、EOS 修正及瀏覽器證據見上述報告。
 證據：上述可攜報告；生成品質與模型判斷仍需人核對。

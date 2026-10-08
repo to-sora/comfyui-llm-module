@@ -11,6 +11,7 @@ requests = [s['body'] for s in fixture['run']['trace']['steps'] if s['kind']=='r
 model = sys.argv[1] if len(sys.argv)>1 else 'Qwen3.5-9B-gguf'
 kv = sys.argv[2] if len(sys.argv)>2 else 'hqq_8'
 body = {**requests[-1],'model':model,'quantization':'bnb_nf4',
+        'prefix_cache':False,
         'kv_quantization':kv,'max_tokens':64,'temperature':0,'enable_thinking':False,'stream':False}
 body.pop('max_completion_tokens',None)
 rows = []

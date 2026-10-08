@@ -34,7 +34,8 @@ def validate(body):
             raise UserError(f"{field} must be a boolean.")
     if 'diagnostic_prefix' in body and body['diagnostic_prefix'] not in (
             'default', 'full_accumulation', 'math_attention', 'fixed_reduction',
-            'fp32_projection', 'fp32_default_attention', 'prefix_fp32', 'prefill_fp32', 'dense_prefill'):
+            'fp32_projection', 'fp32_default_attention', 'prefix_fp32', 'prefill_fp32', 'dense_prefill',
+            'attention_fp32', 'mlp_fp32', 'head_fp32', 'mlp_down_fp32', 'mlp_gateup_fp32', 'prefill_fp16'):
         raise UserError('Unknown prefix diagnostic mode.')
     temperature = body.get("temperature", 0)
     if not isinstance(temperature, (int, float)) or not 0 <= temperature <= 2:

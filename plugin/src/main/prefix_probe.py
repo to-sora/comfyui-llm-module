@@ -2,7 +2,7 @@ import torch
 from contextlib import ExitStack
 from .kv_cache import create
 from .prefix_cache import boundary
-from .prefix_probe_modes import mode
+from .hf_math import mode
 from .prefix_probe_layers import Layers
 from .prefix_probe_decode import compare
 from .prefix_probe_prefill import prefill

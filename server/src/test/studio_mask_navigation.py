@@ -12,6 +12,7 @@ from studio_mask_pixels import verify
 
 ref=sys.argv[1] if len(sys.argv)>1 else None
 name='mask-navigation-before-fix' if ref else 'mask-navigation'
+if len(sys.argv)>2: name=sys.argv[2]
 fixture=json.loads(gzip.decompress((OUT/'engine-recheck.json.gz').read_bytes()))
 a,source=fixture['chat'],fixture['image']['id']
 b=call('/chats',{})['id']

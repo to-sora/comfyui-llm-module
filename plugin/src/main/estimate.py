@@ -52,6 +52,9 @@ def working(cfg, tokens, pixels=0, diagnostic=None):
             length = min(tokens, t.get("sliding_window", tokens) or tokens) if kind == "sliding_attention" else tokens
             kv += 2 * length * heads * dim * per
     compute = tokens * t["hidden_size"] * 16 + pixels * 24 + 256 * 1024**2
+    if pixels:
+        from .prefix_context import workspace
+        compute += workspace(cfg, config, tokens)
     if diagnostic:
         from .prefix_probe_budget import extra
         compute += extra(t, tokens, diagnostic)
