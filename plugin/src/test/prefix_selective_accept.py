@@ -1,5 +1,6 @@
 import gzip
 import json
+import os
 import sys
 from pathlib import Path
 from .api_client import request
@@ -7,10 +8,14 @@ from .model_cases import TOOL
 from .prefix_decode_cases import message, correct
 
 model, kv, mode = (sys.argv[1:4] or ['Qwen3.5-9B-gguf', 'hqq_8', 'mlp_down_fp32'])
+quant = os.environ.get('PREFIX_TEST_QUANTIZATION','bnb_nf4')
+precision = os.environ.get('PREFIX_TEST_PRECISION','bfloat16')
 cases = list(sys.argv[4:] or ('red','green','blue','yellow','black','white','photo','multi','vision_tool'))
 system = 'You are a concise, accurate assistant. Answer the user using the conversation and actual image contents. Use an available tool when current information is needed. Never invent tool results. Follow the requested reply format, and distinguish visible facts from guesses.'
 rows = []
 path = Path(__file__).resolve().parents[3]/f'fan-out/studio-engine/prefix-selective-{model}-{kv}-{mode}.json.gz'
+if (quant,precision) != ('bnb_nf4','bfloat16'):
+    path = path.with_name(path.name.replace('.json.gz','-'+quant+'-'+precision+'.json.gz'))
 if sys.argv[4:]:
     path = path.with_name(path.name.replace('.json.gz','-'+'-'.join(cases)+'.json.gz'))
 
@@ -18,13 +23,14 @@ if sys.argv[4:]:
 for case in cases:
     messages = followup if case == 'vision_tool_result' else [{'role':'system','content':system},message(case)]
     prior = '\n'.join(m.get('content') or '' for m in messages if m['role']=='assistant')
-    body = {'model':model,'kv_quantization':kv,'quantization':'bnb_nf4','max_tokens':64,
+    body = {'model':model,'kv_quantization':kv,'quantization':quant,'precision':precision,'max_tokens':64,
             'prefix_cache':False,
             'temperature':0,'tools':[TOOL],'enable_thinking':False,'diagnostic_prefix':mode,
             'messages':messages}
     result = request('/v1/chat/completions', body)['choices'][0]['message']
     state = request('/llm/status')
-    profile = next(p for p in state['models'] if p['model']==model and p['kv_quantization']==kv)
+    profile = next(p for p in state['models'] if p['model']==model and p['kv_quantization']==kv
+                   and p['quantization']==quant and p['precision']==precision)
     decode = profile['diagnostics']['prefix_probe']['decode']
     for value in decode['runs']:
         value['correct'] = correct(case, value, prior)

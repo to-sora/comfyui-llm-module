@@ -5,12 +5,16 @@ import urllib.request
 from marionette_driver.by import By
 from browser_session import browser
 from browser_helpers import until
-from studio_helpers import call, record, snapshot, console_errors, OUT
+from studio_helpers import call, record, snapshot, console_errors, OUT, saved_settings
 from studio_recovery_helpers import finished
 
 name = sys.argv[1] if len(sys.argv)>1 else 'engine-recheck'
 started = time.monotonic()
-with browser() as d:
+with saved_settings(), browser() as d:
+    if len(sys.argv)>2:
+        settings = call('/bootstrap')['settings']
+        settings['assistant']['kv_quantization'] = sys.argv[2]
+        call('/settings',settings,'PUT')
     d.set_window_rect(width=1440,height=1000)
     d.navigate('https://127.0.0.1:8189/')
     until(lambda:d.execute_script("return !!document.getElementById('prompt')&&!document.getElementById('send').disabled"),30)
@@ -18,6 +22,8 @@ with browser() as d:
     d.find_element(By.ID,'send').click()
     until(lambda:'/chats/' in d.get_url(),30)
     chat = d.get_url().rsplit('/',1)[1]
+    if len(sys.argv)>2:
+        call('/settings',{**settings,'chat_id':chat},'PUT')
     ident = until(lambda:next(iter(call('/chats/'+chat+'/messages')['runs']),None),30)
     run = until(lambda:finished(ident),600)
     assert run['status']=='done',run

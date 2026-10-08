@@ -19,5 +19,6 @@ def build(p, seeds, source=None, mask=None):
         g['4'] = node('VAEEncode',pixels=['12',0],vae=['1',2])
     if mask:
         g['13'] = node('LoadImageMask',image=mask,channel='red')
-        g['4'] = node('VAEEncodeForInpaint',pixels=['12',0],vae=['1',2],mask=['13',0],grow_mask_by=0)
+        g['14'] = g['4']
+        g['4'] = node('SetLatentNoiseMask',samples=['14',0],mask=['13',0])
     return g

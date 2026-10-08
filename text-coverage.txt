@@ -1,8 +1,8 @@
 GGUF 9B/27B: six parity gates, precision/NF4, text/tools/vision/SDXL passed; no runtime llama.cpp. / 六關與模型流程通過。
 Five profiles: real generation, pixel review and image follow-up passed; no inference mocks. / 五模型真實流程通過。
 Memory: NF4/INT8 fresh SDXL execution, co-residency, CPU offload, one disk load and exact restored sizes passed; native cache clear releases every handle. / 原生記憶體實測通過。
-Prefix: four Qwen NF4/BF16/HQQ8 profiles, 40 image/tool cases repeated with actual hits; HQQ4 fallback passes. / 四款預設視覺快取與文字分離通過。
-Research: 15 numerical modes; fixed Studio replay median 2.917→2.724s (five warm samples); other modes remain partial. / 量測及限制已記錄。
+Prefix: four Qwen NF4/BF16 profiles, all three KV settings: each has 40 repeated image/tool cases with actual hits. / 四款預設視覺快取與文字分離通過。
+Research: 15 numerical modes; fixed Studio replay median 2.917→2.724s (five warm samples); HQQ4 2.919→2.876s, no KV quantization 2.663→2.492s; other modes remain partial. / 量測及限制已記錄。
 EOS: native Qwen stops at the tokenizer turn end; parallel tools and Gemma calls pass. / 結束回合及平行工具通過。
 Gateway: real token SSE, structured tools, deadline/disconnect cancellation, history cleanup and following reply passed. / 串流及失敗清理通過。
 Studio defaults: random seeds, about 1 MP, CFG 5.5, .5 edits and source aspect; same-prompt native batch differs. / 預設及原生批次通過。

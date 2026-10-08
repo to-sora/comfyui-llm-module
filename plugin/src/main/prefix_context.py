@@ -5,7 +5,8 @@ from .hf_math import mode
 
 def supported(cfg, model_type):
     return (model_type == 'qwen3_5' and cfg['quantization'] == 'bnb_nf4'
-            and cfg['kv_quantization'] == 'hqq_8' and cfg.get('precision','bfloat16') == 'bfloat16')
+            and cfg['kv_quantization'] in ('none','hqq_8','hqq_4')
+            and cfg.get('precision','bfloat16') == 'bfloat16')
 
 
 def workspace(cfg, config, tokens):
@@ -24,6 +25,8 @@ def prepared(engine, request, inputs):
     eligible = supported(engine.cfg, config.model_type) and engine.model.device.type == 'cuda'
     bypass = 'hybrid_vision_full_prefill' if hybrid and vision and not eligible else None
     ids = boundary(engine,request,inputs) if request.get('prefix_cache',True) and not bypass else ()
-    policy = 'mlp_down_fp32' if ids and hybrid and vision else 'default'
+    policy = 'default'
+    if eligible and hybrid and vision:
+        policy = 'mlp_fp32' if engine.cfg['kv_quantization']=='hqq_4' else 'mlp_down_fp32'
     with mode(policy,engine.model) if policy != 'default' else nullcontext():
         yield cached(engine,inputs,ids,policy,bypass)

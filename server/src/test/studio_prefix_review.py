@@ -1,5 +1,6 @@
 import gzip
 import json
+import sys
 import time
 from marionette_driver.by import By
 from browser_session import browser
@@ -7,7 +8,8 @@ from browser_helpers import until
 from studio_helpers import call, record, snapshot, console_errors, OUT
 from studio_recovery_helpers import finished
 
-fixture = json.loads(gzip.decompress((OUT/'vision-prefix-uat.json.gz').read_bytes()))
+name = sys.argv[1] if len(sys.argv)>1 else 'vision-prefix'
+fixture = json.loads(gzip.decompress((OUT/(name+'-uat.json.gz')).read_bytes()))
 chat, image = fixture['chat'], fixture['image']['id']
 started = time.monotonic()
 old = set(call('/chats/'+chat+'/messages')['runs'])
@@ -30,12 +32,14 @@ with browser() as d:
     content = answer['response'].get('content','').lower()
     assert any(w in content for w in ('cup','mug')) and 'blue' in content,answer
     assert not answer['response'].get('tool_calls'),answer
+    kv = run['settings']['kv_quantization']
     profile = next(p for p in answer['memory']['models'] if p['model']==run['settings']['model']
-                   and p['kv_quantization']=='hqq_8')
-    assert profile['diagnostics']['prefix']['math_policy']=='mlp_down_fp32',profile
+                   and p['kv_quantization']==kv)
+    policy = 'mlp_fp32' if kv=='hqq_4' else 'mlp_down_fp32'
+    assert profile['diagnostics']['prefix']['math_policy']==policy,profile
     assert profile['diagnostics']['prefix']['last_reused_tokens']>=64,profile
     assert not console_errors(d)
-    snapshot(d,'vision-prefix-review')
-    record('vision-prefix-review',{'status':'PASS','chat':chat,'image':image,'run':run,
+    snapshot(d,name+'-review')
+    record(name+'-review',{'status':'PASS','chat':chat,'image':image,'run':run,
            'seconds':time.monotonic()-started,'actual_image_reused':True})
     print('Firefox actual-image follow-up with production prefix hit PASS',flush=True)

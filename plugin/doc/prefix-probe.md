@@ -1,8 +1,8 @@
 # Prefix diagnostic / 前綴診斷 / 前缀诊断
 
-Production Qwen vision reuse supports CUDA, NF4 weights, BF16 compute and HQQ8 KV. Other hybrid-vision modes keep full prefill. See [caching](caching.md).
-正式 Qwen 視覺重用支援 CUDA／NF4／BF16／HQQ8；其他混合視覺設定保留完整預填，詳見快取文件。
-正式 Qwen 视觉复用支持 CUDA／NF4／BF16／HQQ8；其他混合视觉配置保留完整预填，详见缓存文档。
+Production Qwen vision reuse supports CUDA, NF4 weights, BF16 compute and all KV settings. Other hybrid-vision modes keep full prefill. See [caching](caching.md).
+正式 Qwen 視覺重用支援 CUDA／NF4／BF16及三種 KV 設定；其他混合視覺設定保留完整預填，詳見快取文件。
+正式 Qwen 视觉复用支持 CUDA／NF4／BF16及三种 KV 配置；其他混合视觉配置保留完整预填，详见缓存文档。
 
 `diagnostic_prefix` compares full/split states and full/restored/reused decoding through ComfyUI. Limits: Qwen, 64+ static prefix tokens, <=2048 input tokens and <=64 diagnostic reply tokens. The API answer still runs normal inference. Use `prefix_cache:false` for a full-prefill baseline.
 上述診斷由 ComfyUI 執行並預留額外空間；限制如上。API 仍正常推論，可停用快取建立完整預填基準。

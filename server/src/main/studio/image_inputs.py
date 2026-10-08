@@ -14,6 +14,7 @@ async def prepare(e, run, task, key):
     if mask is not None:
         if mask.size != original.size:
             raise UserError('The painted area must match the original image size')
+        p['mask_encoding'] = 'source_latent'
         p['width'],p['height'] = ((n+7)//8*8 for n in original.size)
         padded = Image.new('RGBA',(p['width'],p['height']))
         padded.paste(original,(0,0))

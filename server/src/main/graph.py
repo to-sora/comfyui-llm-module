@@ -17,6 +17,6 @@ def graph(p, source=None, mask=None):
         g["4"] = node("VAEEncode", pixels=["8", 0], vae=["1", 2])
     if mask:
         g["9"] = node("LoadImageMask", image=mask, channel="red")
-        g["4"] = node("VAEEncodeForInpaint", pixels=["8", 0], vae=["1", 2],
-                      mask=["9", 0], grow_mask_by=0)
+        g["10"] = g["4"]
+        g["4"] = node("SetLatentNoiseMask", samples=["10", 0], mask=["9", 0])
     return g
