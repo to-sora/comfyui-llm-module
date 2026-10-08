@@ -30,6 +30,9 @@ def terminate(pid, group=False):
         _, alive = psutil.wait_procs([process, *children], timeout=4)
         for item in alive:
             item.kill()
+        _, alive = psutil.wait_procs(alive, timeout=4)
+        if alive:
+            raise RuntimeError(f"Processes have not stopped: {[p.pid for p in alive]}")
     except (ProcessLookupError, psutil.NoSuchProcess):
         pass
 

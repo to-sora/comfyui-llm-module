@@ -32,6 +32,8 @@ Requests share ComfyUI's queue. One websocket relays generated text as SSE. Time
 共用原生佇列及 websocket，逐段輸出 SSE；逾時、斷線或失敗會取消工作，執行停止後清理歷史。
 共享原生队列及 websocket，逐段输出 SSE；超时、断线或失败会取消任务，执行停止后清理历史。
 
+[Cache ownership / 快取管理 / 缓存管理](caching.md).
+
 Runtime data stays under `plugin/data`; dependencies under `plugin/.local-tool-app`.
 執行資料與依賴分別保留在上述目錄，支援資料目錄符號連結。
 运行数据和依赖分别保留在上述目录，支持数据目录符号链接。

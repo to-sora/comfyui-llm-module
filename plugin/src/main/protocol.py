@@ -29,7 +29,7 @@ def validate(body):
         if not isinstance(function, dict) or tool.get("type") != "function" or not isinstance(
                 function.get("name"), str):
             raise UserError("Each tool needs a function name.")
-    for field in ("stream", "parallel_tool_calls"):
+    for field in ("stream", "parallel_tool_calls", "prefix_cache"):
         if field in body and not isinstance(body[field], bool):
             raise UserError(f"{field} must be a boolean.")
     temperature = body.get("temperature", 0)

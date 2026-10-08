@@ -10,6 +10,7 @@ def describe(handles, events):
         "registry_entries": sum(p is h.patcher for p in mm.loaded_models()),
         "quantization": h.cfg["quantization"], "kv_quantization": h.cfg["kv_quantization"],
         "precision": h.cfg.get("precision", "bfloat16"),
+        "context_tokens": h.cfg["context_tokens"],
         "diagnostics": getattr(h.engine, "diagnostics", {})} for h in list(handles.values())],
         "managed_models": [m.model.__class__.__name__ for m in mm.loaded_models()],
         "events": list(events),

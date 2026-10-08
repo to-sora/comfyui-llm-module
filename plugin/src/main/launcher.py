@@ -6,7 +6,7 @@ import subprocess
 import sys
 from .network import hosts, port_config
 from .processes import STATE, listeners, record, stop, terminate
-from .settings import APP, environment
+from .settings import APP, environment, read
 from .tls import certificate
 
 
@@ -47,6 +47,9 @@ def main():
                "--temp-directory", str(APP / "data/tmp")]
         if args.cpu:
             cmd.append("--cpu")
+        runtime = read("config.yaml")
+        cmd += ["--cache-ram", str(runtime.get("cache_ram_headroom_gb", 10)),
+                str(runtime.get("cache_ram_inactive_headroom_gb", 16))]
         env = dict(os.environ, COMFY_PYTHON=sys.executable, COMFY_ENABLE_LLM="1",
                    COMFY_PORT=str(cfg["port"]), COMFY_TLS_DIR=str(cert.parent))
         child = subprocess.Popen(cmd, cwd=APP.parent, env=env, start_new_session=True)

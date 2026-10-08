@@ -11,6 +11,7 @@ class HFEngine:
         self.processor, self.vision = processor(cfg)
         self.model = None
         self.diagnostics = {}
+        self.prefixes = []
 
     def load(self, device, budget):
         if self.model is None:
@@ -24,6 +25,10 @@ class HFEngine:
 
     def prepare(self, request, images):
         return prepare(self.processor, self.vision, request, tensor_images(images))
+
+    def cache_tensors(self):
+        from .prefix_state import tensors
+        return [t for entry in self.prefixes for t in tensors(entry['state'])]
 
     def chat(self, request, inputs):
         from .hf_generate import generate

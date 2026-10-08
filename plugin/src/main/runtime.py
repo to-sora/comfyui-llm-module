@@ -1,12 +1,12 @@
 import json
 import time
-from collections import deque, OrderedDict
-import torch
+from collections import deque
+from weakref import WeakValueDictionary
 from comfy import model_management as mm
 from .patcher import LLMPatcher
 from .estimate import working
 
-HANDLES = OrderedDict()
+HANDLES = WeakValueDictionary()
 EVENTS = deque(maxlen=128)
 
 
@@ -18,7 +18,7 @@ class LLMRuntime:
 
     def ensure_engine(self):
         if self.cfg["backend"] != "transformers":
-            raise ValueError("GGUF must pass offline HF conversion checks before serving")
+            raise ValueError("GGUF requires a validated HF import")
         if self.engine is None:
             from .hf_engine import HFEngine
             self.engine = HFEngine(self.cfg)
@@ -55,6 +55,12 @@ class LLMRuntime:
         EVENTS.append({"time": time.time(), "event": "offloaded", "model": self.cfg["id"],
                        "freed_bytes": freed, "ram_bytes": self.engine.diagnostics["storage"]["cpu"]})
 
+    def _comfy_cache_tensors(self):
+        from .residency import tensors
+        if self.engine is not None and self.engine.model is not None:
+            return list(tensors(self.engine.model)) + self.engine.cache_tensors()
+        return []
+
 
 def get_handle(cfg):
     key = json.dumps(cfg, sort_keys=True)
@@ -62,13 +68,6 @@ def get_handle(cfg):
     if handle is None:
         handle = LLMRuntime(cfg)
         HANDLES[key] = handle
-    HANDLES.move_to_end(key)
-    if len(HANDLES) > 8:
-        for old_key, old in list(HANDLES.items()):
-            if old_key != key and old.patcher not in mm.loaded_models():
-                del HANDLES[old_key]
-                if len(HANDLES) <= 8:
-                    break
     return handle
 
 

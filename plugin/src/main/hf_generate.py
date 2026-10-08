@@ -1,7 +1,7 @@
 import torch
 from .generation_controls import StopGeneration, single_tool
 from .cache_stats import describe
-from .kv_cache import create
+from .prefix_cache import cached
 from .tool_calls import parse
 from .gemma_tools import parse as parse_gemma
 from .model_response import parse as parse_response
@@ -18,7 +18,7 @@ def generate(engine, request, inputs):
     tokenizer = getattr(processor, "tokenizer", processor)
     native_gemma = model.config.model_type == "gemma4"
     marker = "<tool_call|>" if native_gemma else "</tool_call>"
-    cache = create(model.config, cfg["kv_quantization"])
+    cache = cached(engine, request, inputs)
     options = {"do_sample": temperature > 0, "max_new_tokens": limit,
                "past_key_values": cache, "use_cache": True,
                "stopping_criteria": [StopGeneration(tokenizer, marker if single_tool(request) else None)]}
@@ -27,6 +27,9 @@ def generate(engine, request, inputs):
                        top_k=request.get("top_k", 0), min_p=request.get("min_p", 0.0))
     if "seed" in request:
         torch.manual_seed(request["seed"])
+    if request.get('diagnostic_scores'):
+        from .generation_probe import Scores
+        options['logits_processor'] = [Scores(engine, tokenizer)]
     if request.get("stream") and request.get("comfy_prompt_id"):
         from .hf_stream import TokenStream
         options["streamer"] = TokenStream(tokenizer, request)
