@@ -15,10 +15,10 @@
 <button id="debug" data-i18n="debug">Debug</button><button id="chat-menu" aria-label="Chat options">•••</button></header>
 <div id="offline" role="status" hidden></div><section id="library" hidden></section>
 <div id="conversation"><div id="thread" aria-label="Conversation"></div><div id="empty"></div>
-<div id="composer-wrap"><div id="activity" role="status"></div><form id="composer">
+<div id="composer-wrap"><div id="activity" role="status"></div><form id="composer" aria-busy="true">
 <div id="attachments"></div><textarea id="prompt" rows="2" aria-label="Message Studio" placeholder="Describe an image, or attach one to change…"></textarea>
 <div class="composer-actions"><button type="button" id="attach" aria-label="Attach images">＋</button><span data-i18n="composerHint">Ask, create, or change an image</span>
-<button id="send" type="submit" class="send" aria-label="Send message">↑</button><button id="stop" type="button" hidden data-i18n="stop">Stop</button></div>
+<button id="send" type="submit" class="send" aria-label="Send message" disabled>↑</button><button id="stop" type="button" hidden data-i18n="stop">Stop</button></div>
 </form><p class="composer-note" data-i18n="reviewNote">The assistant can make mistakes. Check the images and answers.</p></div></div></main>
 <aside id="viewer" hidden aria-label="Image viewer"></aside><aside id="debug-panel" hidden aria-label="Debug"></aside>
 <dialog id="dialog"></dialog><input id="files" type="file" accept="image/*,.heic,.heif" multiple hidden>

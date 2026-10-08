@@ -3,6 +3,7 @@ GGUF 9B/27B: six real import/parity gates, precision/NF4, text/tools/vision and 
 Native 27B, Gemma IT, native/imported 9B: five new-harness generation, actual-pixel review and image follow-up workflows passed. No inference mocks. / 新工作台五模型通過。
 Memory: NF4/INT8 fresh SDXL execution, co-residency, CPU offload, one disk load and exact restored sizes passed; native cache clear releases every handle. / 原生記憶體實測通過。
 Prefix: seven profile/KV comparisons pass; Qwen text/tools and Gemma vision reuse; hybrid vision bypassed after measured numeric divergence. / 前綴部分適用，限制明確。
+Prefix research: native/imported Qwen9, four math modes each; differences precede snapshot restoration. Eight real comparisons; normal vision unchanged. / 八組實測差異在還原前已發生。
 Gateway: real token SSE, structured tools, deadline/disconnect cancellation, history cleanup and following reply passed. / 串流及失敗清理通過。
 Studio defaults: random seeds, about 1 MP, CFG 5.5, .5 edits and source aspect; same-prompt native batch differs. / 預設及原生批次通過。
 Firefox: create/review, actual painted mask, all unmasked pixels exact, 48 MP and HEIC, viewer/compare, three languages/themes and model settings passed. / 瀏覽器生成編輯與設定通過。
@@ -14,3 +15,4 @@ History: ten-turn rolling summary retains four requirements; real database copy 
 Layouts/focus: 392px, desktop, large, 200%, fullscreen/mobile Escape and 44px targets passed. / 多比例與焦點通過。
 Paste/drop handlers: actual PNGs via browser events passed. Native PNG clipboard was empty in headless Firefox; headed-browser paste and five unaided tasks require a human. / 原生圖片貼上與五任務待真人。
 Phase 2 and later features pending. Historical fan-out/workbench describes the old implementation only. / 後續功能待辦；舊報告不代表新版。
+Startup: real delayed HTTPS, early Send retains text; reply 42 and live title pass. / 慢載入保留輸入及即時標題通過。
