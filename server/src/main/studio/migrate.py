@@ -43,6 +43,8 @@ async def migrate(db, comfy):
         migrate_messages(db, old)
         from .migrate_runs import migrate_runs
         migrate_runs(db, old)
+        from .migrate_content import restore_text
+        restore_text(db)
     finally:
         old.close()
 

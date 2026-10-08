@@ -4,13 +4,14 @@ from .catalog import settings,styles
 from .message_api_data import preferences
 from .store import encode
 from .run_worker import queue
+from .connection_status import message
 
 
 def install(routes,e):
     @routes.get('/api/bootstrap')
     async def bootstrap(request):
         cursor=e.db.one('SELECT COALESCE(MAX(seq),0) AS n FROM events')['n']
-        return web.json_response({'connected':bool(e.caps) and not e.error,'error':e.error,
+        return web.json_response({'connected':bool(e.caps) and not e.error,'error':message(e),
             'profiles':(e.caps or {}).get('profiles',[]),'styles':styles(e.caps) if e.caps else {},
             'checkpoints':(e.caps or {}).get('checkpoints',[]),
             'settings':preferences(e),'assistant':settings(e.caps,preferences(e).get('assistant')),
@@ -33,4 +34,4 @@ def install(routes,e):
     @routes.post('/api/reconnect')
     async def reconnect(request):
         await e.connection(e.comfy.events.ready.is_set(),e.comfy.events.failure)
-        return web.json_response({'connected':bool(e.caps) and not e.error,'error':e.error})
+        return web.json_response({'connected':bool(e.caps) and not e.error,'error':message(e)})

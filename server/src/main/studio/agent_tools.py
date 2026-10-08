@@ -9,9 +9,18 @@ from ..errors import UserError
 
 def prepare(e, run, calls):
     try:
+        seen=set()
+        for call in calls:
+            function=call['function']
+            if function['name']=='generate_images':
+                key=json.dumps(json.loads(function['arguments']),sort_keys=True)
+                if key in seen:
+                    raise UserError('Repeated identical generate_images call. Put the entire intended set, including variations, in one call. Nothing was executed.')
+                seen.add(key)
         with e.db.transaction():
             tasks, results = plan(e,run,calls)
-            if len(tasks)>32:
+            total=e.db.one("SELECT COUNT(*) AS n FROM images WHERE message_id=? AND kind='generated'",(run['assistant_id'],))['n']
+            if total>32:
                 raise UserError('Please request at most 32 images in one turn')
     except (ValueError, TypeError, AttributeError) as exc:
         raise UserError('Invalid image tool arguments: '+str(exc)) from exc

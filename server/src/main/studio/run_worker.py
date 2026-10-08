@@ -5,6 +5,7 @@ from .run_error import mark_images
 from .engine import Stopped
 from ..errors import UserError, message
 from .run_result import finish
+from .recovery import recover
 
 
 def queue(e):
@@ -29,17 +30,6 @@ def plain(exc):
     if isinstance(exc, (ConnectionError, TimeoutError)) or 'connect' in text.lower():
         return 'The image engine could not finish the request. Check its connection and try again.'
     return 'Something went wrong while making this reply. Try again; details are in Debug.'
-
-
-async def recover(e):
-    for run in e.db.all("SELECT * FROM runs WHERE status IN ('running','queued')"):
-        for prompt in run['trace'].get('prompt_ids', []):
-            try:
-                await e.comfy.cancel(prompt)
-            except Exception:
-                logging.exception('Could not cancel an interrupted prompt')
-        e.db.update('runs',run['id'],status='interrupted',finished=time.time(),
-                    error='This request was interrupted by a restart. Try again to continue.')
 
 
 async def worker(e):

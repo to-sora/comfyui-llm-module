@@ -9,6 +9,7 @@ def actual(e,run):
         for model in step.get('memory',{}).get('models',[]):
             if (model['model']==run['settings']['model'] and model['loaded']
                     and model['kv_quantization']==run['settings']['kv_quantization']
+                    and model['context_tokens']==run['settings']['context_tokens']
                     and model['quantization']==wanted and model['precision']==run['settings']['precision']):
                 return {**{k:model[k] for k in ('model','backend','quantization','kv_quantization','precision')},
                     'context_tokens':run['settings']['context_tokens'],

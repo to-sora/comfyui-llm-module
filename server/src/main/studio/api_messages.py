@@ -53,4 +53,7 @@ def install(routes,e):
         row=e.db.get('messages',run['message_id'])
         text='\n'.join(p['text'] for p in row['parts'] if p['type']=='text')
         images=[i for p in row['parts'] if p['type']=='images' for i in p['images']]
-        return web.json_response(enqueue(e,run['chat_id'],text,images))
+        text='Please make a fresh attempt at this request:\n\n'+text
+        value=enqueue(e,run['chat_id'],text,images)
+        e.trace(e.db.get('runs',value['run_id']),'retry',{'original_run':run['id']})
+        return web.json_response(value)

@@ -19,7 +19,7 @@ def settings(caps, requested=None):
         value['model']='gemma-3-12b-it'
     if caps and value['model'] not in {p['id'] for p in caps['profiles']}:
         raise UserError('Select an available assistant model')
-    if value['precision'] not in ('bfloat16','float16','float32'):
+    if value['precision'] not in ('bfloat16','float16'):
         raise UserError('Select a supported model precision')
     if value['image_checkpoint'] and caps and value['image_checkpoint'] not in caps['checkpoints']:
         raise UserError('Select an available SDXL checkpoint')

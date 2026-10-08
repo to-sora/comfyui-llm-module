@@ -18,8 +18,8 @@ def unpack(row):
 
 
 class Store:
-    def __init__(self):
-        self.db = sqlite3.connect(DATA / 'studio.sqlite', isolation_level=None)
+    def __init__(self, path=None):
+        self.db = sqlite3.connect(path or DATA / 'studio.sqlite', isolation_level=None)
         self.db.row_factory = sqlite3.Row
         self.db.executescript(Path(__file__).with_name('schema.sql').read_text())
 

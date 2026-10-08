@@ -5,28 +5,30 @@ from .history_repair import completed
 def rows(e, run):
     parent = e.db.get('messages',run['message_id'])['parent_id']
     return e.db.all('''WITH RECURSIVE chain AS (
-        SELECT * FROM messages WHERE id=? UNION ALL
-        SELECT m.* FROM messages m JOIN chain c ON m.id=c.parent_id)
-        SELECT * FROM chain ORDER BY id''', (parent,))
+        SELECT *,0 AS depth FROM messages WHERE id=? UNION ALL
+        SELECT m.*,c.depth+1 FROM messages m JOIN chain c ON m.id=c.parent_id)
+        SELECT * FROM chain ORDER BY depth DESC''', (parent,))
 
 
 def groups(e, run, through):
-    result, seen = [], set()
-    for row in rows(e,run):
-        if row['id'] <= through:
-            continue
+    result, seen = [], {}
+    chain=rows(e,run)
+    start=next((i+1 for i,row in enumerate(chain) if row['id']==through),0)
+    for row in chain[start:]:
         rid = row.get('run_id')
         if rid and rid in seen:
+            seen[rid]['through']=row['id']
             continue
         if rid:
             saved = e.db.get('runs',rid)
             conversation = saved['trace'].get('conversation')
             if conversation:
-                seen.add(rid)
                 messages = completed(compact(conversation))
                 if saved['status'] != 'done':
                     messages.append({'role':'user','content':'Earlier request status: '+saved['status']+'. '+(saved['error'] or '')})
-                result.append({'through':saved['assistant_id'],'messages':messages})
+                group={'through':row['id'],'messages':messages}
+                seen[rid]=group
+                result.append(group)
                 continue
         text, calls = [], []
         for part in row['parts']:
@@ -39,6 +41,8 @@ def groups(e, run, through):
                         text.append('Image '+str(ref['number']))
             elif part['type']=='legacy':
                 value = compact([part['value']])[0]
+                if not text and value.get('content'):
+                    text.append(value['content'])
                 calls.extend(value.get('tool_calls',[]))
         if text or calls:
             message = {'role':row['role'],'content':'\n'.join(text)}

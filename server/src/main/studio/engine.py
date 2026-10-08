@@ -6,6 +6,7 @@ from ..discovery import discover
 from .store import Store, encode
 from .migrate_backfill import backfill
 from .events import Events
+from .connection_status import message
 
 
 class Stopped(Exception):
@@ -48,7 +49,7 @@ class Engine:
                 logging.exception('Image model discovery failed')
                 self.error = str(exc) or 'Image model discovery failed'
         self.events.publish('*', 'system.status', {'connected':ready and not self.error,
-            'message':self.error or 'Ready'})
+            'message':message(self) or 'Ready'})
 
     def publish(self, run, kind, data):
         self.events.publish(run['chat_id'], kind, {'run_id':run['id'], **data})
