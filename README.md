@@ -4,7 +4,7 @@ Language and vision models use transformers through ComfyUI's queue and native m
 語言及視覺模型透過 transformers、ComfyUI 原生佇列與記憶體管理執行；GGUF 先離線匯入。
 语言和视觉模型通过 transformers、ComfyUI 原生队列与内存管理运行；GGUF 先离线导入。
 
-Converted 9B/27B models passed six parity gates. The pretrained Gemma profile is replaced by a local instruction model. The chat UI rebuild remains in progress; see `todo.txt` and `text-coverage.txt`.
+Converted 9B/27B passed six parity gates. Gemma uses a local instruction model. Chat UI acceptance continues; see `todo.txt` and `text-coverage.txt`.
 匯入模型通過六關，Gemma 改用本機指令模型；聊天介面重建仍在進行，詳見待辦及驗證紀錄。
 导入模型通过六关，Gemma 改用本地指令模型；聊天界面重建仍在进行，详见待办和验证记录。
 
@@ -51,6 +51,6 @@ Model downloads and dependency caches can exceed 1 GB; model weights may stay in
 模型下载与依赖缓存可超过 1 GB；现有权重可保留在外部目录。
 
 [Image Studio / 圖片工作台 / 图片工作台](server/doc/start.md): HTTPS :8189.
-Manual editing and LLM tools.
-支援手動編輯與 LLM 工具。
-支持手动编辑与 LLM 工具。
+Chat, inline images, an image viewer, and five assistant tools. Acceptance is in progress.
+聊天、圖片檢視器與五個助理工具；完整驗收仍在進行。
+聊天、图片查看器和五个助手工具；完整验收仍在进行。

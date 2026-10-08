@@ -21,14 +21,14 @@ EN: `server/start.sh --stop` stops its process tree. Port conflicts show
 PID and process name; `--force` replaces the listener. Default: IPv4
 0.0.0.0:8189, no authentication or whitelist. TLS files, SQLite, images,
 thumbnails and logs stay in `server/data`, which may be a symlink.
-The service supports one active user/session; other sessions remain saved.
+Each chat has its own URL. Multiple tabs share one GPU queue.
 
 繁中：`--stop` 停止應用的程序樹；連接埠衝突顯示 PID 與程序名，
 `--force` 可取代佔用者。預設 IPv4 0.0.0.0:8189，無登入或白名單。
 憑證、資料庫、圖片、縮圖及日誌置於可設符號連結的 `server/data`。
-一次只使用一個工作階段，其餘保留供切換。
+各對話具有獨立網址，多個分頁共用一個 GPU 佇列。
 
 简中：`--stop` 停止应用的进程树；端口冲突显示 PID 与进程名，
 `--force` 可替换占用者。默认 IPv4 0.0.0.0:8189，无登录或白名单。
 证书、数据库、图片、缩略图及日志位于可设符号链接的 `server/data`。
-一次只使用一个工作阶段，其余保留供切换。
+各对话具有独立网址，多个标签页共用一个 GPU 队列。

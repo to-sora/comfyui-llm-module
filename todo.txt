@@ -1,22 +1,29 @@
 Studio redesign / 聊天工作台重建
-Scope: attachment 315da509-7b32-4ff8-ae60-b9d674db7071 and ../studio-ui-redesign.
-範圍：新目標檔全部修正、階段與驗收；八個本地設計畫面。
-Phase 0 core implemented and real checks passed: default text/image settings,
-logs, timeout/disconnect cancellation, RAM offload, transformer-only profiles,
-six-gate GGUF conversion, NF4 disk cache and immutable local images.
-階段零核心已通過真實測試，含修正後 INT8 原生 Free／RAM 恢復及零 CUDA 殘留。
-Phase 1 pending: ULID chats/messages/runs/images, legacy migration, one GPU queue,
-token SSE, reconnect, budgeted transcript and rolling summary, prefix/vision cache,
-five tools/catalog, multi-call batches, exact chat/viewer/library/debug screens,
-uploads/HEIC, Markdown, settings/language/a11y. Gate: five unaided human tasks.
-階段一待辦：新資料結構及遷移、GPU 佇列、串流、長對話記憶、快取、
-五工具與模型目錄、完整新介面、附件與設定；真人獨立完成五任務。
-Phase 2 pending: area edits, variations/upscale, regeneration/branches, search,
-export, phone/PWA, safe-image option, feedback, drafts, resume/retry, instructions,
-notifications, storage cleanup, shortcuts and rate limits.
-階段二待辦：局部編輯、變化與放大、分支重生成、搜尋匯出、手機、
-圖片模糊選項、回饋草稿、恢復、指示通知、清理快捷鍵與請求限制。
-Later items remain tracked: pin/archive, outpaint, backup/restore, documents.
-後續項目持續追蹤：釘選封存、擴圖、備份還原、文件問答。
-Final: requirement audit, Firefox UAT, offline evidence, Git publication.
-最終：逐項驗收、Firefox 實測、離線證據及 Git 發布。
+Scope: full attachment 315da509-7b32-4ff8-ae60-b9d674db7071 and eight local mockups.
+範圍：新目標檔全部要求及八個本地設計畫面；尚未完成整體目標。
+Phase 0 passed: defaults, errors/logs, native cancellation, RAM offload/restoration,
+transformers-only profiles, six GGUF parity gates, NF4 disk cache and local originals.
+階段零：真實預設值、錯誤、取消、RAM 恢復、單引擎與六關匯入驗證已通過。
+Phase 1 implemented: ULID migration, per-chat URLs, one GPU queue, five tools,
+checkpoint-aware batching, native per-image noise, token/progress SSE, chat/viewer/
+library/debug UI, upload/HEIC/4K, mask/source binding, immutable images and settings.
+階段一已實作：新資料與遷移、獨立對話、GPU 佇列、五工具與批次、
+串流及新介面、HEIC/4K 上傳、遮罩來源綁定、本機原圖及設定。
+Passed with Qwen3.5-9B: browser generate/review, default distinct seeds, same-prompt
+native batch, two-chat queue, 48 MP/HEIC, actual brush/erase/undo/clear and exact
+unmasked pixels. Browser layouts pass desktop/392px portrait/large/200%.
+上述九十億參數模型流程與多比例 Firefox 已通過；不代表完整驗收。
+Phase 1 remaining: prefix reuse, long-context/rolling-summary acceptance, full
+recovery/cancellation/download/library/settings/language tests, all five profiles
+on the new harness, final design/a11y refinement, source cleanup and documentation.
+階段一待辦：前綴快取、長上下文、完整恢復及介面操作驗證、新版五模型、
+設計與無障礙修整、清除舊程式及文件。真人獨立五任務關卡尚未開放。
+Phase 2 pending after human gate: polished edits/upscale, model background removal,
+branches/regenerate, search/export, safe-image setting, drafts/resume, instructions,
+notifications, storage cleanup, shortcuts/rate limits and PWA/phone polish.
+真人關卡後續項目：精緻編輯、模型去背、分支、搜尋匯出、安全模糊、草稿恢復、
+自訂指示、通知、清理、快捷鍵、流量限制與手機 PWA。
+Later: pin/archive, outpaint, plain backup/restore and document uploads.
+其後：釘選封存、擴圖、未加密備份還原及文件上傳。
+Final: audit every requirement, portable evidence and Git publication.
+最終：逐項完整驗收、離線證據與 Git 發布。

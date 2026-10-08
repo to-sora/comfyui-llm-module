@@ -7,3 +7,4 @@ mkdir -p .local-tool-app data/tmp data/cache
 export TMPDIR="$PWD/data/tmp" PIP_CACHE_DIR="$PWD/.local-tool-app/pip-cache"
 [[ -x .local-tool-app/venv/bin/python ]] || "$app_python" -m venv .local-tool-app/venv
 .local-tool-app/venv/bin/python src/main/pip_ipv4.py install -r requirements.txt
+.local-tool-app/venv/bin/python install-fonts.py

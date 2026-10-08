@@ -1,8 +1,6 @@
 import asyncio
-import json
-import logging
 import uuid
-import aiohttp
+from .comfy_socket import listen
 
 
 class Events:
@@ -12,7 +10,8 @@ class Events:
         self.ready = asyncio.Event()
         self.pending = {}
         self.failure = "ComfyUI event connection has not opened"
-        self.task = asyncio.create_task(self.listen())
+        self.active = None
+        self.task = asyncio.create_task(listen(self))
 
     async def subscribe(self, ident, callback):
         try:
@@ -26,6 +25,8 @@ class Events:
 
     async def dispatch(self, value):
         data, kind = value.get("data", {}), value.get("type")
+        if kind == "execution_start":
+            self.active = data.get("prompt_id")
         item = self.pending.get(data.get("prompt_id"))
         if not item:
             return
@@ -44,30 +45,6 @@ class Events:
             future.set_exception(RuntimeError(data.get("exception_message") or "ComfyUI generation was interrupted"))
         elif kind == "executing" and data.get("node") is None:
             future.set_result(data)
-
-    async def listen(self):
-        delay = 0.5
-        while True:
-            try:
-                async with self.comfy.client.ws_connect(self.comfy.url + "/ws",
-                        params={"clientId": self.client_id}, heartbeat=20) as ws:
-                    self.ready.set()
-                    delay = 0.5
-                    async for msg in ws:
-                        if msg.type == aiohttp.WSMsgType.TEXT:
-                            await self.dispatch(json.loads(msg.data))
-                    raise ConnectionError("ComfyUI event connection closed")
-            except asyncio.CancelledError:
-                raise
-            except Exception as exc:
-                logging.exception("ComfyUI event connection failed")
-                self.failure = str(exc).strip() or "ComfyUI event connection failed"
-                self.ready.clear()
-                for future, _ in self.pending.values():
-                    if not future.done():
-                        future.set_exception(ConnectionError(self.failure))
-                await asyncio.sleep(delay)
-                delay = min(delay * 2, 30)
 
     async def close(self):
         self.task.cancel()

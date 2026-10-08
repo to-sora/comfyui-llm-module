@@ -1,37 +1,28 @@
 # Images / 圖片 / 图片
 
-EN: Each edit creates an immutable image version with parents, operation,
-parameters, actual SDXL settings and assistant provenance. Mark a final version
-or branch again. The lineage view links ancestors and descendants.
-Inpainting pads odd sizes for the VAE, then composites at original dimensions;
-pixels outside the mask remain byte-identical. CPU background removal estimates
-border color or uses a chosen color; tolerance and softness control transparency.
-It is a simple color algorithm and can remove similar foreground colors.
+Generated PNG bytes are copied once into `data/assets`, with SHA256 and WebP thumbnails.
+Originals have immutable caching; PNG, JPG and selected-image ZIP downloads use local files.
+Images remain available while ComfyUI is offline. Uploads accept HEIC and resize large photos
+so neither dimension exceeds 4096. Every edit creates a new version linked to its source.
 
-繁中：每次編輯新增不可變圖片版本，記錄父圖、操作、參數、實際 SDXL 設定
-及助理來源。可標為最終版或繼續分支，版本介面連結祖先與後續版本。
-局部重繪先補齊 VAE 尺寸，再以原尺寸合成；遮罩外像素完全相同。
-CPU 去背估算邊界色或使用指定色，以容差及柔化控制透明度；相近前景色亦可能被移除。
+繁中：生成 PNG 複製一次，記錄 SHA256 及 WebP 縮圖。原圖使用不可變快取，
+PNG、JPG 與多選 ZIP 下載均來自本機；ComfyUI 離線仍可查看。
+支援 HEIC，大相片縮至每邊最多 4096 像素；每次編輯新增版本並連結來源。
 
-简中：每次编辑新增不可变图片版本，记录父图、操作、参数、实际 SDXL 设置
-及助手来源。可标为最终版或继续分支，版本界面链接祖先与后续版本。
-局部重绘先补齐 VAE 尺寸，再以原尺寸合成；遮罩外像素完全相同。
-CPU 去背估计边界色或使用指定色，以容差及柔化控制透明度；相近前景色也可能被移除。
+简中：生成 PNG 复制一次，记录 SHA256 和 WebP 缩略图。原图使用不可变缓存，
+PNG、JPG 和多选 ZIP 下载均来自本机；ComfyUI 离线仍可查看。
+支持 HEIC，大照片缩至每边最多 4096 像素；每次编辑新增版本并链接来源。
 
-EN: Multi-select sharing exposes only chosen images to every session, with
-read-only aliases. Revoke each image independently. Private parents, prompts,
-chat and settings are not shared. Editing a shared source creates a local copy;
-revocation cannot recall copies or downloads already made.
-Delete removes local image files/thumbnails and revokes sharing, retaining lineage.
-ComfyUI originals stay in its output folder. ZIP export includes selected PNGs
-and their metadata. Storage totals are shown; retained images can exceed 1 GB.
+Painted masks record their source. A mismatched source is rejected before GPU submission.
+Odd sizes are padded for the VAE, then composited at the original dimensions; unmasked pixels stay exact.
+The viewer offers versions, compare, zoom and pan. Library supports favorites and bulk actions.
+Deleting a chat preserves its Library images. Deleting images removes local files while retaining lineage records.
+The model's visual assessment can still be wrong; actual results remain visible for review.
 
-繁中：可多選圖片分享給所有階段，使用唯讀別名；每張均可獨立撤回。
-未分享的父圖、提示、聊天及設定不會公開。修改共享來源會產生本地副本；
-撤回無法收回既有副本或下載。刪除清除本地圖片與縮圖、撤回分享並保留版本紀錄；
-ComfyUI 原檔仍在其輸出目錄。ZIP 匯出含選定 PNG 與資料，介面顯示用量，保留圖片可超過 1 GB。
+繁中：遮罩記錄來源，不匹配時在送入 GPU 前拒絕。奇數尺寸先補齊再以原尺寸合成，
+遮罩外像素完全保留。提供版本、比較、縮放與平移，圖片庫可收藏及批次處理。
+刪除對話保留圖片庫內容；刪圖移除本機檔案但保留版本記錄。視覺模型的判斷仍需核對。
 
-简中：可多选图片分享给所有阶段，使用只读别名；每张均可独立撤回。
-未分享的父图、提示、聊天及设置不会公开。编辑共享来源会产生本地副本；
-撤回无法收回已有副本或下载。删除清除本地图片与缩略图、撤回分享并保留版本记录；
-ComfyUI 原文件仍在其输出目录。ZIP 导出含选定 PNG 与数据，界面显示用量，保留图片可超过 1 GB。
+简中：遮罩记录来源，不匹配时在提交 GPU 前拒绝。奇数尺寸先补齐再以原尺寸合成，
+遮罩外像素完全保留。提供版本、比较、缩放和平移，图片库可收藏和批量处理。
+删除对话保留图片库内容；删图移除本地文件但保留版本记录。视觉模型的判断仍需核对。

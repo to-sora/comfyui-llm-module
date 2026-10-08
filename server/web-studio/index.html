@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Studio</title><link rel="stylesheet" href="/static/base.css"><link rel="stylesheet" href="/static/layout.css">
+<link rel="stylesheet" href="/static/thread.css"><link rel="stylesheet" href="/static/viewer.css">
+<link rel="stylesheet" href="/static/panels.css"><link rel="stylesheet" href="/static/responsive.css">
+<link rel="stylesheet" href="/static/empty.css">
+<script type="module" src="/static/main.js"></script></head><body>
+<a class="skip" href="#prompt">Skip to message</a>
+<nav id="sidebar" aria-label="Conversations"><a href="/" class="brand"><span class="brand-mark">▧</span>Studio</a>
+<button id="new-chat" class="new-chat" data-i18n="newChat">＋ New chat</button><div id="chat-list"></div>
+<div class="nav-bottom"><a class="nav-link" href="/library" data-route data-i18n="library">Library</a>
+<button id="settings" data-i18n="settings">Settings</button><div id="connection" role="status"></div></div></nav>
+<main id="main"><header><button id="menu" aria-label="Open sidebar">☰</button><h1 id="chat-title">New chat</h1>
+<button id="debug" data-i18n="debug">Debug</button><button id="chat-menu" aria-label="Chat options">•••</button></header>
+<div id="offline" role="status" hidden></div><section id="library" hidden></section>
+<div id="conversation"><div id="thread" aria-label="Conversation"></div><div id="empty"></div>
+<div id="composer-wrap"><div id="activity" role="status"></div><form id="composer">
+<div id="attachments"></div><textarea id="prompt" rows="2" aria-label="Message Studio" placeholder="Describe an image, or attach one to change…"></textarea>
+<div class="composer-actions"><button type="button" id="attach" aria-label="Attach images">＋</button><span data-i18n="composerHint">Ask, create, or change an image</span>
+<button id="send" type="submit" class="send" aria-label="Send message">↑</button><button id="stop" type="button" hidden data-i18n="stop">Stop</button></div>
+</form><p class="composer-note" data-i18n="reviewNote">The assistant can make mistakes. Check the images and answers.</p></div></div></main>
+<aside id="viewer" hidden aria-label="Image viewer"></aside><aside id="debug-panel" hidden aria-label="Debug"></aside>
+<dialog id="dialog"></dialog><input id="files" type="file" accept="image/*,.heic,.heif" multiple hidden>
+<div id="toast" role="status" hidden></div>
+</body></html>

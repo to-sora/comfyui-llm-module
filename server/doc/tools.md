@@ -1,38 +1,30 @@
-# Tools / 工具 / 工具
+# Five tools / 五個工具 / 五个工具
 
-EN: Buttons and assistant calls use `POST /api/session/{sid}/tool` with
-`name`, `arguments` and an optional retry-stable `request_id`.
-`GET /api/tools` returns detected enums and schemas. `image_gen_sdxl_text`,
-`image_gen_sdxl_image`, `image_gen_sdxl_inpaint` and `image_edit_*` enqueue jobs.
-`sent_all_pending` (alias `pending_sent`) snapshots and executes the pending batch.
-Earlier job IDs can be image inputs. `check_current_pending`, `job_status`,
-`cancel_job`, `view_images` and `list_models` inspect or manage work.
-After listing models, `image_settings` selects detected model/sampling enums.
+| Tool | Arguments / 參數 / 参数 |
+|---|---|
+| generate_images | images[{prompt,negative?}], style, aspect, seed? |
+| edit_image | image, instruction, area?, strength? |
+| upscale_image | image, factor:2 |
+| remove_background | image |
+| look_at_images | images:[numbers] |
 
-繁中：按鈕與助理共用 `POST /api/session/{sid}/tool`，欄位為 `name`、
-`arguments` 及可選的重試固定 `request_id`。`GET /api/tools` 回傳自動偵測
-選項與格式。`image_gen_sdxl_*`、`image_edit_*` 先加入待處理；
-`sent_all_pending`（別名 `pending_sent`）一次送出清單。可用較早工作 ID
-作為圖片來源。查詢工具包括 `check_current_pending`、`job_status`、
-`cancel_job`、`view_images`、`list_models`；列出模型後可用 `image_settings` 選擇模型。
+Styles come from `config/content-config/styles.yaml`, filtered against detected compatible SDXL checkpoints.
+The model sees style descriptions and aspect enums. Default: about 1 MP, random seeds, 28 steps,
+CFG 5.5, dpmpp_2m, karras. Edit strengths low/medium/high mean .35/.5/.7 and keep source aspect.
+Image numbers belong to a chat; storage IDs are ULIDs. Attach a Library image before the assistant uses it.
+There is no pending-send tool or fixed alias range. No ControlNet.
 
-简中：按钮与助手共用 `POST /api/session/{sid}/tool`，字段为 `name`、
-`arguments` 及可选的重试固定 `request_id`。`GET /api/tools` 返回自动检测
-选项与格式。`image_gen_sdxl_*`、`image_edit_*` 先加入待处理；
-`sent_all_pending`（别名 `pending_sent`）一次提交列表。可用较早工作 ID
-作为图片来源。查询工具包括 `check_current_pending`、`job_status`、
-`cancel_job`、`view_images`、`list_models`；列出模型后可用 `image_settings` 选择模型。
+繁中：樣式設定依自動偵測的相容 SDXL 模型篩選，工具提供描述及比例選項。
+預設約百萬像素、隨機種子、28 步、CFG 5.5；編輯強度為 .35/.5/.7 並保留比例。
+圖片編號屬於各對話，儲存使用 ULID；圖片庫內容需明確附加至對話才供助理使用。
+不使用舊待送清單或固定別名範圍，不含 ControlNet。
 
-EN: Tool results include a short `id`, status and relevant references.
-Native IDs are 0–10000; read-only shared aliases are 10001–20000.
-IDs never recycle. Create another session when a range is exhausted.
-Expanded edit schemas expose 20 operations; chat uses a compact dispatcher.
-All outputs are PNG, at most 4096 pixels on either axis. No ControlNet.
+简中：样式配置按自动检测的兼容 SDXL 模型筛选，工具提供描述和比例选项。
+默认约百万像素、随机种子、28 步、CFG 5.5；编辑强度为 .35/.5/.7 并保留比例。
+图片编号属于各对话，存储使用 ULID；图片库内容需明确附加到对话才供助手使用。
+不使用旧待发送列表或固定别名范围，不含 ControlNet。
 
-繁中：結果含整數 `id`、狀態及相關參照。本地 ID 為 0–10000；共享唯讀
-別名為 10001–20000，不循環再用，耗盡時另開階段。完整格式列出 20 種編輯；
-聊天用精簡分派工具。輸出 PNG，每邊最多 4096 像素，不含 ControlNet。
-
-简中：结果含整数 `id`、状态及相关引用。本地 ID 为 0–10000；共享只读
-别名为 10001–20000，不循环使用，耗尽时新建阶段。完整格式列出 20 种编辑；
-聊天用精简分派工具。输出 PNG，每边最多 4096 像素，不含 ControlNet。
+Upscale currently uses Lanczos. Background removal currently estimates a uniform border color.
+Model-based background removal belongs to the remaining polish phase.
+目前放大使用 Lanczos，去背估算均勻邊界色；模型去背尚待後續階段。
+目前放大使用 Lanczos，去背估计均匀边缘色；模型去背仍待后续阶段。

@@ -4,10 +4,12 @@ import uuid
 import hashlib
 from urllib.parse import urlencode
 from PIL import Image, ImageOps
+from pillow_heif import register_heif_opener
 from .settings import DATA
 from .records import create, get
 
 Image.MAX_IMAGE_PIXELS = 100_000_000
+register_heif_opener()
 
 
 def decode(data, upload=False):

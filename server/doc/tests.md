@@ -1,42 +1,26 @@
 # Acceptance / 驗收 / 验收
 
-EN: Start ComfyUI and the workbench, then run `bash server/install-test-tools.sh`.
-Run scripts with `server/.local-tool-app/venv/bin/python server/src/test/NAME.py`.
-Tests use the real HTTPS gateway, original weights and SDXL; no mocked inference.
+Start both services. Use `server/.local-tool-app/venv/bin/python server/src/test/NAME.py`.
+Install browser tooling with `bash server/install-test-tools.sh` if needed.
+These scripts use actual local models and ComfyUI, create records and images, and close their Firefox processes.
 
-繁中：啟動 ComfyUI 與工作台後執行 `bash server/install-test-tools.sh`。
-以 `server/.local-tool-app/venv/bin/python server/src/test/NAME.py` 執行測試。
-使用真實 HTTPS gateway、原模型與 SDXL，建立具名工作階段及實際圖片，不模擬推理。
-
-简中：启动 ComfyUI 与工作台后执行 `bash server/install-test-tools.sh`。
-用 `server/.local-tool-app/venv/bin/python server/src/test/NAME.py` 运行测试。
-使用真实 HTTPS gateway、原模型与 SDXL，建立命名工作阶段及实际图片，不模拟推理。
+啟動兩個服務後以上述命令執行。測試使用真實本機模型，建立紀錄及圖片，結束時關閉所啟動的 Firefox。
+启动两个服务后以上述命令执行。测试使用真实本地模型，建立记录和图片，结束时关闭所启动的 Firefox。
 
 | Script | Scope / 範圍 / 范围 |
 |---|---|
-| smoke | SDXL batch / SDXL 批次 |
-| cpu_accept | 20 edits, text, 4K / 編輯、文字、4K / 编辑、文字、4K |
-| workflow_accept | img2img, exact unmasked pixels / 圖生圖、遮罩外像素 / 图生图、遮罩外像素 |
-| sharing_accept | isolation, aliases, revoke / 隔離、別名、撤回 / 隔离、别名、撤回 |
-| jobs_accept | retry, progress, cancel / 重試、進度、取消 / 重试、进度、取消 |
-| failure_accept | failures, export, delete / 失敗、匯出、刪除 / 失败、导出、删除 |
-| chain_accept | generation → text → background → share / 生成 → 加字 → 去背 → 分享 |
-| chat_accept MODEL | real model tool loop / 真實模型工具流程 / 真实模型工具流程 |
-| browser_accept | generate → inspect → edit / 生成 → 檢查 → 編輯 / 生成 → 检查 → 编辑 |
-| browser_extra | share, upload, final / 分享、上傳、最終版 / 分享、上传、最终版 |
-| browser_layout | layout and 200% zoom / 版面與縮放 / 版面与缩放 |
-| browser_models | model/context/KV and revise / 模型、上下文、KV 與修訂 / 模型、上下文、KV 与修订 |
-| lifecycle_accept | stop, force, restart / 啟停與重啟 / 启停与重启 |
-| evidence | recorded CUDA transitions / 實測 CUDA 交接 / 实测 CUDA 交接 |
+| studio_generate | Browser prompt → images → actual review; default seeds/sizes / 瀏覽器生成及檢查 / 浏览器生成和检查 |
+| studio_views | Viewer, Debug, Library, portrait, 200% / 檢視器及比例 / 查看器和比例 |
+| studio_concurrent | Two chats, one GPU queue, separate records / 雙對話共用佇列 / 双对话共用队列 |
+| studio_batch | One prompt × two, native batch, distinct seeds / 原生雙圖批次 / 原生双图批次 |
+| studio_edit | 48 MP, HEIC, real brush actions, exact unmasked pixels / 上傳及遮罩像素 / 上传和遮罩像素 |
 
-EN: Run sequentially: one active session. Firefox profiles/processes are cleaned up.
-Browser scripts depend on browser_accept. Restart the server after lifecycle tests.
-Evidence is in ignored `fan-out/workbench`; open index.html for the offline report.
+Run `studio_generate` before `studio_views`. Evidence: ignored `fan-out/studio-chat`.
+Other older server tests target the replaced session API and are historical, not this release's acceptance.
+Core engine evidence is in `fan-out/studio-engine`. Long memory, recovery, remaining controls and
+all-profile checks for the new harness remain pending. Agent tests do not satisfy the five-task human gate.
 
-繁中：單一使用中階段，測試須循序執行。Firefox 使用暫存設定並於結束清除。
-後續瀏覽器測試依賴 browser_accept 報告；生命週期測試後須重啟工作台。
-證據位於不提交的 `fan-out/workbench`。
-
-简中：单一使用中阶段，测试须顺序执行。Firefox 使用临时配置并在结束清理。
-后续浏览器测试依赖 browser_accept 报告；生命周期测试后须重新启动工作台。
-证据位于不提交的 `fan-out/workbench`。
+先執行生成再驗證檢視器。舊 server 測試屬於已取代的工作階段 API，不能證明新版通過。
+長記憶體、恢復、其餘操作及新版五模型測試仍待完成；代理測試不代替真人五任務關卡。
+先执行生成再验证查看器。旧 server 测试属于已替换的会话 API，不能证明新版通过。
+长记忆、恢复、其余操作和新版五模型测试仍待完成；代理测试不替代真人五任务关卡。

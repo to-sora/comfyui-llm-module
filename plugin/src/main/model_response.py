@@ -3,6 +3,7 @@ import re
 
 def parse(parser, raw, tools):
     visible = re.sub(r"<think>.*?(?:</think>|$)", "", raw, flags=re.S)
+    visible = re.sub(r"<\|im_start\|>[^\n]*(?:\n|$)", "", visible)
     try:
         return parser(visible, tools)
     except (ValueError, KeyError, TypeError) as exc:

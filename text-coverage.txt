@@ -6,6 +6,9 @@ Gateway SSE: 76 text chunks arrived during inference, exact nonstreaming reply, 
 Gateway faults: invalid JSON 400; real inference deadline 500 with traceback; native prompt/history removed and following reply correct. No mocks. / 真實逾時錯誤及清理通過。
 Defaults: actual random seeds, about 1 MP, CFG5.5; img2img uses 0.5 and preserves a 3:2 source near 1 MP. / 預設生圖及來源比例通過。
 Firefox UAT: plain prompt generates/reviews two images; text edit, original preservation, odd-size inpaint, mask tools, 48 MP upload, download, refresh, responsive and 200% layouts passed. Offline originals/ETag/WebP passed. / 真實瀏覽器及離線圖片通過。
-Pending: long-conversation summary acceptance, prefix caching, chat data migration, new five-tool batching, browser SSE and all redesigned screens. Human Phase 1 gate is not yet available. / 長對話、新資料與工具、快取及重建介面待驗證，真人關卡尚未就緒。
+Pending: long-context/prefix caching, full recovery/settings/download checks and five-profile coverage of the new harness. Human gate not ready. / 長上下文、快取、恢復與完整介面及五模型驗收待完成。
 Historical fan-out/workbench and older tests describe fc0177e only. / 舊證據僅代表先前版本。
 INT8 state leak fixed: post-offload CUDA storage zero and restored weight size unchanged. / INT8 狀態殘留已修正，卸載後 CUDA 為零且恢復大小不變。
+
+Studio: real Qwen9 browser generation/review, SSE previews, per-chat queue, native two-image batch, HEIC/48MP and exact masked pixels passed; no inference mocks. / 新聊天流程、批次、上傳及遮罩像素真實通過。
+Firefox Studio viewer/debug/library: desktop, 392px portrait, large and 200%, no overflow or console errors. / 新介面多比例無溢出及主控台錯誤。

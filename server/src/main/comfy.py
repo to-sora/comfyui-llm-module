@@ -40,6 +40,8 @@ class Comfy:
         try:
             async with self.client.post(self.url + f"/api/jobs/{prompt_id}/cancel", json={},
                                         timeout=aiohttp.ClientTimeout(total=10)) as response:
+                if response.status in (404, 409):
+                    self.cancelled.discard(prompt_id)
                 if response.status not in (200, 404, 409):
                     raise RuntimeError(f"Cannot cancel ComfyUI prompt: HTTP {response.status}")
         except BaseException:

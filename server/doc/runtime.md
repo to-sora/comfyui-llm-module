@@ -1,36 +1,28 @@
 # Runtime / 執行流程 / 执行流程
 
-EN: The harness finishes each LLM request before running its tools. Enqueued
-SDXL jobs share one submitted batch; the assistant resumes after it finishes.
-A global worker serializes browser/chat GPU requests. Native ComfyUI loaders
-and eviction control both LLM and SDXL residency. CPU edits use Pillow/NumPy.
-Nothing in this application imports torch or creates a GPU inference server.
-Batch records retain ComfyUI memory snapshots before and after each image job.
+The harness stores ULID chats, messages, runs and image versions in `data/studio.sqlite`.
+Each chat has its own URL and event cursor. One worker admits GPU turns in order.
+The old `workbench.sqlite` is read without modification; remote images are copied locally,
+including a retry after the engine reconnects. Old attachments and failed turns remain saved.
 
-繁中：每次 LLM 請求結束後才執行工具；SDXL 待處理工作一次送出成批，
-完成後才恢復助理。全域工作器循序執行瀏覽器與聊天 GPU 請求。
-LLM 與 SDXL 載入、釋放由 ComfyUI 控制，CPU 編輯使用 Pillow／NumPy。
-此應用不匯入 torch 或建立 GPU 推理服務，批次紀錄保存前後記憶體快照。
+繁中：新資料庫保存 ULID 對話、訊息、工作及圖片版本。各對話有獨立網址及事件游標，
+單一工作器循序執行 GPU 工作。舊資料庫保留唯讀，圖片複製至本機；重新連線可補回未匯入圖片。
+保留舊附件及失敗回合。
 
-简中：每次 LLM 请求结束后才执行工具；SDXL 待处理工作一次提交成批，
-完成后才恢复助手。全局工作器顺序执行浏览器与聊天 GPU 请求。
-LLM 与 SDXL 加载、释放由 ComfyUI 控制，CPU 编辑使用 Pillow／NumPy。
-此应用不导入 torch 或建立 GPU 推理服务，批次记录保存前后内存快照。
+简中：新数据库保存 ULID 对话、消息、任务及图片版本。各对话有独立网址和事件游标，
+单一工作器顺序执行 GPU 任务。旧数据库保留只读，图片复制到本机；重连可补回未导入图片。
+保留旧附件和失败回合。
 
-EN: A browser refresh reloads persisted conversation, jobs, lineage and settings.
-After a server restart, unfinished work is marked interrupted and its known
-ComfyUI prompt is cancelled; completed images remain in ComfyUI history.
-Reuse settings to retry. Cancellation targets only the selected prompt ID.
-Chat uses short tool results and bounded context; the full transcript stays in
-SQLite. Maximum rounds and revision batches are configured in config.yaml.
-Visual reviews are model observations for human review, not a quality guarantee.
+LLM → all image calls → final pixels → LLM review. Independent SDXL jobs are submitted
+together; identical prompts share one native batch with separate seeds. Dependent edits wait.
+ComfyUI alone loads and offloads GPU models. Pillow handles CPU edits; the harness imports no torch.
+Token and progress events use SSE. History keeps the complete current turn and summarizes older turns
+within the token budget. Long-context acceptance and prefix reuse are still pending.
 
-繁中：頁面重整會還原對話、工作、版本及設定。服務重啟後，未完工作標示
-中斷並取消已知 ComfyUI prompt；已完成原圖仍在 ComfyUI 歷史，可重用設定重試。
-取消僅影響選定 prompt ID。聊天使用精簡上下文，完整紀錄保留於 SQLite。
-回合與修訂批次上限設定於 config.yaml。視覺回覆供使用者審閱，不能保證模型判斷正確。
+繁中：LLM 完成請求後才生成圖片，整批完成後才以真實像素檢查。相同提示共用原生批次，
+每張有獨立種子；相依編輯等待來源完成。GPU 模型由 ComfyUI 載入及卸載。
+SSE 傳送文字與進度，保留整個當前回合；長上下文驗收及前綴快取仍待完成。
 
-简中：页面刷新会还原对话、工作、版本及设置。服务重启后，未完成工作标记
-中断并取消已知 ComfyUI prompt；已完成原图仍在 ComfyUI 历史，可复用设置重试。
-取消仅影响选定 prompt ID。聊天使用精简上下文，完整记录保留于 SQLite。
-回合与修订批次上限设置于 config.yaml。视觉回复供用户审阅，不能保证模型判断正确。
+简中：LLM 完成请求后才生成图片，整批完成后才以真实像素检查。相同提示共用原生批次，
+每张有独立种子；依赖编辑等待来源完成。GPU 模型由 ComfyUI 加载和卸载。
+SSE 传送文字和进度，保留整个当前回合；长上下文验收和前缀缓存仍待完成。

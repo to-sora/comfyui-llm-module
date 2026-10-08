@@ -1,0 +1,15 @@
+photo:
+  label: Photo
+  describe: Realistic photos of people, products and landscapes
+  checkpoint: sd_xl_base_1.0.safetensors
+  prompt_suffix: photographic detail, natural light
+illustration:
+  label: Illustration
+  describe: Painted or flat illustrations, posters and cards
+  checkpoint: sd_xl_base_1.0.safetensors
+  prompt_suffix: illustration, intentional composition, harmonious colors
+anime:
+  label: Anime
+  describe: Anime characters and drawn scenes
+  checkpoint: sdxl_animagineXL40_v4Opt.safetensors
+  prompt_suffix: masterpiece, best quality, anime illustration

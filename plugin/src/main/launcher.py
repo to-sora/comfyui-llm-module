@@ -41,7 +41,7 @@ def main():
         cmd = ["bash", str(script),
                "--listen", hosts(cfg), "--port", str(cfg["port"]),
                "--tls-keyfile", str(key), "--tls-certfile", str(cert),
-               "--disable-auto-launch", "--user-directory", str(APP / "data/user"),
+               "--disable-auto-launch", "--preview-method", "latent2rgb", "--user-directory", str(APP / "data/user"),
                "--input-directory", str(APP / "data/input"),
                "--output-directory", str(APP / "data/output"),
                "--temp-directory", str(APP / "data/tmp")]

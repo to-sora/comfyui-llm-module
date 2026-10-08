@@ -2,8 +2,8 @@ import logging
 import logging.handlers
 import ssl
 from aiohttp import web
-from . import api_images, api_state, api_work
-from .engine import Engine
+from .studio import routes as studio_routes
+from .studio.engine import Engine
 from .network import hosts, port_config, install_whitelist
 from .settings import APP, DATA, prepare, read
 from .tls import certificate
@@ -31,11 +31,13 @@ async def build():
     await engine.start()
     app["engine"] = engine
     routes = web.RouteTableDef()
-    for module in (api_state, api_work, api_images):
-        module.install(routes, engine)
+    studio_routes.install(routes, engine)
     app.add_routes(routes)
-    app.router.add_get("/", lambda r: web.FileResponse(APP / "web/index.html"))
-    app.router.add_static("/static", APP / "web")
+    async def page(request):
+        return web.FileResponse(APP / "web-studio/index.html")
+    for path in ('/', '/chats/{id}', '/library'):
+        app.router.add_get(path, page)
+    app.router.add_static("/static", APP / "web-studio")
     install_whitelist(app)
     async def close(app):
         await engine.close()

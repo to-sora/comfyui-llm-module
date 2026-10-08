@@ -1,0 +1,9 @@
+import {state,emit,on} from './state.js';
+import {$,el,button,dialog,safe} from './dom.js';
+import {api} from './api.js';
+import {disconnect,connect,refresh} from './stream.js';
+export async function list(){state.chats=(await api('/api/chats')).chats;const box=$('#chat-list');box.replaceChildren();let group='';for(const c of state.chats){const label=new Date(c.updated*1000).toLocaleDateString();if(label!==group){box.append(el('div',{class:'date-label'},label));group=label}box.append(el('a',{href:'/chats/'+c.id,class:'chat-link'+(state.chat?.id===c.id?' active':''),'data-route':''},el('span',{class:'grow'},c.title),c.running?el('small',{},'working'):null))}}
+export async function create(){const c=await api('/api/chats','POST',{});emit('navigate','/chats/'+c.id);return c}
+export async function open(id){disconnect();state.chat=id?await api('/api/chats/'+id):null;Object.assign(state,{messages:[],runs:{},images:{},attachments:[],cursor:0});$('#chat-title').textContent=state.chat?.title||'New chat';emit('attachments');emit('thread');if(id){await refresh();connect()}await list()}
+export function options(){if(!state.chat)return;const chat=state.chat;const input=el('input',{value:chat.title,'aria-label':'Chat title',maxLength:100});const box=el('div',{},el('label',{},'Chat title',input),button('Save title',safe(async()=>{await api('/api/chats/'+chat.id,'PATCH',{title:input.value});$('#dialog').close();await open(chat.id)}),{class:'primary'}),el('p',{class:'muted'},'Deleting a chat keeps its images in Library.'),button('Delete chat',()=>{box.replaceChildren(el('p',{},'Delete this conversation? This cannot be undone.'),button('Delete',safe(async()=>{await api('/api/chats/'+chat.id,'DELETE');$('#dialog').close();emit('navigate','/')}),{class:'danger'}))},{class:'danger'}));dialog('Chat options',box)}
+on('chats',safe(list));

@@ -1,6 +1,7 @@
 from comfy import model_management as mm
 from .nodes_load import LLMModel
 from .nodes_generate import LLMChat
+from .batch_noise import LLMBatchNoise
 
 
 class LLMUnload:
@@ -23,4 +24,4 @@ class LLMUnload:
         return (after,)
 
 
-NODE_CLASS_MAPPINGS = {c.__name__: c for c in (LLMModel, LLMChat, LLMUnload)}
+NODE_CLASS_MAPPINGS = {c.__name__: c for c in (LLMModel, LLMChat, LLMUnload, LLMBatchNoise)}
