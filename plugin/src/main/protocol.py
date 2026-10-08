@@ -32,6 +32,9 @@ def validate(body):
     for field in ("stream", "parallel_tool_calls", "prefix_cache"):
         if field in body and not isinstance(body[field], bool):
             raise UserError(f"{field} must be a boolean.")
+    if 'diagnostic_prefix' in body and body['diagnostic_prefix'] not in (
+            'default', 'full_accumulation', 'math_attention', 'fixed_reduction'):
+        raise UserError('Unknown prefix diagnostic mode.')
     temperature = body.get("temperature", 0)
     if not isinstance(temperature, (int, float)) or not 0 <= temperature <= 2:
         raise UserError("temperature must be between 0 and 2.")

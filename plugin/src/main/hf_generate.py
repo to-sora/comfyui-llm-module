@@ -14,6 +14,9 @@ def generate(engine, request, inputs):
     limit = request.get("max_completion_tokens", request.get("max_tokens", 256))
     if count + limit > cfg["context_tokens"]:
         raise ValueError("Prompt and reply exceed context capacity; shorten the conversation")
+    if request.get('diagnostic_prefix'):
+        from .prefix_probe import inspect
+        inspect(engine, request, inputs)
     temperature = request.get("temperature", 0.0)
     tokenizer = getattr(processor, "tokenizer", processor)
     native_gemma = model.config.model_type == "gemma4"

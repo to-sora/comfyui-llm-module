@@ -21,3 +21,4 @@ Hybrid vision requests use full prefill: split prefill changed a near-tied token
 混合模型的图片请求保留完整预填，避免导入 Qwen9 BF16 接近分数时改变输出。文字／工具与 Gemma 视觉仍复用；可停用前缀，状态列出命中、CPU 用量及跳过原因。
 
 [Transformers cache documentation](https://huggingface.co/docs/transformers/kv_cache).
+[Diagnostic / 診斷 / 诊断](prefix-probe.md).
