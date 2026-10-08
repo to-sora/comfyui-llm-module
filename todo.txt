@@ -1,29 +1,27 @@
 Studio redesign / 聊天工作台重建
-Scope: full attachment 315da509-7b32-4ff8-ae60-b9d674db7071 and eight local mockups.
-範圍：新目標檔全部要求及八個本地設計畫面；尚未完成整體目標。
-Phase 0 passed: defaults, errors/logs, native cancellation, RAM offload/restoration,
-transformers-only profiles, six GGUF parity gates, NF4 disk cache and local originals.
-階段零：真實預設值、錯誤、取消、RAM 恢復、單引擎與六關匯入驗證已通過。
-Phase 1 implemented: ULID migration, per-chat URLs, one GPU queue, five tools,
-checkpoint-aware batching, native per-image noise, token/progress SSE, chat/viewer/
-library/debug UI, upload/HEIC/4K, mask/source binding, immutable images and settings.
-階段一已實作：新資料與遷移、獨立對話、GPU 佇列、五工具與批次、
-串流及新介面、HEIC/4K 上傳、遮罩來源綁定、本機原圖及設定。
-Passed with Qwen3.5-9B: browser generate/review, default distinct seeds, same-prompt
-native batch, two-chat queue, 48 MP/HEIC, actual brush/erase/undo/clear and exact
-unmasked pixels. Browser layouts pass desktop/392px portrait/large/200%.
-上述九十億參數模型流程與多比例 Firefox 已通過；不代表完整驗收。
-Phase 1 remaining: prefix reuse, long-context/rolling-summary acceptance, full
-recovery/cancellation/download/library/settings/language tests, all five profiles
-on the new harness, final design/a11y refinement, source cleanup and documentation.
-階段一待辦：前綴快取、長上下文、完整恢復及介面操作驗證、新版五模型、
-設計與無障礙修整、清除舊程式及文件。真人獨立五任務關卡尚未開放。
-Phase 2 pending after human gate: polished edits/upscale, model background removal,
-branches/regenerate, search/export, safe-image setting, drafts/resume, instructions,
+Full scope remains the active goal attachment and eight local mockups.
+完整範圍仍為目前目標檔及八個本地設計；整體目標尚未完成。
+Phase 0 passed: defaults, errors/logs, native cancellation, transformers-only models,
+GGUF parity gates, RAM ownership/offload, NF4 disk cache and local originals.
+階段零已通過：預設、錯誤取消、單引擎、GGUF、原生 RAM 管理與本機原圖。
+Phase 1 agent checks passed: five actual model workflows, batches/queue/masks,
+long memory, recovery/retry, downloads, settings, layouts, focus and real migration.
+階段一代理驗收：五模型、批次佇列遮罩、長記憶、恢復重試、下載設定及遷移通過。
+All 25 reported bug paths addressed; 13 optimizations applied, #8 partial:
+hybrid Qwen vision retains full prefill after a measured numerical mismatch.
+原報告二十五項問題有對應修正；十三項最佳化已套用，第八項混合視覺保留完整預填。
+Next required input: non-technical human completes five tasks unaided.
+Checklist: fan-out/studio-chat/human-check.html. Agent UAT cannot replace it.
+必需下一關：非技術真人獨立完成五項任務；代理驗收不能代替。
+Native image paste needs that human check: headless Firefox clipboard was empty;
+file-bearing paste/drop handlers passed with real PNG uploads.
+原生圖片貼上待真人驗證；無頭瀏覽器剪貼簿為空，圖片事件上傳已通過。
+Phase 2 waits for the human gate: editing/upscale polish, model background removal,
+branches/regenerate, search/export, safe images, drafts/resume, instructions,
 notifications, storage cleanup, shortcuts/rate limits and PWA/phone polish.
-真人關卡後續項目：精緻編輯、模型去背、分支、搜尋匯出、安全模糊、草稿恢復、
+真人關卡後：精緻編輯、模型去背、分支、搜尋匯出、安全模糊、草稿恢復、
 自訂指示、通知、清理、快捷鍵、流量限制與手機 PWA。
 Later: pin/archive, outpaint, plain backup/restore and document uploads.
 其後：釘選封存、擴圖、未加密備份還原及文件上傳。
-Final: audit every requirement, portable evidence and Git publication.
-最終：逐項完整驗收、離線證據與 Git 發布。
+Evidence: fan-out/studio-chat/continuation.html and fan-out/studio-engine/cache.html.
+證據：上述可攜報告；生成品質與模型判斷仍需人核對。

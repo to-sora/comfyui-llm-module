@@ -17,12 +17,13 @@ LLM → all image calls → final pixels → LLM review. Independent SDXL jobs a
 together; identical prompts share one native batch with separate seeds. Dependent edits wait.
 ComfyUI alone loads and offloads GPU models. Pillow handles CPU edits; the harness imports no torch.
 Token and progress events use SSE. History keeps the complete current turn and summarizes older turns
-within the token budget. Long-context acceptance and prefix reuse are still pending.
+within the token budget; ten-turn recall with a rolling summary has passed.
+Prefix reuse and its vision limit are documented in [caching](../../plugin/doc/caching.md).
 
 繁中：LLM 完成請求後才生成圖片，整批完成後才以真實像素檢查。相同提示共用原生批次，
 每張有獨立種子；相依編輯等待來源完成。GPU 模型由 ComfyUI 載入及卸載。
-SSE 傳送文字與進度，保留整個當前回合；長上下文驗收及前綴快取仍待完成。
+SSE 傳送文字與進度，保留整個當前回合；十回合摘要及記憶驗收已通過。前綴限制見快取文件。
 
 简中：LLM 完成请求后才生成图片，整批完成后才以真实像素检查。相同提示共用原生批次，
 每张有独立种子；依赖编辑等待来源完成。GPU 模型由 ComfyUI 加载和卸载。
-SSE 传送文字和进度，保留整个当前回合；长上下文验收和前缀缓存仍待完成。
+SSE 传送文字和进度，保留整个当前回合；十轮摘要和记忆验收已通过。前缀限制见缓存文档。

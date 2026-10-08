@@ -3,5 +3,5 @@ export function el(tag,attrs={},...children){const node=document.createElement(t
 export const button=(text,fn,attrs={})=>el('button',{type:'button',onclick:fn,...attrs},text);
 export function toast(text){const n=$('#toast');n.textContent=text;n.hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>n.hidden=true,6500)}
 export async function copy(text){try{await navigator.clipboard.writeText(text);toast('Copied')}catch{toast('Copy was unavailable in this browser')}}
-export function dialog(title,content){const d=$('#dialog');d.replaceChildren(el('h2',{},title),content,button('Close',()=>d.close()));d.showModal();return d}
+export function dialog(title,content){const d=$('#dialog');d.replaceChildren(el('h2',{id:'dialog-title'},title),content,button('Close',()=>d.close()));d.setAttribute('aria-labelledby','dialog-title');d.showModal();return d}
 export function safe(fn){return async(...args)=>{try{return await fn(...args)}catch(e){toast(e.message||'Something went wrong')}}}

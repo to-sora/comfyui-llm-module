@@ -3,11 +3,21 @@ import gzip
 import json
 import ssl
 import urllib.request
+from contextlib import contextmanager
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[3]
 OUT=ROOT/'fan-out/studio-chat'
 OUT.mkdir(parents=True,exist_ok=True)
+
+
+@contextmanager
+def saved_settings():
+    original=call('/bootstrap')['settings']
+    try:
+        yield
+    finally:
+        call('/settings',original,'PUT')
 
 
 def call(path,body=None,method=None):

@@ -3,14 +3,15 @@ import time
 from marionette_driver.by import By
 from browser_session import browser
 from browser_helpers import until
-from studio_helpers import OUT,call,record,snapshot,console_errors
+from studio_helpers import OUT,record,snapshot,console_errors,saved_settings
 
 
 def button(d,text):
     d.find_element(By.XPATH,"//button[normalize-space(.)="+json.dumps(text)+"]").click()
 
 
-with browser() as d:
+started=time.monotonic()
+with saved_settings(),browser() as d:
     chat=json.loads((OUT/'browser-chat.json').read_text())['chat']
     d.set_window_rect(width=1440,height=1000)
     d.navigate('https://127.0.0.1:8189/chats/'+chat)
@@ -50,7 +51,7 @@ with browser() as d:
         time.sleep(.5)
         sizes.append(snapshot(d,name))
     errors=console_errors(d)
-    record('views',{'layouts':sizes,'console':errors})
+    record('views',{'layouts':sizes,'console':errors,'seconds':time.monotonic()-started})
     print({'layouts':sizes,'errors':errors},flush=True)
     assert not any(s['overflow'] for s in sizes)
     assert not errors

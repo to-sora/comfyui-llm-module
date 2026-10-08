@@ -1,0 +1,6 @@
+let current=null,previous=null,closeCurrent;
+const behind=()=>document.querySelectorAll('#sidebar,#main,#viewer');
+export function releasePanel(panel){if(current!==panel)return;panel.removeAttribute('aria-modal');panel.removeAttribute('role');for(const node of behind())node.inert=false;current=null;previous?.focus();previous=null}
+export function hidePanel(panel){panel.hidden=true;releasePanel(panel)}
+export function openPanel(panel,close=()=>hidePanel(panel)){if(current===panel)return;if(current)releasePanel(current);previous=document.activeElement;current=panel;closeCurrent=close;panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');for(const node of behind())node.inert=node!==panel;panel.querySelector('button')?.focus()}
+document.addEventListener('keydown',event=>{if(!current||current.hidden)return;if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();closeCurrent()}else if(event.key==='Tab'){const nodes=[...current.querySelectorAll('button,a[href],input,select,textarea,summary,[tabindex="0"]')].filter(n=>!n.disabled&&n.getClientRects().length);const first=nodes[0],last=nodes.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}}},true);

@@ -1,14 +1,16 @@
-Current redesign / 本次重建（feat/studio-chat-engine）
-9B/27B GGUF: strict keys/shapes, identical tokenizer/template, numeric logits and greedy text, matched vision, FP16/NF4 text/tools/SDXL workflows passed; llama.cpp only an offline reference. / 六關真實測試通過，參考引擎不服務使用者。
-Native 27B and Gemma 3 IT: actual NF4, HQQ8, images/tools and SDXL return passed without disk reload. Gemma also recovered one naturally malformed tool call. / 原生模型及一次格式修復通過。
-9B NF4/INT8 RAM: repeated calls keep one registry entry; native Free releases CUDA to CPU RAM and restores without disk reload. NF4 restart loads the saved quantized copy. / 原生 RAM 恢復及持久量化快取通過。
-Gateway SSE: 76 text chunks arrived during inference, exact nonstreaming reply, structured tools, disconnect cancellation and following request passed. / 真實逐段串流、工具、斷線取消及後續工作通過。
-Gateway faults: invalid JSON 400; real inference deadline 500 with traceback; native prompt/history removed and following reply correct. No mocks. / 真實逾時錯誤及清理通過。
-Defaults: actual random seeds, about 1 MP, CFG5.5; img2img uses 0.5 and preserves a 3:2 source near 1 MP. / 預設生圖及來源比例通過。
-Firefox UAT: plain prompt generates/reviews two images; text edit, original preservation, odd-size inpaint, mask tools, 48 MP upload, download, refresh, responsive and 200% layouts passed. Offline originals/ETag/WebP passed. / 真實瀏覽器及離線圖片通過。
-Pending: long-context/prefix caching, full recovery/settings/download checks and five-profile coverage of the new harness. Human gate not ready. / 長上下文、快取、恢復與完整介面及五模型驗收待完成。
-Historical fan-out/workbench and older tests describe fc0177e only. / 舊證據僅代表先前版本。
-INT8 state leak fixed: post-offload CUDA storage zero and restored weight size unchanged. / INT8 狀態殘留已修正，卸載後 CUDA 為零且恢復大小不變。
-
-Studio: real Qwen9 browser generation/review, SSE previews, per-chat queue, native two-image batch, HEIC/48MP and exact masked pixels passed; no inference mocks. / 新聊天流程、批次、上傳及遮罩像素真實通過。
-Firefox Studio viewer/debug/library: desktop, 392px portrait, large and 200%, no overflow or console errors. / 新介面多比例無溢出及主控台錯誤。
+Current branch / 目前分支: feat/studio-chat-engine
+GGUF 9B/27B: six real import/parity gates, precision/NF4, text/tools/vision and SDXL round trips; no runtime llama.cpp. / 六關與實際模型流程通過。
+Native 27B, Gemma IT, native/imported 9B: five new-harness generation, actual-pixel review and image follow-up workflows passed. No inference mocks. / 新工作台五模型通過。
+Memory: NF4/INT8 fresh SDXL execution, co-residency, CPU offload, one disk load and exact restored sizes passed; native cache clear releases every handle. / 原生記憶體實測通過。
+Prefix: seven profile/KV comparisons pass; Qwen text/tools and Gemma vision reuse; hybrid vision bypassed after measured numeric divergence. / 前綴部分適用，限制明確。
+Gateway: real token SSE, structured tools, deadline/disconnect cancellation, history cleanup and following reply passed. / 串流及失敗清理通過。
+Studio defaults: random seeds, about 1 MP, CFG 5.5, .5 edits and source aspect; same-prompt native batch differs. / 預設及原生批次通過。
+Firefox: create/review, actual painted mask, all unmasked pixels exact, 48 MP and HEIC, viewer/compare, three languages/themes and model settings passed. / 瀏覽器生成編輯與設定通過。
+Browser controls: PNG/JPG/ZIP originals, favorites/bulk delete, suggestions, Enter/Shift+Enter, Markdown/code/reply copy, rename/delete passed. / 圖片庫及對話操作通過。
+Recovery: refresh and SSE replay preserve 4,781 characters; restart marks cards terminal; retry creates four images and retains interrupted context. / 斷線及重試通過。
+Duplicate batch: actual captured model failure reproduced; validation prevents image work and one real repair returns one four-image call. / 真實重複失敗重播修復通過。
+Offline engine: stored original hash unchanged, plain error, native restart and retry answer 42. / 實際引擎離線仍可看原圖。
+History: ten-turn rolling summary retains four requirements; real database copy covers 34 old chats, structured content and valid chain cursors. / 長對話及舊資料通過。
+Layouts/focus: 392px, desktop, large, 200%, fullscreen/mobile Escape and 44px targets passed. / 多比例與焦點通過。
+Paste/drop handlers: actual PNGs via browser events passed. Native PNG clipboard was empty in headless Firefox; headed-browser paste and five unaided tasks require a human. / 原生圖片貼上與五任務待真人。
+Phase 2 and later features pending. Historical fan-out/workbench describes the old implementation only. / 後續功能待辦；舊報告不代表新版。
