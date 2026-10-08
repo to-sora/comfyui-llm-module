@@ -16,9 +16,9 @@ Two CPU snapshots retain token IDs, math policy, attention KV and recurrent stat
 兩份 CPU 快照記錄 token、精度、KV 及遞迴狀態；每次還原副本，合併後才做 HQQ。
 两份 CPU 快照记录 token、精度、KV 及递归状态；每次恢复副本，合并后才做 HQQ。
 
-Qwen vision uses NF4/BF16 on CUDA with any KV setting. Prefill MLP output projections use FP32; HQQ4 uses all MLP projections. Text/vision snapshots have separate math keys. ComfyUI reserves scratch space. Other hybrid-vision settings keep full prefill. Text/tool and Gemma vision reuse remain enabled.
-Qwen 視覺支援 CUDA／NF4／BF16 及三種 KV 設定；預填的 MLP 輸出投影用 FP32，HQQ4 則用全部投影。文字視覺快照分開，空間由 ComfyUI 預留；其他混合視覺設定完整預填。
-Qwen 视觉支持 CUDA／NF4／BF16 和三种 KV 配置；预填的 MLP 输出投影用 FP32，HQQ4 则用全部投影。文本视觉快照分开，空间由 ComfyUI 预留；其他混合视觉配置完整预填。
+Qwen vision uses BF16/CUDA with selective FP32 prefill; text and vision snapshots have separate math keys. ComfyUI reserves workspace. See [supported settings](vision-prefix.md). Text/tool and Gemma vision reuse remain enabled.
+Qwen 視覺以 BF16／CUDA 搭配局部 FP32 預填，文字視覺快照分開，空間由 ComfyUI 預留。支援範圍見連結；文字及 Gemma 視覺重用保留。
+Qwen 视觉以 BF16／CUDA 配合局部 FP32 预填，文本视觉快照分开，空间由 ComfyUI 预留。支持范围见链接；文本及 Gemma 视觉复用保留。
 
 `prefix_cache:false` disables reuse, retaining vision prefill precision. `/llm/status` reports hits, CPU bytes, math policy and bypass reasons. Tested speedups depend on the prompt and hardware; model answers are not universally exact.
 停用前綴仍保留視覺預填精度；狀態列出命中、CPU 用量、精度及略過原因。加速依提示與硬體而異，不保證模型永遠正確。

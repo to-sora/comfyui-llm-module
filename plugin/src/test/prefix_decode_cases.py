@@ -6,6 +6,8 @@ from pathlib import Path
 from PIL import Image
 from .model_cases import image_message
 
+SYSTEM = 'You are a concise, accurate assistant. Answer the user using the conversation and actual image contents. Use an available tool when current information is needed. Never invent tool results. Follow the requested reply format, and distinguish visible facts from guesses.'
+
 
 def message(case):
     if case in ('text', 'tool'):

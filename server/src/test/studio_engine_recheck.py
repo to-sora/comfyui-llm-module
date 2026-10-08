@@ -13,7 +13,7 @@ started = time.monotonic()
 with saved_settings(), browser() as d:
     if len(sys.argv)>2:
         settings = call('/bootstrap')['settings']
-        settings['assistant']['kv_quantization'] = sys.argv[2]
+        settings['assistant'].update(dict(zip(('kv_quantization','model','quantization'),sys.argv[2:])))
         call('/settings',settings,'PUT')
     d.set_window_rect(width=1440,height=1000)
     d.navigate('https://127.0.0.1:8189/')

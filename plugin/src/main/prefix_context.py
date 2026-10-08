@@ -4,7 +4,9 @@ from .hf_math import mode
 
 
 def supported(cfg, model_type):
-    return (model_type == 'qwen3_5' and cfg['quantization'] == 'bnb_nf4'
+    weights = cfg['quantization']
+    allowed = weights == 'bnb_nf4' or (weights == 'bnb_fp4' and cfg.get('fp4_vision_prefix',False))
+    return (model_type == 'qwen3_5' and allowed
             and cfg['kv_quantization'] in ('none','hqq_8','hqq_4')
             and cfg.get('precision','bfloat16') == 'bfloat16')
 

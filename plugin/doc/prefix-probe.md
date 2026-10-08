@@ -1,8 +1,8 @@
 # Prefix diagnostic / 前綴診斷 / 前缀诊断
 
-Production Qwen vision reuse supports CUDA, NF4 weights, BF16 compute and all KV settings. Other hybrid-vision modes keep full prefill. See [caching](caching.md).
-正式 Qwen 視覺重用支援 CUDA／NF4／BF16及三種 KV 設定；其他混合視覺設定保留完整預填，詳見快取文件。
-正式 Qwen 视觉复用支持 CUDA／NF4／BF16及三种 KV 配置；其他混合视觉配置保留完整预填，详见缓存文档。
+Production support is documented in [vision prefix settings](vision-prefix.md). Other hybrid-vision modes keep full prefill.
+正式支援範圍見視覺前綴文件；其他混合視覺設定保留完整預填。
+正式支持范围见视觉前缀文档；其他混合视觉配置保留完整预填。
 
 `diagnostic_prefix` compares full/split states and full/restored/reused decoding through ComfyUI. Limits: Qwen, 64+ static prefix tokens, <=2048 input tokens and <=64 diagnostic reply tokens. The API answer still runs normal inference. Use `prefix_cache:false` for a full-prefill baseline.
 上述診斷由 ComfyUI 執行並預留額外空間；限制如上。API 仍正常推論，可停用快取建立完整預填基準。
@@ -17,6 +17,7 @@ Modes / 模式 / 模式:
 - `attention_fp32`, `mlp_fp32`, `mlp_down_fp32`, `mlp_gateup_fp32`: selected prefill projections.
 - `head_fp32`: retain FP32 output logits.
 - `dense_prefill`: dequantized dense prefill.
+- `mlp_math_fp32`: math attention with FP32 MLP prefill / 數學注意力與 MLP 預填 FP32 / 数学注意力与 MLP 预填 FP32.
 
 精度模式選擇投影及預填範圍；退出時還原掛鉤、運算旗標、精度、偏置及方法。
 精度模式选择投影和预填范围；退出时恢复钩子、运算标志、精度、偏置和方法。

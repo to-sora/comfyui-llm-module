@@ -9,6 +9,8 @@ TLS = ssl._create_unverified_context()
 
 
 def request(path, data=None, binary=False):
+    if path == '/v1/chat/completions' and data and os.environ.get('LLM_TEST_KERNELS'):
+        data = {**data, 'diagnostic_kernels': os.environ['LLM_TEST_KERNELS']}
     payload = None if data is None else json.dumps(data).encode()
     req = urllib.request.Request(API + path, payload,
                                  {"Content-Type": "application/json"})

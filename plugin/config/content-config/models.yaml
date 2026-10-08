@@ -2,11 +2,13 @@ Qwen3.8-27B-OBLITERATED:
   model: /mnt/DATA9/LLM_model/d/Qwen3.8-27B-OBLITERATED
   backend: transformers
   quantization: bnb_nf4
+  fp4_vision_prefix: true
   chat_template: /mnt/DATA9/LLM_model/d/Qwen3.5-9B/chat_template.jinja
 Qwen3.8-27B:
   model: data/imported/Qwen3.8-27B
   backend: transformers
   quantization: bnb_nf4
+  fp4_vision_prefix: true
 gemma-3-12b-it:
   model: /mnt/DATA9/LLM_model/d/gemma-3-12b-it
   backend: transformers

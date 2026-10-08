@@ -1,33 +1,34 @@
 Studio redesign / 聊天工作台重建
-Full scope remains the active goal attachment and eight local mockups.
-完整範圍仍為目前目標檔及八個本地設計；整體目標尚未完成。
-Phase 0 passed: defaults, errors/logs, native cancellation, transformers-only models,
-GGUF parity gates, RAM ownership/offload, NF4 disk cache and local originals.
-階段零已通過：預設、錯誤取消、單引擎、GGUF、原生 RAM 管理與本機原圖。
-Phase 1 agent checks passed: five actual model workflows, batches/queue/masks,
-long memory, recovery/retry, downloads, settings, layouts, focus and real migration.
-階段一代理驗收：五模型、批次佇列遮罩、長記憶、恢復重試、下載設定及遷移通過。
-All 25 reported bug paths and seven browser races are addressed; tokenizer EOS now
-also stops invented continuation turns. Optimization 8 now includes Qwen vision
-on CUDA with NF4/BF16 and all three KV settings. All four Qwen profiles passed ten API cases,
-repeated cache hits and separate text/vision states. Other hybrid vision settings
-retain full prefill. Masked SDXL edits now preserve source latents to avoid grey fill.
-原有二十五問題及七項瀏覽器時序已修正；新增 EOS 修正，防止虛構後續回合。
-四款 Qwen NF4／BF16 搭配三種 KV 設定 視覺前綴已實測；遮罩改保留原圖潛變量。
-Engineering continues on remaining prefix modes and independent fixes.
-Non-technical human acceptance is still unrecorded; its five-task checklist is
-fan-out/studio-chat/human-check.html. Agent UAT cannot replace that evidence.
-繼續處理其他前綴設定與獨立修正；真人五任務驗收仍未記錄，不能由代理代替。
-Native image paste needs that human check: headless Firefox clipboard was empty;
-file-bearing paste/drop handlers passed with real PNG uploads.
-原生圖片貼上待真人驗證；無頭瀏覽器剪貼簿為空，圖片事件上傳已通過。
-Phase 2 waits for the human gate: editing/upscale polish, model background removal,
-branches/regenerate, search/export, safe images, drafts/resume, instructions,
-notifications, storage cleanup, shortcuts/rate limits and PWA/phone polish.
-真人關卡後：精緻編輯、模型去背、分支、搜尋匯出、安全模糊、草稿恢復、
-自訂指示、通知、清理、快捷鍵、流量限制與手機 PWA。
-Later: pin/archive, outpaint, plain backup/restore and document uploads.
-其後：釘選封存、擴圖、未加密備份還原及文件上傳。
-Latest: fan-out/studio-engine/prefix-all-kv.html and fan-out/studio-chat/latest.html.
-最新視覺前綴、EOS 修正及瀏覽器證據見上述報告。
-證據：上述可攜報告；生成品質與模型判斷仍需人核對。
+Full scope: active goal attachment and eight local mockups. The goal is unfinished.
+完整範圍為目前目標檔及八個本地設計；整體目標尚未完成。
+Phase 0 default path passed: defaults, errors/logs, cancellation, transformers-only
+models, GGUF parity, ComfyUI RAM ownership/offload, NF4 disk cache and originals.
+階段零預設流程已通過：設定、錯誤取消、單引擎、GGUF、原生 RAM 與本機原圖。
+Phase 1 agent checks passed: five model workflows, batches/queue/masks, long memory,
+recovery/retry, downloads, settings, layouts, focus and migration.
+階段一代理驗收：五模型、批次遮罩、長記憶、恢復重試、設定及版面通過。
+All 25 reported bug paths and seven browser races are addressed; tokenizer EOS
+stops invented continuation turns. Qwen vision prefix reuse on CUDA/BF16 supports
+NF4 on all four Qwen profiles and FP4 on both 27B profiles, with all KV modes.
+原有二十五問題與七項時序已修正；EOS 阻止虛構後續回合。CUDA／BF16 視覺前綴
+支援四款 NF4 Qwen 及兩款二百七十億 FP4，三種 KV 均通過。
+FP4 27B: 120 repeated image requests, 36 full-prefill checks and Firefox generation,
+inspection and cached follow-up passed. Native 17.9 GB offload/restore; one disk load.
+FP4 二百七十億的 API、瀏覽器與原生卸載恢復通過，磁碟載入維持一次。
+Both 9B FP4 profiles and imported 9B NF4/FP16 fail some tool-context requests;
+vision keeps full prefill. Optional-tool guidance still fails 11/54 checks and is
+not enabled. Local optimized kernels remain under assessment.
+兩款九十億 FP4 及匯入九十億 NF4／FP16 尚有工具錯誤；工具指引仍有十一項失敗而未啟用；
+本機快速核心待驗。
+Masked SDXL source preservation fixes grey fill; the original narrow-mask star
+request still fails. Artistic quality and VLM judgment need continued work.
+遮罩保留原圖已修正灰塊；原窄區紅星仍失敗，生成品質及視覺判斷仍需改善。
+Human acceptance remains unrecorded: fan-out/studio-chat/human-check.html.
+Headless native clipboard was empty; file-bearing paste/drop handlers passed.
+真人五任務與原生圖片剪貼簿待驗證；代理不能取代真人，圖片貼上／拖放事件通過。
+Phase 2 follows that gate: edit/upscale polish, model background removal, branches,
+search/export, safe images, drafts/resume, instructions, notifications, cleanup,
+shortcuts/rate limits and PWA/phone polish. Later: pin/archive, outpaint, backup and docs.
+真人關卡後：編輯、去背、分支、匯出、安全模糊、草稿、指示、通知清理及手機；
+其後：釘選封存、擴圖、未加密備份及文件。
+Evidence / 證據：fan-out/studio-chat/latest.html; fan-out/studio-engine/prefix-fp4.html.

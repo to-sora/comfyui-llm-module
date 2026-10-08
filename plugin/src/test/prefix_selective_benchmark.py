@@ -1,9 +1,11 @@
 import gzip
 import json
+import os
 import statistics
 import sys
 from pathlib import Path
 from .api_client import request
+from .engine_output import output
 
 root = Path(__file__).resolve().parents[3]/'fan-out'
 fixture = json.loads(gzip.decompress((root/'studio-chat/engine-recheck.json.gz').read_bytes()))
@@ -11,20 +13,25 @@ original = [s['body'] for s in fixture['run']['trace']['steps'] if s['kind']=='r
 model = sys.argv[1] if len(sys.argv)>1 else 'Qwen3.5-9B-gguf'
 mode = sys.argv[2] if len(sys.argv)>2 else 'mlp_down_fp32'
 kv = sys.argv[3] if len(sys.argv)>3 else 'hqq_8'
-body = {**original,'model':model,'quantization':'bnb_nf4','kv_quantization':kv,
+quant = os.environ.get('PREFIX_TEST_QUANTIZATION','bnb_nf4')
+precision = os.environ.get('PREFIX_TEST_PRECISION','bfloat16')
+body = {**original,'model':model,'quantization':quant,'kv_quantization':kv,'precision':precision,
         'prefix_cache':False,
         'max_tokens':64,'temperature':0,'enable_thinking':False,'stream':False}
 body.pop('max_completion_tokens',None)
 rows = []
-target = root/f'studio-engine/prefix-benchmark-{model}-{mode}.json.gz'
+target = output(f'prefix-benchmark-{model}-{mode}.json.gz')
 if kv != 'hqq_8':
     target = target.with_name(target.name.replace('.json.gz','-'+kv+'.json.gz'))
+if (quant,precision) != ('bnb_nf4','bfloat16'):
+    target = target.with_name(target.name.replace('.json.gz','-'+quant+'-'+precision+'.json.gz'))
 for iteration in range(6):
     sample = {'iteration':iteration,'warmup':iteration==0}
     for name in (('default',mode) if iteration%2==0 else (mode,'default')):
         response = request('/v1/chat/completions',{**body,'diagnostic_prefix':name})
         status = request('/llm/status')
-        profile = next(p for p in status['models'] if p['model']==model and p['kv_quantization']==kv)
+        profile = next(p for p in status['models'] if p['model']==model and p['kv_quantization']==kv
+                       and p['quantization']==quant and p['precision']==precision)
         decode = profile['diagnostics']['prefix_probe']['decode']
         sample[name] = decode
         assert all(len(r['tokens'])==64 and not r['tools'] and

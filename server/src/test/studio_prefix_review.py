@@ -33,8 +33,8 @@ with browser() as d:
     assert any(w in content for w in ('cup','mug')) and 'blue' in content,answer
     assert not answer['response'].get('tool_calls'),answer
     kv = run['settings']['kv_quantization']
-    profile = next(p for p in answer['memory']['models'] if p['model']==run['settings']['model']
-                   and p['kv_quantization']==kv)
+    profile = next(p for p in answer['memory']['models'] if all(p[k]==run['settings'][k]
+                   for k in ('model','quantization','precision','kv_quantization')))
     policy = 'mlp_fp32' if kv=='hqq_4' else 'mlp_down_fp32'
     assert profile['diagnostics']['prefix']['math_policy']==policy,profile
     assert profile['diagnostics']['prefix']['last_reused_tokens']>=64,profile

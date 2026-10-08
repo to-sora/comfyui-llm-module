@@ -1,21 +1,25 @@
 import gzip
 import json
+import os
 import sys
 import time
-from pathlib import Path
+from .engine_output import output
 from .api_client import request
 from .model_cases import TOOL
-from .prefix_decode_cases import message, correct
+from .prefix_decode_cases import message, correct, SYSTEM
 
 model = sys.argv[1] if len(sys.argv)>1 else 'Qwen3.5-9B'
 kv = sys.argv[2] if len(sys.argv)>2 else 'hqq_8'
 policy = 'mlp_fp32' if kv=='hqq_4' else 'mlp_down_fp32'
-system = 'You are a concise, accurate assistant. Answer the user using the conversation and actual image contents. Use an available tool when current information is needed. Never invent tool results. Follow the requested reply format, and distinguish visible facts from guesses.'
-base = {'model':model,'quantization':'bnb_nf4','kv_quantization':kv,
+quant = os.environ.get('PREFIX_TEST_QUANTIZATION','bnb_nf4')
+precision = os.environ.get('PREFIX_TEST_PRECISION','bfloat16')
+base = {'model':model,'quantization':quant,'precision':precision,'kv_quantization':kv,
         'temperature':0,'max_tokens':128,'tools':[TOOL],'enable_thinking':False}
-system = {'role':'system','content':system}
+system = {'role':'system','content':SYSTEM}
 suffix = '' if kv=='hqq_8' else '-'+kv
-target = Path(__file__).resolve().parents[3]/f'fan-out/studio-engine/prefix-live-{model}{suffix}.json.gz'
+if (quant,precision) != ('bnb_nf4','bfloat16'):
+    suffix += '-'+quant+'-'+precision
+target = output(f'prefix-live-{model}{suffix}.json.gz')
 rows = []
 
 
@@ -23,10 +27,11 @@ def run(messages, policy):
     started = time.monotonic()
     answer = request('/v1/chat/completions',{**base,'messages':messages})
     profile = next(p for p in request('/llm/status')['models']
-                   if p['model']==model and p['kv_quantization']==kv)
+                   if all(p[k]==base[k] for k in ('model','quantization','precision','kv_quantization')))
     stats = profile['diagnostics']['prefix']
     assert stats['math_policy']==policy and not stats['bypass_reason'],stats
     return {'reply':answer['choices'][0]['message'],'cache':stats,
+            'diagnostics':profile['diagnostics'],
             'seconds':time.monotonic()-started,'loads':profile['loads']}
 
 

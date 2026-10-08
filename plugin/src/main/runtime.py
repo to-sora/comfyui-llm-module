@@ -43,7 +43,7 @@ class LLMRuntime:
         required = working(self.cfg, length, pixels, request.get('diagnostic_prefix'))
         mm.load_models_gpu([self.patcher], memory_required=required)
         mm.throw_exception_if_processing_interrupted()
-        return self.engine.chat(request, inputs)
+        return self.engine.chat(request, inputs, required)
 
     def offload(self):
         if self.engine is None or self.engine.model is None:

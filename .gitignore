@@ -1,5 +1,9 @@
 .local-tool/
 .local-dep/
+!plugin/.local-dep/
+plugin/.local-dep/*
+!plugin/.local-dep/install.sh
+!plugin/.local-dep/installBuildTool.sh
 **/.local-tool-app/*
 !**/.local-tool-app/install-local-app-build.sh
 **/venv/

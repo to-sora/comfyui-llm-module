@@ -10,7 +10,7 @@ def selected(name, path):
     if name == 'mlp_gateup_fp32':
         return path.endswith(('.mlp.gate_proj', '.mlp.up_proj'))
     return ((name == 'attention_fp32' and any(p in path for p in ('.linear_attn.', '.self_attn.')))
-            or (name == 'mlp_fp32' and '.mlp.' in path))
+            or (name in ('mlp_fp32','mlp_math_fp32') and '.mlp.' in path))
 
 
 @contextmanager

@@ -2,6 +2,7 @@ import asyncio
 import gzip
 import json
 import ssl
+import sys
 import urllib.request
 from pathlib import Path
 import numpy as np
@@ -31,20 +32,23 @@ async def main():
     image = cropped.resize(dimensions,Image.Resampling.LANCZOS)
     region = area.resize(dimensions,Image.Resampling.NEAREST)
     rows = []
-    for strength,grow in ((.5,0),(.5,6),(.7,6)):
+    preserve = len(sys.argv)>1 and sys.argv[1]=='source'
+    label = 'mask-crop-source' if preserve else 'mask-crop'
+    variants = ((.5,0),(.7,0)) if preserve else ((.5,0),(.5,6),(.7,6))
+    for strength,grow in variants:
         params = {**p,'width':dimensions[0],'height':dimensions[1],'denoise':strength}
-        output,trace = await generate(params,image,region,grow)
+        output,trace = await generate(params,image,region,grow,preserve)
         restored = source.copy()
         restored.paste(output.resize(cropped.size,Image.Resampling.LANCZOS),box[:2])
         result = Image.composite(restored,source,mask)
         original,final = np.array(source),np.array(result)
         untouched = np.array(mask)==0
         assert np.array_equal(original[untouched],final[untouched])
-        name = f'mask-crop-{strength}-{grow}'
+        name = f'{label}-{strength}-{grow}'
         result.save(out/(name+'.png'))
         rows.append({'variant':name,'box':box,'working_size':dimensions,'trace':trace,
                      'outside_unchanged':True,'file':name+'.png'})
-        (out/'mask-crop-research.json.gz').write_bytes(gzip.compress(json.dumps(rows,indent=2).encode()))
+        (out/(label+'-research.json.gz')).write_bytes(gzip.compress(json.dumps(rows,indent=2).encode()))
         print(name,round(trace['seconds'],2),'unmasked pixels exact',flush=True)
 
 

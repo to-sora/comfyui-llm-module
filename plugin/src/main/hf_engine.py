@@ -30,9 +30,12 @@ class HFEngine:
         from .prefix_state import tensors
         return [t for entry in self.prefixes for t in tensors(entry['state'])]
 
-    def chat(self, request, inputs):
+    def chat(self, request, inputs, required):
         from .hf_generate import generate
-        return generate(self, request, inputs)
+        from .working_memory import measured
+        from .kernel_policy import selected
+        with selected(self, request), measured(self, required):
+            return generate(self, request, inputs)
 
     def offload(self):
         if self.model is not None:
