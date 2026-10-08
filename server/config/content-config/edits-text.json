@@ -1,3 +1,0 @@
-{
- "text":{"text":["string","Your text"],"font":["string","DejaVu Sans"],"size":["number",64,6,512],"x":["number",32,-4096,4096],"y":["number",32,-4096,4096],"width":["number",800,1,4096],"indent":["number",0,0,4096],"color":["string","#ffffff"],"bold":["boolean",false],"italic":["boolean",false],"align":["enum","left","left","center","right"],"spacing":["number",8,0,512],"stroke_width":["number",0,0,32],"stroke_color":["string","#000000"]}
-}
