@@ -3,8 +3,8 @@ from .branches import idle
 from .run_worker import notify
 from .image_batch import execute
 from .vision_messages import attach
-from .llm import complete
 from .message_parts import separate
+from .image_store import metadata
 from ..errors import UserError
 
 
@@ -22,7 +22,9 @@ def enqueue_resume(e, ident):
     return {'run_id':ident}
 
 
-async def finish(e,run):
+async def prepare(e,run):
+    from .agent_start import prepare as start
+    current,system,tools=await start(e,run)
     rows=e.db.all("SELECT * FROM images WHERE message_id=? AND kind='generated' AND deleted=0",(run['assistant_id'],))
     tasks=[{'id':r['id'],'params':{k:v for k,v in r['recipe'].items() if k not in ('error','cancelled')},'call':'resume'}
            for r in rows if not r['file']]
@@ -31,20 +33,17 @@ async def finish(e,run):
             e.db.update('images',task['id'],recipe_json=encode(task['params']))
         await execute(e,run,tasks)
     e.check(run)
-    row=e.db.get('messages',run['message_id'])
-    original='\n'.join(p['text'] for p in row['parts'] if p['type']=='text')
-    from .documents import context
-    original+=context(e,row,run['settings'])
-    done=[r['id'] for r in rows if e.db.get('images',r['id'])['file']]
+    done=[metadata(e.db,r['id'],run['chat_id']) for r in rows if e.db.get('images',r['id'])['file']]
     previous=e.db.get('messages',run['assistant_id'])
     partial='\n'.join(p['text'] for p in previous['parts'] if p['type']=='text')
-    current=await attach(e,run['chat_id'],done[-8:],
-        'Original request: '+original+'\nPrevious partial reply: '+partial+
-        '\nContinue the interrupted reply. Finished images are attached; do not claim unfinished images succeeded.')
+    completed=[{'image':r['number'],'operation':r['recipe'].get('operation'),
+                'prompt':r['recipe'].get('requested_prompt',r['recipe'].get('prompt',''))} for r in done]
+    current.append(await attach(e,run['chat_id'],[r['id'] for r in done[-8:]],
+        'Continue this interrupted request. These images are already finished; do not recreate them. '
+        'Use tools only for remaining work. Review the finished results before answering.\n'
+        'Completed images: '+encode(completed)+'\nPrevious partial reply: '+partial))
     separate(e,run)
-    answer=await complete(e,run,[{'role':'system','content':'Finish the user request and review actual images honestly.'},current],[])
     trace=e.db.get('runs',run['id'])['trace']
-    from .vision_messages import compact
-    trace['conversation']=compact([current,{k:v for k,v in answer.items() if k in ('role','content')}])
     trace['resume']=False
     e.db.update('runs',run['id'],trace_json=encode(trace))
+    return current,system,tools

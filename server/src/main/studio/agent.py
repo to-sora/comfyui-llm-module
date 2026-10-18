@@ -18,9 +18,9 @@ def remember(e,run,current):
 
 async def run(e,run):
     if run['trace'].get('resume'):
-        from .resume import finish
-        return await finish(e,run)
-    from .agent_start import prepare as start
+        from .resume import prepare as start
+    else:
+        from .agent_start import prepare as start
     current,system,tools=await start(e,run)
     repaired=False
     try:
@@ -52,8 +52,8 @@ async def run(e,run):
             replies,images=await execute_all(e,run,calls,tasks,results)
             current.extend(replies)
             e.publish(run,'tool.started',{'message':'Checking the finished images'})
-            current.append(await attach(e,run['chat_id'],images,
-                'Check the final images against the request. Report any problems.'))
+            from .review_images import message
+            current.append(await message(e,run,images))
         delta(e,run,'\nThe reply reached its step limit. Finished images are saved above; the remaining work was not completed.')
     finally:
         remember(e,run,current)

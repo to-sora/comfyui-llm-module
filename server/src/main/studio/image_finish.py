@@ -22,7 +22,8 @@ async def finish(e,run,tasks,prompt,outputs,original,mask):
             from PIL import ImageChops
             picture.putalpha(ImageChops.multiply(picture.getchannel('A'),original.getchannel('A')))
             raw=None
-        recipe={**task['params'],'batch_seeds':seeds,'batch_index':index,'prompt_id':prompt}
+        recipe={**task['params'],'batch_seeds':seeds,'batch_index':index,'prompt_id':prompt,
+                'preserved_unmasked_pixels':mask is not None}
         save(e.db,task['id'],picture,raw,recipe_json=encode(recipe))
         e.previews.pop(task['id'],None)
         e.publish(run,'image.done',{'image':metadata(e.db,task['id'],run['chat_id'])})

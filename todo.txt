@@ -13,9 +13,11 @@ Implemented / 已實作
 
 Live integration / 實際整合
 First Firefox generate → SDXL → inspect completed in 24 s; background removal in 6 s.
-No model matrix is running. Feature interactions, documentation and publication are in progress.
+Document Q&A and edit-and-branch work in Firefox. Stop → Continue completed canvas expansion.
+Unmasked pixels remain exact; model loads remain one. Current feature implementation is complete.
 首次瀏覽器生圖與檢視二十四秒完成，模型去背六秒；未執行完整模型矩陣。
-目前完成實際互動整合、文件及版本發布，尚未宣告整體完成。
+文件問答、訊息分支與停止續作擴圖已完成；未塗區像素一致，權重仍只載入一次。
+本次功能實作已完成；未宣稱所有模型設定或藝術要求均正確。
 
 Constraints / 限制
 Existing models stay retained; additional models can be refused by the RAM budget.

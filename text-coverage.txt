@@ -1,19 +1,16 @@
-GGUF 9B/27B: six parity gates, precision/NF4, text/tools/vision/SDXL passed; no runtime llama.cpp. / 六關與模型流程通過。
-Five profiles: real generation, pixel review and image follow-up passed; no inference mocks. / 五模型真實流程通過。
-Memory: NF4/INT8 fresh SDXL execution, co-residency, CPU offload, one disk load and exact restored sizes passed; native cache clear releases every handle. / 原生記憶體實測通過。
-Prefix: four Qwen NF4/BF16 profiles × three KV settings × ten scenarios × two requests: 240 actual image/tool requests with cache hits. / 四款三種 KV 共二百四十圖片請求通過。
-Research: fixed NF4 replay improves 1.5–6.6%; 12 FP16 candidates fail. / 量測與失敗保留。
-FP4: both 27B profiles pass 120 repeated requests, 36 full-prefill cases and Firefox; 17.9 GB native offload/restore, one disk load. / 二款模型與瀏覽器通過。
-EOS: native Qwen stops at the tokenizer turn end; parallel tools and Gemma calls pass. / 結束回合及平行工具通過。
-Gateway: real token SSE, structured tools, deadline/disconnect cancellation, history cleanup and following reply passed. / 串流及失敗清理通過。
-Studio defaults: random seeds, about 1 MP, CFG 5.5, .5 edits and source aspect; same-prompt native batch differs. / 預設及原生批次通過。
-Firefox: create/review, actual painted mask, all unmasked pixels exact, 48 MP and HEIC, viewer/compare, three languages/themes and model settings passed. / 瀏覽器生成編輯與設定通過。
-Browser controls: PNG/JPG/ZIP originals, favorites/bulk delete, suggestions, Enter/Shift+Enter, Markdown/code/reply copy, rename/delete passed. / 圖片庫及對話操作通過。
-Recovery: refresh and SSE replay preserve 4,781 characters; restart marks cards terminal; retry creates four images and retains interrupted context. / 斷線及重試通過。
-Duplicate batch: actual captured model failure reproduced; validation prevents image work and one real repair returns one four-image call. / 真實重複失敗重播修復通過。
-Offline engine: stored original hash unchanged, plain error, native restart and retry answer 42. / 實際引擎離線仍可看原圖。
-History: ten-turn rolling summary retains four requirements; real database copy covers 34 old chats, structured content and valid chain cursors. / 長對話及舊資料通過。
-Layouts/focus: 392px, desktop, large, 200%, fullscreen/mobile Escape and 44px targets passed. / 多比例與焦點通過。
-Paste/drop handlers: actual PNGs via browser events passed. Native clipboard and five unaided tasks need human evidence. / 原生圖片貼上與五任務待真人。
-Startup: delayed HTTPS preserves early text; reply 42 and title pass. / 慢載入通過。
-Timing: seven real Firefox before/after cases: duplicate Send, late routes, uploads and painted edits; other-chat drafts and unmasked pixels preserved. / 七項時序修復通過，沒有模擬推論。
+Current feature integration / 本次功能整合
+No inference mocks; no full model matrix or repeated conversion in this feature pass. / 未模擬推論，未重跑模型矩陣或轉換。
+Firefox: SDXL generation + actual-image review, U2NetP background removal and CJK text overlay completed. / 生圖檢視、模型去背及中文字完成。
+Firefox: document Q&A and edited-message branch answered the attached facts correctly. / 文件問答與分支正確使用附件。
+Firefox: Stop → Continue completed outpainting; the actual unmasked output pixels equal the source. / 停止續作擴圖，未塗像素相同。
+Firefox: drafts, search, desktop and phone layouts completed without console errors. / 草稿搜尋與桌機手機操作完成。
+Data: chat ZIP includes actual originals; full ZIP backup and merge restore completed. / 對話匯出、完整備份及合併還原完成。
+Memory: 7,882,445,024 LLM bytes offloaded to CPU and restored through native ComfyUI; KV/context changes keep one owner and one load. / 原生卸載恢復，共用權重且只讀一次。
+After resumed SDXL: LLM, SDXL and U2NetP source ledgers remain one read each; effective 80 GB planning availability exceeds 52 GB. / 續作後各讀一次，可用預算超過五十二 GB。
+Static checks: changed Python/JS syntax, JSON, whitespace and file size. / 修改檔案的語法、JSON、空白及大小。
+
+Historical evidence / 既有證據
+Earlier five-profile text/tool/vision/SDXL, GGUF parity, NF4 prefix, 27B FP4, SSE cancellation, uploads, masked editing and layout reports remain in fan-out. / 先前五模型、轉換、前綴、串流及介面紀錄保留。
+Earlier cache-clear disposal behavior is superseded: R1 now keeps strong model owners until process exit. / 舊清快取釋放行為已由 R1 常駐規則取代。
+9B FP4 and FP16 candidate failures remain documented; NF4/BF16 is the default. / 九十億 FP4 與 FP16 失敗仍保留，預設 NF4/BF16。
+Human unaided acceptance and every model/configuration combination are not claimed. / 未宣稱真人驗收或所有模型組合通過。
