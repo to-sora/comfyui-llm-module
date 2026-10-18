@@ -13,7 +13,7 @@ class Events:
 
     def publish(self, chat, kind, data):
         self.store.insert('events', chat_id=chat, kind=kind, data_json=encode(data), created=time.time())
-        global_events=self.watchers['*'] if kind in ('chats.changed','queue.changed','system.status') else set()
+        global_events=self.watchers['*'] if kind in ('chats.changed','queue.changed','system.status','run.finished') else set()
         for event in self.watchers[chat] | global_events:
             event.set()
 
@@ -32,7 +32,7 @@ class Events:
             while request.transport and not request.transport.is_closing():
                 wake.clear()
                 if chat == '*':
-                    rows = self.store.all("SELECT * FROM events WHERE seq>? AND kind IN ('chats.changed','queue.changed','system.status') ORDER BY seq LIMIT 200", (cursor,))
+                    rows = self.store.all("SELECT * FROM events WHERE seq>? AND kind IN ('chats.changed','queue.changed','system.status','run.finished') ORDER BY seq LIMIT 200", (cursor,))
                 else:
                     rows = self.store.all('SELECT * FROM events WHERE seq>? AND chat_id=? ORDER BY seq LIMIT 200', (cursor, chat))
                 for row in rows:

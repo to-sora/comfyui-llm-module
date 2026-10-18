@@ -10,16 +10,18 @@ def create(db, title='New chat', settings=None):
     return db.get('chats', ident)
 
 
-def turn(db, chat, text, attachments, settings, parent=None):
+def turn(db, chat, text, attachments, settings, parent=..., documents=None):
     now, mid, aid, rid = time.time(), new(), new(), new()
     value = db.get('chats', chat)
     parts = [{'type': 'text', 'text': text}]
+    if documents:
+        parts.append({'type':'documents','documents':documents})
     if attachments:
         parts.append({'type': 'images', 'images': attachments})
     with db.transaction():
         for image in attachments:
             db.reference(chat, image)
-        db.insert('messages', id=mid, chat_id=chat, parent_id=parent or value['tip'], role='user',
+        db.insert('messages', id=mid, chat_id=chat, parent_id=value['tip'] if parent is ... else parent, role='user',
                   parts_json=encode(parts), created=now, run_id=rid)
         db.insert('messages', id=aid, chat_id=chat, parent_id=mid, role='assistant',
                   parts_json='[]', created=now, run_id=rid)
@@ -28,6 +30,8 @@ def turn(db, chat, text, attachments, settings, parent=None):
         title = ' '.join(text.split())[:64] or 'About an image'
         db.update('chats', chat, tip=aid, updated=now,
                   title=title if value['title'] == 'New chat' else value['title'])
+        if parent is not ...:
+            db.update('chats',chat,summary='',summary_through='')
     return {'message_id': mid, 'run_id': rid, 'assistant_id': aid}
 
 

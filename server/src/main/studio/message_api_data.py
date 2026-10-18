@@ -2,10 +2,15 @@ from .image_store import metadata
 
 
 def page(e,chat,before):
-    messages=e.db.all('SELECT * FROM messages WHERE chat_id=? AND id<? ORDER BY id DESC LIMIT 60',
-                       (chat,before or 'Z'))[::-1]
+    from .branches import chain,versions
+    messages=[r for r in chain(e.db,chat) if r['id']<(before or 'Z')][-60:]
     runs,images={},{}
     for row in messages:
+        row['versions']=versions(e.db,row) if row['role']=='user' else []
+        for part in row['parts']:
+            if part['type']=='documents':
+                part['names']={i:(e.db.one('SELECT name FROM documents WHERE id=?',(i,)) or {}).get('name','Document') for i in part['documents']}
+        row['feedback']=e.db.one('SELECT value_json FROM preferences WHERE key=?',('feedback:'+row['id'],))
         if row['run_id'] and row['run_id'] not in runs:
             run=e.db.get('runs',row['run_id'])
             runs[run['id']]={k:v for k,v in run.items() if k!='trace'}
@@ -17,7 +22,7 @@ def page(e,chat,before):
                     image['number']=ref['number'] if ref else None
                     images[ident]=image
     cursor=e.db.one('SELECT COALESCE(MAX(seq),0) AS n FROM events')['n']
-    return {'messages':messages,'runs':runs,'images':images,'cursor':cursor,
+    return {'messages':messages,'runs':runs,'images':images,'cursor':cursor,'tip':e.db.get('chats',chat)['tip'],
             'before':messages[0]['id'] if len(messages)==60 else None}
 
 

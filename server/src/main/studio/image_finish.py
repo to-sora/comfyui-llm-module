@@ -15,7 +15,12 @@ async def finish(e,run,tasks,prompt,outputs,original,mask):
         raw=await e.comfy.request('/view?'+urlencode(remote),binary=True)
         picture=await asyncio.to_thread(decode,raw)
         if mask is not None:
-            picture=Image.composite(picture.crop((0,0,*original.size)),original,mask)
+            from .edit_region import composite
+            picture=composite(picture,original,mask,task['params'])
+            raw=None
+        elif task['params'].get('operation')=='remove_background':
+            from PIL import ImageChops
+            picture.putalpha(ImageChops.multiply(picture.getchannel('A'),original.getchannel('A')))
             raw=None
         recipe={**task['params'],'batch_seeds':seeds,'batch_index':index,'prompt_id':prompt}
         save(e.db,task['id'],picture,raw,recipe_json=encode(recipe))

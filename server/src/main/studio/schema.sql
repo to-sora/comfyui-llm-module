@@ -29,5 +29,7 @@ CREATE TABLE IF NOT EXISTS events(
 CREATE INDEX IF NOT EXISTS events_chat ON events(chat_id,seq);
 CREATE INDEX IF NOT EXISTS events_global ON events(kind,seq);
 CREATE TABLE IF NOT EXISTS preferences(key TEXT PRIMARY KEY,value_json TEXT);
+CREATE TABLE IF NOT EXISTS documents(id TEXT PRIMARY KEY,name TEXT,file TEXT,text TEXT,
+ bytes INTEGER,created REAL,truncated INTEGER DEFAULT 0);
 CREATE TABLE IF NOT EXISTS legacy(
  kind TEXT,session TEXT,number INTEGER,id TEXT,PRIMARY KEY(kind,session,number));

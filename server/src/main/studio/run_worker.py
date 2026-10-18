@@ -25,6 +25,8 @@ def plain(exc):
     text=message(exc)
     if isinstance(exc, UserError):
         return text
+    if any(value in text for value in ('RAM admission','resident budget','R2:')):
+        return 'This request exceeds the retained-model RAM budget or requires rereading weights. Existing models remain available; choose a resident model or reduce the context.'
     if 'out of memory' in text.lower():
         return 'Ran out of GPU memory. Try fewer images or a smaller size.'
     if isinstance(exc, (ConnectionError, TimeoutError)) or 'connect' in text.lower():
@@ -61,4 +63,6 @@ async def worker(e):
         finally:
             e.publish(job,'message.done',{'message_id':job['assistant_id']})
             e.events.publish('*','chats.changed',{'chat_id':job['chat_id']})
+            e.events.publish('*','run.finished',{'chat_id':job['chat_id'],'run_id':job['id'],
+                'title':e.db.get('chats',job['chat_id'])['title'],'status':e.db.get('runs',job['id'])['status']})
             notify(e)

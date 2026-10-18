@@ -3,13 +3,17 @@ from .catalog import image_settings
 from .image_store import number,metadata
 
 
-def edit_defaults(e,source):
+def edit_defaults(e,source,strict=True):
+    for _ in range(32):
+        if 'checkpoint' in source['recipe'] or not source['parents']:
+            break
+        source=e.db.get('images',source['parents'][0])
     previous=source['recipe']
     p=image_settings(e.caps,previous.get('style','photo'),'square')
     for key in ('checkpoint','style','style_label','steps','cfg','sampler_name','scheduler'):
         if key in previous:
             p[key]=previous[key]
-    if p['checkpoint'] not in e.caps['checkpoints']:
+    if strict and p['checkpoint'] not in e.caps['checkpoints']:
         raise UserError('The image’s original model is unavailable. Restore it before editing.')
     return p
 

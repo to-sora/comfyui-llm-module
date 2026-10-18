@@ -3,7 +3,11 @@ from ..graph import node
 
 
 def build(p, seeds, source=None, mask=None):
-    g = {'1':node('CheckpointLoaderSimple',ckpt_name=p['checkpoint']),
+    if p.get('operation')=='remove_background':
+        return {'12':node('LoadImage',image=source),
+                '10':node('LLMRemoveBackground',image=['12',0]),
+                '11':node('SaveImage',images=['10',0],filename_prefix='studio/'+p['output_key'])}
+    g = {'1':node('LLMManagedCheckpoint',ckpt_name=p['checkpoint']),
          '2':node('CLIPTextEncode',clip=['1',1],text=p['prompt']),
          '3':node('CLIPTextEncode',clip=['1',1],text=p.get('negative','')),
          '4':node('EmptyLatentImage',width=p['width'],height=p['height'],batch_size=len(seeds)),

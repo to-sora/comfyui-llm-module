@@ -45,6 +45,7 @@ def install(routes,e):
                     related.update([row['id'],*row['parents']])
             changed=len(related)!=before
         item['versions']=[row for row in family if row['id'] in related and row['file']]
+        item['compare_source']=next((p for p in item['parents'] if any(r['id']==p for r in item['versions'])),None)
         return web.json_response(item)
 
     @routes.get('/api/previews/{id}')

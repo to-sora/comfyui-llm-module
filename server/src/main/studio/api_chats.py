@@ -9,7 +9,7 @@ def install(routes,e):
     async def listing(request):
         rows=e.db.all('''SELECT c.*,EXISTS(SELECT 1 FROM runs r WHERE r.chat_id=c.id
             AND r.status IN ('queued','running')) AS running FROM chats c
-            ORDER BY c.pinned DESC,c.updated DESC''')
+            WHERE c.archived=? ORDER BY c.pinned DESC,c.updated DESC''',(int(request.query.get('archived')=='1'),))
         return web.json_response({'chats':rows})
 
     @routes.post('/api/chats')
@@ -27,10 +27,20 @@ def install(routes,e):
         ident=request.match_info['id']
         e.db.get('chats',ident)
         body=await json_body(request)
-        title=body.get('title')
-        if not isinstance(title,str) or not title.strip() or len(title)>100:
-            raise UserError('Choose a title between 1 and 100 characters')
-        value=e.db.update('chats',ident,title=title.strip())
+        updates={}
+        if 'title' in body:
+            title=body['title']
+            if not isinstance(title,str) or not title.strip() or len(title)>100:
+                raise UserError('Choose a title between 1 and 100 characters')
+            updates['title']=title.strip()
+        for name in ('pinned','archived'):
+            if name in body:
+                if type(body[name]) is not bool:
+                    raise UserError('Choose a boolean for '+name)
+                updates[name]=int(body[name])
+        if not updates:
+            raise UserError('Choose a title, pin or archive change')
+        value=e.db.update('chats',ident,**updates)
         e.events.publish('*','chats.changed',{'chat_id':ident})
         return web.json_response(value)
 

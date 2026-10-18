@@ -10,16 +10,16 @@ async def prepare(e, run, task, key):
     if not p.get('source'):
         return None,None,None,None
     original = load(e.db,p['source'],run['chat_id'])
+    if p.get('operation')=='remove_background':
+        p['width'],p['height']=original.size
+        p['method']='u2netp'
+        return await e.comfy.upload(png(original),key+'.png'),None,original,None
     mask = load(e.db,p['mask'],run['chat_id']).convert('L') if p.get('mask') else None
     if mask is not None:
         if mask.size != original.size:
             raise UserError('The painted area must match the original image size')
-        p['mask_encoding'] = 'source_latent'
-        p['width'],p['height'] = ((n+7)//8*8 for n in original.size)
-        padded = Image.new('RGBA',(p['width'],p['height']))
-        padded.paste(original,(0,0))
-        padded_mask = Image.new('L',padded.size)
-        padded_mask.paste(mask,(0,0))
+        from .edit_region import prepare as region
+        padded,padded_mask=region(original,mask,p)
         mask_name = await e.comfy.upload(png(padded_mask),key+'-mask.png')
     else:
         p['width'],p['height'] = source_size(original.size)

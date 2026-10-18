@@ -17,8 +17,8 @@ def settings(caps, requested=None):
         raise UserError('Model and quantization choices must be text')
     if value['model']=='gemma-4-E2B':
         value['model']='gemma-3-12b-it'
-    if caps and value['model'] not in {p['id'] for p in caps['profiles']}:
-        raise UserError('Select an available assistant model')
+    if not value['model'].strip() or len(value['model'])>400:
+        raise UserError('Enter a model profile, local path or Hugging Face repository')
     if value['precision'] not in ('bfloat16','float16'):
         raise UserError('Select a supported model precision')
     if value['image_checkpoint'] and caps and value['image_checkpoint'] not in caps['checkpoints']:
@@ -30,7 +30,7 @@ def settings(caps, requested=None):
     for key in ('context_tokens','max_tokens'):
         if type(value[key]) is not int:
             raise UserError(f'{key} must be an integer')
-    if not 128 <= value['context_tokens'] <= 262144 or not 1 <= value['max_tokens'] < value['context_tokens']:
+    if not 128 <= value['context_tokens'] <= 262144 or not 1 <= value['max_tokens'] <= min(32768,value['context_tokens']-1):
         raise UserError('Reply length must fit in the assistant context')
     return value
 

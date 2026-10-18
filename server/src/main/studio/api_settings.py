@@ -23,6 +23,8 @@ def install(routes,e):
         if body.get('theme') not in ('system','light','dark') or body.get('language') not in ('en','zh-Hant','zh-Hans'):
             raise UserError('Choose a listed theme and language')
         value={k:body[k] for k in ('theme','language')}
+        from .preference_fields import extra
+        value.update(extra(body))
         value['technical']=bool(body.get('technical'))
         value['assistant']=settings(e.caps,body.get('assistant'))
         if body.get('chat_id'):

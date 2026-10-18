@@ -46,5 +46,6 @@ def install(routes,e):
                     (DATA/folder/row[key]).unlink(missing_ok=True)
             for folder,ext in (('vision','.jpg'),('cache','.jpg')):
                 (DATA/folder/(row['id']+ext)).unlink(missing_ok=True)
+            (DATA/'vision'/(row['id']+'-alpha.jpg')).unlink(missing_ok=True)
             e.previews.pop(row['id'],None)
         return web.json_response({'deleted':[r['id'] for r in rows]})

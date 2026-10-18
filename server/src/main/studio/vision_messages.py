@@ -13,6 +13,8 @@ async def attach(e, chat, ids, text):
         await e.comfy.upload(vision(e.db,ident,chat),filename)
         url = e.comfy.url+'/view?'+urlencode({'filename':filename,'type':'input'})
         label=f'Image {item["number"]}'
+        if item['recipe'].get('has_transparency') or item['recipe'].get('operation')=='remove_background':
+            label+=' — transparency is displayed as a checkerboard, not image content'
         if ident in sources:
             label+=' — selected source image to edit'
         if item['kind']=='mask' and item['parents']:

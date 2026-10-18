@@ -28,16 +28,11 @@ def plan(e, run, calls):
                 output.append(add(e,run,tasks,p,call['id']))
         elif name in ('edit_image','upscale_image','remove_background'):
             source = number(e.db,run['chat_id'],args.get('image'))
-            p = {**edit_defaults(e,source),'source':source['id'],
+            p = {**edit_defaults(e,source,name=='edit_image' and args.get('operation','sdxl')=='sdxl'),'source':source['id'],
                  'operation':name,'seed':secrets.randbits(52)}
             if name=='edit_image':
-                if not isinstance(args.get('instruction'),str) or not args['instruction'].strip():
-                    raise UserError('Describe what should change')
-                p.update(prompt=args['instruction'],negative='',denoise=recipe()['strengths'].get(args.get('strength','medium')))
-                if p['denoise'] is None:
-                    raise UserError('Choose low, medium or high edit strength')
-                if args.get('area') is not None:
-                    p['mask']=mask_for(e,run['chat_id'],source,args['area'])
+                from .edit_plan import configure
+                configure(e,run,source,p,args)
             elif name=='upscale_image' and args.get('factor')!=2:
                 raise UserError('Upscale supports factor 2')
             output.append(add(e,run,tasks,p,call['id'],[source['id']]))

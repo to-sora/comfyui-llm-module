@@ -15,3 +15,11 @@ for name,url in sources.items():
     if not path.is_file():
         with urllib.request.urlopen(url,timeout=30) as response:
             path.write_bytes(response.read())
+
+# Keep a project-local CJK font for text overlays.
+import shutil
+image_fonts=Path(__file__).resolve().parent/'data/fonts'
+image_fonts.mkdir(parents=True,exist_ok=True)
+source=Path('/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc')
+if source.is_file() and not (image_fonts/source.name).exists():
+    shutil.copyfile(source,image_fonts/source.name)

@@ -47,6 +47,10 @@ def save(db, ident, image, raw=None, **extra):
     preview = image.copy()
     preview.thumbnail((384, 384))
     preview.save(DATA / 'thumbs' / thumb, format='WEBP')
+    import json
+    recipe=json.loads(extra.pop('recipe_json')) if 'recipe_json' in extra else db.get('images',ident)['recipe']
+    recipe['has_transparency']='A' in image.getbands() and image.getchannel('A').getextrema()[0]<255
+    extra['recipe_json']=encode(recipe)
     return db.update('images', ident, file=path, thumb=thumb, width=image.width, height=image.height,
                      sha256=hashlib.sha256(raw).hexdigest(), bytes=len(raw), **extra)
 
@@ -61,14 +65,5 @@ def number(db, chat, value):
 
 
 def vision(db, ident, chat):
-    metadata(db,ident,chat)
-    cache = DATA/'vision'/(ident+'.jpg')
-    cache.parent.mkdir(exist_ok=True)
-    if cache.is_file():
-        return cache.read_bytes()
-    picture = load(db, ident, chat).convert('RGB')
-    picture.thumbnail((512, 512), Image.Resampling.LANCZOS)
-    stream = io.BytesIO()
-    picture.save(stream, format='JPEG', quality=85)
-    cache.write_bytes(stream.getvalue())
-    return stream.getvalue()
+    from .vision_preview import vision as preview
+    return preview(db,ident,chat)

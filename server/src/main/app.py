@@ -26,7 +26,9 @@ async def errors(request, handler):
 
 
 async def build():
-    app = web.Application(middlewares=[errors], client_max_size=read()["upload_mb"] * 1024**2)
+    from .rate_limit import limit
+    from .host_guard import guard
+    app = web.Application(middlewares=[errors,guard,limit], client_max_size=read()["upload_mb"] * 1024**2)
     engine = Engine()
     await engine.start()
     app["engine"] = engine
@@ -37,6 +39,7 @@ async def build():
         return web.FileResponse(APP / "web-studio/index.html")
     for path in ('/', '/chats/{id}', '/library'):
         app.router.add_get(path, page)
+    app.router.add_get("/sw.js",lambda request:web.FileResponse(APP/"web-studio/sw.js",headers={"Service-Worker-Allowed":"/"}))
     app.router.add_static("/static", APP / "web-studio")
     install_whitelist(app)
     async def close(app):

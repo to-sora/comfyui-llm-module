@@ -7,25 +7,7 @@ from .message_api_data import page,preferences
 from .run_worker import notify
 
 
-def enqueue(e,chat,text,images):
-    if not isinstance(text,str) or len(text)>100000:
-        raise UserError('Use a message of at most 100,000 characters')
-    if not isinstance(images,list) or len(images)>8 or any(not isinstance(i,str) for i in images):
-        raise UserError('Attach up to eight images')
-    if not text.strip() and not images:
-        raise UserError('Write a message or attach a picture')
-    for ident in images:
-        if not metadata(e.db,ident)['file']:
-            raise UserError('Wait for the attached image to finish')
-    if e.db.one("SELECT id FROM runs WHERE chat_id=? AND status IN ('queued','running')",(chat,)):
-        raise UserError('Wait for this chat’s reply, or stop it first')
-    config={**preferences(e).get('assistant',{}),**e.db.get('chats',chat)['settings']}
-    value=chat_store.turn(e.db,chat,text,images,settings(e.caps,config))
-    e.events.publish(chat,'message.updated',value)
-    e.events.publish('*','chats.changed',{'chat_id':chat})
-    notify(e)
-    e.wake.set()
-    return value
+from .message_enqueue import enqueue
 
 
 def install(routes,e):
@@ -38,7 +20,7 @@ def install(routes,e):
     @routes.post('/api/chats/{id}/messages')
     async def send(request):
         body=await json_body(request)
-        return web.json_response(enqueue(e,request.match_info['id'],body.get('text',''),body.get('attachments',[])))
+        return web.json_response(enqueue(e,request.match_info['id'],body.get('text',''),body.get('attachments',[]),body.get('parent_id',...),body.get('documents',[])))
 
     @routes.post('/api/runs/{id}/cancel')
     async def cancel(request):
@@ -54,6 +36,7 @@ def install(routes,e):
         text='\n'.join(p['text'] for p in row['parts'] if p['type']=='text')
         images=[i for p in row['parts'] if p['type']=='images' for i in p['images']]
         text='Please make a fresh attempt at this request:\n\n'+text
-        value=enqueue(e,run['chat_id'],text,images)
+        docs=[i for p in row['parts'] if p['type']=='documents' for i in p['documents']]
+        value=enqueue(e,run['chat_id'],text,images,documents=docs)
         e.trace(e.db.get('runs',value['run_id']),'retry',{'original_run':run['id']})
         return web.json_response(value)

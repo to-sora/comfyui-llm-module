@@ -13,7 +13,7 @@ async def start(e,run,tasks):
     prompt=str(uuid.uuid4())
     p=dict(tasks[0]['params'],output_key=tasks[0]['id'])
     source,mask,original,paint=await prepare(e,run,tasks[0],prompt)
-    p.update({k:tasks[0]['params'][k] for k in ('width','height')})
+    p.update(tasks[0]['params'])
     graph=build(p,[t['params']['seed'] for t in tasks],source,mask)
     future=await e.comfy.events.subscribe(prompt,callback(e,run,tasks))
     e.prompts[run['id']].add(prompt)

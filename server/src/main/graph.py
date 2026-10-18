@@ -3,7 +3,7 @@ def node(kind, **inputs):
 
 
 def graph(p, source=None, mask=None):
-    g = {"1": node("CheckpointLoaderSimple", ckpt_name=p["checkpoint"]),
+    g = {"1": node("LLMManagedCheckpoint", ckpt_name=p["checkpoint"]),
          "2": node("CLIPTextEncode", clip=["1", 1], text=p["prompt"]),
          "3": node("CLIPTextEncode", clip=["1", 1], text=p["negative"]),
          "4": node("EmptyLatentImage", width=p["width"], height=p["height"], batch_size=1),

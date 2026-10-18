@@ -6,6 +6,7 @@ from .image_store import metadata
 from .store import encode
 from ..errors import message, UserError
 from ..prompt_cleanup import cleanup
+from .basic_edits import OPERATIONS
 
 
 def group(tasks):
@@ -44,7 +45,7 @@ async def execute(e,run,tasks):
             break
         for task in ready:
             remaining.remove(task)
-        gpu=[t for t in ready if t['params'].get('operation') not in ('upscale_image','remove_background')]
+        gpu=[t for t in ready if t['params'].get('operation') not in ['upscale_image',*OPERATIONS]]
         submitted=[]
         try:
             for batch in group(gpu):
