@@ -1,34 +1,26 @@
-Studio redesign / 聊天工作台重建
-Full scope: active goal attachment and eight local mockups. The goal is unfinished.
-完整範圍為目前目標檔及八個本地設計；整體目標尚未完成。
-Phase 0 default path passed: defaults, errors/logs, cancellation, transformers-only
-models, GGUF parity, ComfyUI RAM ownership/offload, NF4 disk cache and originals.
-階段零預設流程已通過：設定、錯誤取消、單引擎、GGUF、原生 RAM 與本機原圖。
-Phase 1 agent checks passed: five model workflows, batches/queue/masks, long memory,
-recovery/retry, downloads, settings, layouts, focus and migration.
-階段一代理驗收：五模型、批次遮罩、長記憶、恢復重試、設定及版面通過。
-All 25 reported bug paths and seven browser races are addressed; tokenizer EOS
-stops invented continuation turns. Qwen vision prefix reuse on CUDA/BF16 supports
-NF4 on all four Qwen profiles and FP4 on both 27B profiles, with all KV modes.
-原有二十五問題與七項時序已修正；EOS 阻止虛構後續回合。CUDA／BF16 視覺前綴
-支援四款 NF4 Qwen 及兩款二百七十億 FP4，三種 KV 均通過。
-FP4 27B: 120 repeated image requests, 36 full-prefill checks and Firefox generation,
-inspection and cached follow-up passed. Native 17.9 GB offload/restore; one disk load.
-FP4 二百七十億的 API、瀏覽器與原生卸載恢復通過，磁碟載入維持一次。
-Both 9B FP4 profiles and imported 9B NF4/FP16 fail some tool-context requests;
-vision keeps full prefill. Optional-tool guidance still fails 11/54 checks and is
-not enabled. Local optimized kernels remain under assessment.
-兩款九十億 FP4 及匯入九十億 NF4／FP16 尚有工具錯誤；工具指引仍有十一項失敗而未啟用；
-本機快速核心待驗。
-Masked SDXL source preservation fixes grey fill; the original narrow-mask star
-request still fails. Artistic quality and VLM judgment need continued work.
-遮罩保留原圖已修正灰塊；原窄區紅星仍失敗，生成品質及視覺判斷仍需改善。
-Human acceptance remains unrecorded: fan-out/studio-chat/human-check.html.
-Headless native clipboard was empty; file-bearing paste/drop handlers passed.
-真人五任務與原生圖片剪貼簿待驗證；代理不能取代真人，圖片貼上／拖放事件通過。
-Phase 2 follows that gate: edit/upscale polish, model background removal, branches,
-search/export, safe images, drafts/resume, instructions, notifications, cleanup,
-shortcuts/rate limits and PWA/phone polish. Later: pin/archive, outpaint, backup and docs.
-真人關卡後：編輯、去背、分支、匯出、安全模糊、草稿、指示、通知清理及手機；
-其後：釘選封存、擴圖、未加密備份及文件。
-Evidence / 證據：fan-out/studio-chat/latest.html; fan-out/studio-engine/prefix-fp4.html.
+Studio feature completion / 工作台功能完成
+
+Implemented / 已實作
+- Shared process-owned LLM weights across KV/context settings; retained CPU offload.
+- Bounded RAM admission, read-once ledger, retained SDXL loader and guarded conversion.
+- ComfyUI-managed model lifetime; extension-owned token stream; upstream files untouched.
+- Model background removal, twenty local edits, text, crop-based inpaint and outpaint.
+- Branch/regenerate/version selection, resume, feedback, search, exports and pin/archive.
+- Drafts, custom instructions, blur/reveal, notifications, shortcuts and PWA shell.
+- Storage/cleanup, bounded PDF/text attachments, backup/merge restore and IP limits.
+共享常駐權重、RAM 預算、一次讀取及原生 ComfyUI 管理均已實作。
+編輯、去背、分支、續作、搜尋匯出、個人設定、手機、文件及備份功能已加入。
+
+Live integration / 實際整合
+First Firefox generate → SDXL → inspect completed in 24 s; background removal in 6 s.
+No model matrix is running. Feature interactions, documentation and publication are in progress.
+首次瀏覽器生圖與檢視二十四秒完成，模型去背六秒；未執行完整模型矩陣。
+目前完成實際互動整合、文件及版本發布，尚未宣告整體完成。
+
+Constraints / 限制
+Existing models stay retained; additional models can be refused by the RAM budget.
+Image blur is reveal-on-click, not a classifier. PWA/notifications depend on browser support.
+Long documents use labeled context-limited excerpts; scanned PDFs need OCR.
+Pre-existing research found unreliable FP4/tool cases on 9B; NF4/BF16 stays the default.
+既有模型不丟棄；容量不足會拒絕新增載入。模糊為點選顯示，PWA 依瀏覽器支援。
+長文件為標示摘錄；掃描文件需 OCR。九十億 FP4 有既知模型回覆問題，預設維持 NF4/BF16。
