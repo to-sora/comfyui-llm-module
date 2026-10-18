@@ -26,3 +26,7 @@ Long documents use labeled context-limited excerpts; scanned PDFs need OCR.
 Pre-existing research found unreliable FP4/tool cases on 9B; NF4/BF16 stays the default.
 既有模型不丟棄；容量不足會拒絕新增載入。模糊為點選顯示，PWA 依瀏覽器支援。
 長文件為標示摘錄；掃描文件需 OCR。九十億 FP4 有既知模型回覆問題，預設維持 NF4/BF16。
+
+27B E2E completed: 51.42 s; peak system RAM 51.13 GB within the 80 GB plan.
+Fixed overestimated NF4 cache admission; retained 9B + SDXL during the 27B cycle.
+二百七十億流程與記憶體觀察完成，修正快取預算高估；既有模型保留。

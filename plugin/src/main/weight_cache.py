@@ -33,3 +33,15 @@ def save(cfg, model, processor):
     if target.exists():
         shutil.rmtree(target)
     staging.rename(target)
+
+
+def reservation(cfg):
+    cached=source(cfg)
+    if cached!=cfg['model']:
+        # Saved NF4 already includes quantization metadata and unquantized tensors.
+        # File sizes conservatively include headers; loader staging is separate.
+        size=sum(p.stat().st_size for p in Path(cached).glob('*.safetensors'))
+        if size:
+            return size+512*1024**2
+    from .estimate import weights
+    return int(weights(cfg)*1.15)+512*1024**2

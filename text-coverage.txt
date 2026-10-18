@@ -14,3 +14,5 @@ Earlier five-profile text/tool/vision/SDXL, GGUF parity, NF4 prefix, 27B FP4, SS
 Earlier cache-clear disposal behavior is superseded: R1 now keeps strong model owners until process exit. / 舊清快取釋放行為已由 R1 常駐規則取代。
 9B FP4 and FP16 candidate failures remain documented; NF4/BF16 is the default. / 九十億 FP4 與 FP16 失敗仍保留，預設 NF4/BF16。
 Human unaided acceptance and every model/configuration combination are not claimed. / 未宣稱真人驗收或所有模型組合通過。
+
+27B Firefox E2E: 51.42 s; native 17.90 GB offload/restore, one read each for 9B/27B/SDXL; peak RSS 37.17 GB, system used 51.13 GB, no swap. / 二百七十億端到端與原生記憶體切換完成。

@@ -17,3 +17,9 @@ Studio uses `LLMManagedCheckpoint` to retain SDXL outputs. Use this loader in cu
 Studio 使用常駐 checkpoint 節點；自訂流程亦應使用此節點。啟動器沿用 civit 設定、略過上游連結寫入，禁止磁碟卸載及 mmap，不修改上游或內部函式。執行中的 ComfyUI 禁止離線轉換。
 
 Studio 使用常驻 checkpoint 节点；自定义流程也应使用此节点。启动器沿用 civit 设置、跳过上游链接写入，禁止磁盘卸载和 mmap，不修改上游或内部函数。运行中的 ComfyUI 禁止离线转换。
+
+Cached NF4 reserves file bytes plus 512 MiB. Loading buffers and headroom are budgeted separately.
+
+NF4 快取依檔案大小加 512 MiB；載入暫存及可用 RAM 另計。
+
+NF4 缓存按文件大小加 512 MiB；加载暂存与可用 RAM 另计。

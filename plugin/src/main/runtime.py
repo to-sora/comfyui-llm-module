@@ -1,7 +1,6 @@
 import time
 from collections import deque
 from .patcher import LLMPatcher
-from .estimate import weights
 from . import ram_budget, weight_reads, weight_cache
 from .runtime_selection import Selection
 
@@ -27,7 +26,7 @@ class LLMRuntime:
         self.ensure_engine()
         fresh = self.engine.model is None
         if fresh:
-            size = int(weights(self.cfg)*1.15)+512*1024**2
+            size = weight_cache.reservation(self.cfg)
             ram_budget.reserve(self.key, size, weight_reads.staging_bytes(weight_cache.source(self.cfg)))
         self.engine.load(device, budget)
         self.resident_bytes = self.engine.diagnostics["storage"].get("cuda", 0)
