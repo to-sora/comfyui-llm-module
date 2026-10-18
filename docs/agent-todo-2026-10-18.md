@@ -6,6 +6,29 @@
 
 ---
 
+## 0. 已實測與未實測（2026-10-18，雲端 CPU 環境，無 GPU）
+
+已用真實檔案驗證（腳本在審查者的 scratchpad，結論如下）：
+
+| 項目 | 結果 |
+|---|---|
+| 固定版本存在 | `transformers==5.18.0`、`llama-cpp-python==0.3.36`、`accelerate==1.15.0`、`kernels==0.17.2` 都能安裝 |
+| transformers 5.18 的 GGUF 新路徑 | 只支援 `qwen35`、`qwen35moe`；會反轉 llama.cpp 的 5 種轉換（norm +1、`-exp(A_log)`、conv1d squeeze、value head 排列、改名），只有 `out_proj` 需要解量化，其餘保持 GGUF block（`quantizers/quantizer_gguf.py`、`integrations/gguf/gguf_conversion_mapping.py`） |
+| 數值正確性 | Qwen3.5-0.8B Q4_K_M（lmstudio-community）同一組 28 token：transformers 對 llama.cpp top1 1.0、mean KL 0.0055、max KL 0.052，兩者都答 "42" |
+| CPU 上的 packed 模式 | **沒有 kernel**（"no GGUF matmul kernel is published for this device"），transformers **自動改成整個模型解量化**。packed 模式只可能在 CUDA 上、且要能下載 hub kernel `ggml-org/ggml-quantization` |
+| repo 的 mmproj 對照表 | 對真實 Qwen3.5-0.8B mmproj：153／153 個 vision 張量全部對上，無缺漏、無 shape 不符 |
+| llama.cpp + memfd | stories15M Q4_0：從 `/proc/self/fd/N` 載入成功；第一次與重載 `read_bytes` 都是 0（只有複製進 memfd 時讀 19 MB）；權重顯示為 RssShmem 而非 RssAnon；`close()` 後 memfd 仍在；重載輸出相同。對照組（從磁碟路徑載入）讀了 19 MB，證明量測有效 |
+| memfd 的 RAM 計量 | 2 GiB memfd → Shmem +2048 MiB、MemAvailable −2124 MiB，ComfyUI 的 `virtual_memory_available` 看得到 |
+| `GgufHeader.from_file` | 有每個張量的 `nbytes`，可不讀權重算每層大小 |
+| `MTMDChatHandler`（0.3.36） | 會用 GGUF 內的 chat template 並傳入 `tools`；但**每次請求都 `reset()` + `kv_cache_clear()`**，視覺請求沒有前綴重用 |
+| `Llama.generate` 前綴重用 | 文字路徑會找最長共同前綴，但要 `llama_memory_seq_rm` 部分刪除；混合（遞迴）模型不支援時會整段重算 |
+| `Llama.save_state()` | 會額外複製 `n_batch × vocab` 的 logits（Qwen 248k vocab ≈ 0.5 GB／份），前綴快照不能用它 |
+
+未實測（必須在本機 GPU 先驗證，見 Step 7.0）：CUDA 上 hub kernel 能否取得與 packed 模式的速度與 VRAM；
+memfd 載入在 CUDA 上的行為；混合模型在 llama.cpp 的實際前綴行為；所有 9B／27B 的數字。
+
+---
+
 ## A. 不可違反的規則
 
 | 編號 | 規則 |
@@ -23,8 +46,10 @@
    `POST /llm/release` 與 `LLMRelease` 節點。
 3. LLM 常駐 RAM 預算 `llm_ram_budget_gb: 45`（寫在 `plugin/config/config.yaml`）。超過就拒絕載入新模型並回報原因，
    不自動踢掉舊模型。
-4. Path B（llama.cpp 執行時載入 GGUF）的 profile 名稱用 `-llamacpp` 後綴，避免與既有 Path A 的
-   `Qwen3.5-9B-gguf` 混淆：`Qwen3.8-27B-llamacpp`、`Qwen3.5-9B-llamacpp`。
+4. Path B（執行時載入 GGUF）有兩個候選，由 Step 7.0 的量測規則自動決定，不問使用者：
+   **B-T**＝transformers 5.18 packed GGUF（與 ComfyUI 原生 RAM 卸載完全相容，優先）；**B-L**＝llama.cpp + memfd（備案）。
+   profile 名稱固定用 `-gguf-runtime` 後綴，與既有 Path A 的 `Qwen3.5-9B-gguf` 區分：
+   `Qwen3.8-27B-gguf-runtime`、`Qwen3.5-9B-gguf-runtime`。
 5. 不重新匯入、不刪除、不重建：`plugin/data/imported/*`、`plugin/data/quantized/*`、`/mnt/DATA9/LLM_model/**`。
 6. 匯入關卡強制檢查只套用在本次之後新產生的匯入（`import.json` 有 `gate_version` 欄位者），既有匯入只警告。
 7. 不改系統設定（swap、ulimit、套件）；不執行 `sudo` 或 `plugin/.local-dep/installBuildTool.sh`。
@@ -55,8 +80,10 @@ RAM 規劃（估算，Step 0 與 S1 實測後更新 `fan-out/agent/ram-plan.json
 | 安全餘量 | 4 GB |
 | **LLM 常駐預算** | **45 GB**（90 − 8 − 14 − 16 − 4 = 48，取 45） |
 
-LLM 實際大小（估算）：Qwen3.8-27B NF4 ≈ 18 GB；Qwen3.8-27B-llamacpp ≈ 17.5 GB（GGUF + mmproj）；
-Qwen3.5-9B NF4 ≈ 6 GB；Qwen3.5-9B-llamacpp ≈ 8.3 GB。
+LLM 實際大小（估算）：Qwen3.8-27B NF4 ≈ 18 GB；Qwen3.5-9B NF4 ≈ 6 GB。
+Path B 的大小：B-L＝GGUF + mmproj（27B ≈ 17.5 GB、9B ≈ 8.3 GB，一直常駐 RAM）；
+B-T＝GGUF 大小 + 解量化的 `out_proj`（Σ linear-attention 層 `hidden × linear_num_value_heads × linear_value_head_dim × dtype bytes`）
++ mmproj（BF16）。27B 用 float32 時 `out_proj` 可能多出數 GB，必須依 config 算出，超過 VRAM 就改 bfloat16 或改用 B-L。
 
 GPU session 規則：
 - 一個 session＝ComfyUI 啟動一次到停止。plugin 程式碼改了才需要重啟；同一個 step 的程式碼改完再一次重啟。
@@ -79,6 +106,8 @@ GPU session 規則：
     `comfy/cli_args.py` 的 `--cache-ram` 為 `nargs='*'`；`comfy/model_management.py` 的 `def load_models_gpu(` 含
     `memory_required`、`def ensure_pin_budget`。
   - `civit_script/start.sh` 是否加上 `--high-ram`、`--cache-classic`、`--cache-none`（有就停止並回報，不修改它）。
+  - ComfyUI venv 的 `torch.__version__`、`torch.version.cuda`、GPU compute capability（hub kernel 是否有對應版本取決於這些）。
+  - Studio 瀏覽器測試需要 `~/UAT-firefox/firefox/firefox`；不存在就把所有 Studio 瀏覽器測試標記 skipped，不停止。
   - `models.yaml` 每個 profile 的 NF4 快取是否已存在（`plugin/data/quantized/*/source.txt` 對應）。不存在的 profile 不可在測試中使用（會觸發 54 GB 讀取 + 15 GB 寫入）。
 - [ ] commit：`chore: add agent preflight checks / 新增代理前置檢查`
 
@@ -142,15 +171,19 @@ GPU session 規則：
 
 預算：Qwen3.5-9B NF4 快取大小 + SDXL base checkpoint 大小，× 1.05 + 3 GB。
 
-- [ ] `bash plugin/start.sh --force`（R3：只用 repo 自己的 launcher）；等 `/llm/status` 可用。
+- [ ] 啟動 ComfyUI（R3：只用 repo 自己的 launcher；**不要用 `--force`**，它會殺掉佔用連接埠的其他程序）：
+  `bash plugin/start.sh --stop; nohup bash plugin/start.sh > fan-out/agent/comfy.log 2>&1 &`，
+  每 5 秒 `curl -sk https://127.0.0.1:8188/llm/status`，600 秒內沒有回應就停止。連接埠被不明程序佔用就停止並回報。
 - [ ] 新增並執行 `plugin/src/test/ram_rules_accept.py`（9B、全程包在 `Budget` 內）：
   1. 對話一次（kv none）。
   2. 對話（kv hqq_8、context 8192）→ `disk_loads` 不變。
   3. SDXL 與對話交替 5 輪 → `disk_loads` 不變。
   4. `/free unload_models:true` → 對話 → `disk_loads` 不變、`transfers` +1。
   5. `/free unload_models:true, free_memory:true` → 對話 → `disk_loads` 不變。
-  6. RAM 壓力：另開子程序配置 ballast，使 MemAvailable 降到 12 GB（低於 16 GB inactive headroom、高於停止條件 8 GB），
-     跑一次 SDXL prompt 再對話 → `disk_loads` 不變；釋放 ballast。
+  6. RAM 壓力：另開子程序配置 ballast，使 MemAvailable 降到 12 GB（低於 16 GB inactive headroom、高於停止條件 8 GB；
+     有 swap 時改成 14 GB，且 swap 用量增加超過 256 MB 就中止此項）。壓力期間**只送 LLM 請求**（每個節點執行完都會觸發
+     ComfyUI 的 RAM 清理）→ LLM 的 `disk_loads` 不變、這段期間 `read_bytes` 增量 ≈ 0。釋放 ballast。
+     ComfyUI 在壓力下清掉 SDXL 快取、之後重讀 SDXL，是 ComfyUI 原生行為（R3 不能改），另外記錄，不計入預算。
   7. `/llm/release` 9B → 確認 RAM 釋放（這是唯一允許之後重讀的情況，本 session 不再載入 9B）。
 - [ ] 同一個 session 接著跑既有的 9B 驗收：`api_accept`、`stream_accept`、`fault_accept`、`concurrent_accept`、`ram_accept`
   （在步驟 7 之前跑，避免重讀）。
@@ -171,47 +204,67 @@ GPU session 規則：
   以 `<think>` 結尾才實作 forced-open 處理與 `reasoning_content`；否則在報告中記錄「不需要」。
 - [ ] 每項附單元測試；全部完成後一次 commit（或每項一次）。
 
-## Step 7：Path B — llama.cpp 執行時載入 GGUF（review T-5.0、T-5.6～T-5.9）
+## Step 7：Path B — 執行時載入 GGUF（review T-5.0、T-5.6～T-5.9）
 
+- [ ] 7.0 **決策 spike（先做，用 0.8B，I/O 很小）**：在 ComfyUI 停止時，用 plugin venv 跑新的
+  `plugin/src/test/gguf_runtime_spike.py`。模型：lmstudio-community 的 `Qwen3.5-0.8B-Q4_K_M.gguf` 與
+  `mmproj-Qwen3.5-0.8B-BF16.gguf`（共 ≈ 735 MB，下載到 `plugin/data/spike/`，之後重用不再下載），config／tokenizer 取自 `Qwen/Qwen3.5-0.8B`。
+  先在 plugin venv 安裝 `kernels==0.17.2`（transformers 5.18 要求 `>=0.17.0,<0.18.0`）；B-T 被選中才寫入 `plugin/requirements.txt`。
+  - B-T：先呼叫 `transformers.integrations.gguf.kernels.get_gguf_kernel()`；回傳 `False` 就判定 B-T 不可用（不要直接
+    `from_pretrained`，它會靜默整個解量化）。可用時再用 `GgufConfig(dequantize=False)`、`device_map={"": "cuda:0"}`、
+    `attn_implementation="sdpa"` 載入，斷言：`GgufLinear` 模組數 > 0、uint8 參數 > 0、`torch.cuda.memory_allocated` ≈ 檔案大小
+    + `out_proj` 解量化量；`hf_move.move(model, "cpu", 0)` 後 CUDA 歸零、再搬回 GPU 輸出相同（R1）。
+  - B-L：同一個 GGUF 用 memfd + llama-cpp-python（`n_gpu_layers=-1`）載入；斷言 `read_bytes` 只在複製時增加、
+    RssAnon 不多出一份權重、Shmem 增加約檔案大小、`close()` 後重載 `read_bytes` 不變。
+  - 兩者都量：logits 對 llama.cpp 的 top1／KL（同 `importer/logit_parity.py` 的門檻）、decode tok/s、512 與 4096 token 的 prefill 秒數、VRAM 峰值。
+  - 確認 hub kernel 下載後，設定 `HF_HUB_OFFLINE=1` 重開程序仍能取得 kernel（否則每次啟動都要連網）。
+  - **決策規則**：B-T 可用、數值通過、decode tok/s ≥ B-L 的 50%、4096 token prefill ≤ B-L 的 3 倍 → 選 B-T；否則選 B-L。
+    寫入 `fan-out/agent/path-b-decision.json`，之後的步驟只實作被選中的那一個。兩者都不可用就跳過 Step 7 剩餘部分與 Step 8，在報告中說明。
 - [ ] 7.1 共同 Engine 介面：`load(device, budget)`、`offload()`、`prepare()`、`chat()`、`cache_tensors()`、`diagnostics`。
   `runtime.ensure_engine` 依 `backend` 選擇；移除 `runtime.py:20-21`、`request_options.py:14-15`、`estimate.py:13-14`、
   `token_count.py:16-17` 的 gguf 拒絕，改成依 backend 驗證。
-- [ ] 7.2 `plugin/src/main/gguf_memfd.py`：第一次載入時把 GGUF 與 mmproj 讀進 `os.memfd_create`（64 MiB 分塊），
-  讀完對來源檔 `os.posix_fadvise(fd, 0, 0, os.POSIX_FADV_DONTNEED)`，避免 page cache 與 memfd 同時佔用兩份 RAM。
-  memfd 由 registry 持有，`disk_loads` +1。這是此權重唯一一次磁碟讀取。
-- [ ] 7.3 `plugin/src/main/gguf_engine.py`：起點是 `git show ebf4ca4^:plugin/src/main/gguf_engine.py`
-  （以及同一 commit 的 `gguf_inputs.py`、`generation_controls.py`）。要改的地方：
-  - `model_path=f"/proc/self/fd/{fd}"`、`use_mmap=True`、`flash_attn=True`、`type_k/type_v` 對應 `none/q8_0/q4_0`。
-  - 拿掉每次請求的 `self.model.reset()`（它會讓前綴重用失效）。
-  - 文字請求：prompt 用 GGUF 的 `tokenizer.chat_template` 經 Jinja 渲染（同 `importer/token_parity.py`），呼叫 `create_completion`。
-  - 視覺請求：沿用 `MTMDChatHandler`（mmproj 也用 `/proc/self/fd/N`）。先確認渲染後的 prompt 含工具定義；不含就照
-    `932df8b`、`ebf4ca4^` 的做法把 handler 模板換成 GGUF 的 chat template。
-  - 輸出 raw text 交給共同的 `model_response.parse` / `tool_calls.parse`；串流沿用 `llm.token` 事件與 `VisibleText`；
-    `stopping_criteria` 內呼叫 `mm.throw_exception_if_processing_interrupted()`。
-  - kv 或 context 改變時重建 `Llama`（從 memfd 載入，不讀磁碟，符合 R2），在 diagnostics 記錄重建次數與秒數。
-- [ ] 7.4 Patcher 對應（review §5.4）：用 `transformers.integrations.gguf.reader.GgufHeader`（`importer/vision.py` 已在用）
-  讀 memfd 上的張量資訊，算每層大小與 `n_gpu_layers`；`partially_unload` 先釋放 context；`detach` 呼叫 `close()`、memfd 保留；
-  `loaded_size` 用載入前後 `torch.cuda.mem_get_info` 的差值；`_comfy_cache_tensors` 回傳 `[]`。
-- [ ] 7.5 前綴重用：同一對話兩輪，記錄第二輪 prefill token 數；混合模型若整段重算，改用 `save_state`／`load_state`
-  保存上一輪結尾（存在 RAM，大小計入 registry 的 `ram_bytes`）。
-- [ ] 7.6 Profiles（`plugin/config/content-config/models.yaml`）：新增 `Qwen3.5-9B-llamacpp`、`Qwen3.8-27B-llamacpp`，
-  `backend: gguf`，`model`／`mmproj` 指向 `imports.yaml` 的檔案。Studio `catalog.settings` 依 profile backend 驗證 kv
-  （gguf：`none/q8_0/q4_0`）；刪除未使用的 `discovery.llm_settings`。
-- [ ] 7.7 單元測試：memfd 讀寫（用小暫存檔）、層大小計算（用 gguf-py 寫出的小型假 GGUF；gguf 套件固定版本寫入 `requirements-dev.txt`）、
-  backend 選擇、profile 驗證。
+- [ ] 7.2（選 B-T 時）`plugin/src/main/gguf_packed.py`：
+  - 載入前檢查 kernel（同 7.0），並用 `GgufHeader.from_file` 依 `get_gguf_plan` 算出會被解量化的張量與大小，計入 RAM／VRAM 預算；
+    不符就拒絕載入，不可讓 transformers 退回整個解量化。
+  - 文字權重：`AutoModelForCausalLM.from_pretrained(<gguf 所在目錄>, gguf_file=..., quantization_config=GgufConfig(dequantize=False))`。
+  - 視覺：profile 新增 `base`（HF config 與 processor 目錄，9B 用 `/mnt/DATA9/LLM_model/d/Qwen3.5-9B`，27B 用
+    `/mnt/DATA9/LLM_model/d/Qwen3.8-27B-OBLITERATED`）。在 meta device 建 `AutoModelForImageTextToText`，把
+    `model.language_model` 與 `lm_head` 換成 packed 的模組，vision 權重用 `importer/vision.py` 的 `convert(mmproj, torch.bfloat16)`
+    以 `load_state_dict(strict=True, assign=True)` 只載入 `model.visual.*`。先比對 base config 的 text 部分與 GGUF 轉出的 config 一致才組裝。
+  - 只讀一次磁碟：GGUF 與 mmproj 各讀一次；卸載用現有 `hf_move`（packed uint8 tensor 搬到 CPU RAM，R1）；registry 強引用（Step 3）。
+  - packed 模型不能 `save_pretrained`（`is_serializable` 為 False），不要寫 NF4 快取。
+  - `hf_precision.py`、`prefix_probe_linear.py` 只認 `Linear4bit`；packed 模型的 Qwen 視覺前綴先走完整預填（`prefix_context.supported` 回傳 False），文字前綴照常。
+- [ ] 7.2'（選 B-L 時）`plugin/src/main/gguf_memfd.py` 與 `gguf_engine.py`：
+  - 第一次載入把 GGUF 與 mmproj 讀進 `os.memfd_create`（64 MiB 分塊），讀完對來源 `posix_fadvise(DONTNEED)`；memfd 由 registry 持有，`disk_loads` +1。
+  - 起點是 `git show ebf4ca4^:plugin/src/main/gguf_engine.py`（同 commit 的 `gguf_inputs.py`、`generation_controls.py`）。
+    `model_path=f"/proc/self/fd/{fd}"`、`use_mmap=True`、`flash_attn=True`、`type_k/type_v` 對應 `none/q8_0/q4_0`；拿掉每次請求的 `reset()`。
+  - 文字：GGUF 的 `tokenizer.chat_template` 經 Jinja 渲染後 `create_completion`；視覺：`MTMDChatHandler`（已確認會帶入 `tools`，但每次清 KV）。
+  - 輸出 raw text 交給共同的 `model_response.parse`／`tool_calls.parse`；串流沿用 `llm.token` 與 `VisibleText`；`stopping_criteria` 呼叫 `throw_exception_if_processing_interrupted()`。
+  - 前綴快照不要用 `save_state()`（會多複製 ≈ 0.5 GB logits），改用 `llama_state_seq_get_data`／`llama_state_seq_set_data`，大小計入 `ram_bytes`。
+  - kv 或 context 改變時從 memfd 重建 `Llama`（不讀磁碟），記錄次數與秒數。
+- [ ] 7.3 Patcher 對應：
+  - B-T：與 Path A 相同（`hf_move` 卸載／恢復），`model_size` 只回報權重。
+  - B-L：用 `GgufHeader.from_file`（讀 memfd 路徑，只讀 header）算每層大小與 `n_gpu_layers`；`detach` 呼叫 `close()`、memfd 保留；
+    `loaded_size` 用載入前後 `torch.cuda.mem_get_info` 差值；`partially_unload` 一律回傳 0（只釋放 context 要用 llama-cpp-python 內部 API，不做）。
+  - 兩者的 `_comfy_cache_tensors` 都回傳 `[]`（registry 持有）。
+- [ ] 7.4 Profiles：新增 `Qwen3.5-9B-gguf-runtime`、`Qwen3.8-27B-gguf-runtime`（`backend: gguf`，`model`／`mmproj` 指向 `imports.yaml`，
+  B-T 另加 `base`）。Studio `catalog.settings` 依 backend 驗證 kv（B-T：`none/hqq_8/hqq_4`；B-L：`none/q8_0/q4_0`）；刪除未使用的 `discovery.llm_settings`。
+- [ ] 7.5 前綴：B-T 沿用現有文字前綴快照；B-L 量測第二輪 prefill token 數，必要時用 7.2' 的 seq state 快照保存 system 前綴。
+  B-L 的視覺請求（`MTMDChatHandler` 每次清 KV）接受完整預填，在報告中記錄耗時。
+- [ ] 7.6 單元測試：backend 選擇、profile 驗證、kernel 不可用時拒絕載入、預算計算；B-L 另測 memfd 讀寫（小暫存檔）；
+  vision 對照表測試沿用 0.8B mmproj 的 header（只讀 header，不讀權重）。
 - [ ] commit。
 
 ## Step 8：GPU session S2（Path B 與 A/B 對照）
 
 預算：9B GGUF + 9B mmproj + 27B GGUF + 27B mmproj + Qwen3.8-27B NF4 快取 + SDXL base，× 1.05 + 3 GB。
-RAM 順序（不超過 45 GB 預算）：先 9B 系列，release 後再 27B 系列。
+RAM 順序（不超過 45 GB 預算）：9B runtime 先跑完並 release，再跑 27B 兩條路徑。
 
-- [ ] 啟動 ComfyUI。
-- [ ] 確認 review §8-10：`/proc/<pid>/status` 的 RSS 沒有多出一份 GGUF；`/proc/meminfo` 的 Shmem 增加約 GGUF 大小；
-  MemAvailable 對應減少。不成立就停止並回報（R1 的設計前提失效）。
-- [ ] `Qwen3.5-9B-llamacpp`：文字、工具、視覺、與 SDXL 交替 5 輪、`/free unload_models` 後重載 → `disk_loads == 1`、
-  重載時 `read_bytes` 不增加；量測 tok/s、首 token、VRAM。完成後 `/llm/release`。
-- [ ] `Qwen3.8-27B-llamacpp` 與 `Qwen3.8-27B`（Path A）：同一組請求各跑一次並輸出差異（review T-5.10），
+- [ ] 啟動 ComfyUI（同 Step 5 的方式）。
+- [ ] `Qwen3.5-9B-gguf-runtime`：文字、工具、視覺、與 SDXL 交替 5 輪、`/free unload_models` 後重載 → `disk_loads == 1`、重載時 `read_bytes` 不增加；
+  量測 tok/s、首 token、VRAM、常駐 RAM。完成後 `/llm/release`。
+- [ ] 27B 載入前先依 config 算出 VRAM 需求（B-T 含 `out_proj` 解量化量）；超過 24 GB 減去 2 GB 工作空間就改 bfloat16（B-T）或部分 layer 放 CPU（B-L），仍不符就跳過並記錄。
+- [ ] `Qwen3.8-27B-gguf-runtime` 與 `Qwen3.8-27B`（Path A）：同一組請求各跑一次並輸出差異（review T-5.10），
   與 SDXL 交替 10 輪不 OOM；兩者 `disk_loads` 各為 1（review T-5.1）。
 - [ ] 停止 ComfyUI；結果寫入 `fan-out/agent/s2.json`。
 - [ ] commit。
