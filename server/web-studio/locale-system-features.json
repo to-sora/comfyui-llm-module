@@ -1,0 +1,74 @@
+{
+ "Personal preferences": [
+  "個人偏好",
+  "个人偏好"
+ ],
+ "About you": [
+  "關於您",
+  "关于您"
+ ],
+ "How should Studio reply?": [
+  "希望 Studio 如何回覆？",
+  "希望 Studio 如何回复？"
+ ],
+ "Blur images until revealed": [
+  "點選顯示前將圖片模糊",
+  "点击显示前将图片模糊"
+ ],
+ "Notify when a reply finishes": [
+  "回覆完成時通知",
+  "回复完成时通知"
+ ],
+ "Install Studio": [
+  "安裝 Studio",
+  "安装 Studio"
+ ],
+ "Storage": [
+  "儲存空間",
+  "存储空间"
+ ],
+ "Storage and cleanup": [
+  "儲存空間與清理",
+  "存储空间与清理"
+ ],
+ "Find images older than this many days": [
+  "尋找早於此天數的圖片",
+  "查找早于此天数的图片"
+ ],
+ "Find old images": [
+  "尋找舊圖片",
+  "查找旧图片"
+ ],
+ "Delete selected files": [
+  "刪除所選檔案",
+  "删除所选文件"
+ ],
+ "Select images to delete": [
+  "請選擇要刪除的圖片",
+  "请选择要删除的图片"
+ ],
+ "Selected files deleted": [
+  "已刪除所選檔案",
+  "已删除所选文件"
+ ],
+ "Backup and restore": [
+  "備份與還原",
+  "备份与恢复"
+ ],
+ "Download full backup": [
+  "下載完整備份",
+  "下载完整备份"
+ ],
+ "Restore backup": [
+  "還原備份",
+  "恢复备份"
+ ],
+ "Studio backup ZIP": [
+  "Studio 備份 ZIP",
+  "Studio 备份 ZIP"
+ ],
+ "Choose a Studio backup ZIP": [
+  "請選擇 Studio 備份 ZIP",
+  "请选择 Studio 备份 ZIP"
+ ]
+}

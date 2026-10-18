@@ -2,6 +2,7 @@ import {state,emit,active,uploadsPending} from './state.js';
 import {$} from './dom.js';
 import {api} from './api.js';
 import {open} from './chats.js';
+import {clear as clearDraft} from './drafts.js';
 import {refresh} from './stream.js';
 
 export async function send(text,attachments=state.attachments){
@@ -9,11 +10,12 @@ export async function send(text,attachments=state.attachments){
  if(active())throw Error('Wait for this reply or stop it first');
  if(!text.trim()&&Array.isArray(attachments)&&!attachments.length)return;
  const origin=state.route;
- let chat=state.chat?.id;
+ let chat=state.chat?.id;const wasNew=!chat;
  state.sending=true;emit('sending');
  try{
   const images=typeof attachments==='function'?await attachments():attachments;
-  const ids=images.map(i=>i.id);
+  const ids=images.filter(i=>i.kind!=='document').map(i=>i.id);
+  const documents=images.filter(i=>i.kind==='document').map(i=>i.id);
   if(!chat){
    chat=(await api('/api/chats','POST',{})).id;
    if(state.route===origin){
@@ -26,11 +28,12 @@ export async function send(text,attachments=state.attachments){
     }
    }
   }
-  await api(`/api/chats/${chat}/messages`,'POST',{text,attachments:ids});
+  await api(`/api/chats/${chat}/messages`,'POST',{text,attachments:ids,documents});
+  clearDraft(chat);if(wasNew)clearDraft(null);
   if(state.chat?.id!==chat)return;
   const prompt=$('#prompt');
   if(prompt.value===text){prompt.value='';prompt.style.height='auto'}
-  state.attachments=state.attachments.filter(i=>!ids.includes(i.id));emit('attachments');
+  state.attachments=state.attachments.filter(i=>!ids.includes(i.id)&&!documents.includes(i.id));emit('attachments');
   await refresh();if(state.chat?.id===chat)prompt.focus();
  }finally{state.sending=false;emit('sending')}
 }

@@ -1,0 +1,6 @@
+import {el} from './dom.js';
+import {state} from './state.js';
+export function choice(label,name,values,value){return el('label',{},label,el('select',{name},values.map(v=>{const [key,title]=Array.isArray(v)?v:[v,v];return el('option',{value:key,selected:key===value},title)})))}
+export function model(value){const id='assistant-models';return el('label',{},'Default assistant',el('input',{name:'model',value,list:id,required:true,maxLength:400}),el('datalist',{id},(state.boot.profiles||[]).map(p=>el('option',{value:p.id}))))}
+export function extra(prefs){return el('details',{},el('summary',{},'Personal preferences'),el('label',{},'About you',el('textarea',{name:'about_me',value:prefs.about_me||'',maxLength:4000,rows:3})),el('label',{},'How should Studio reply?',el('textarea',{name:'reply_instructions',value:prefs.reply_instructions||'',maxLength:4000,rows:3})),el('label',{},el('input',{name:'safe_images',type:'checkbox',checked:!!prefs.safe_images}),'Blur images until revealed'),el('label',{},el('input',{name:'notifications',type:'checkbox',checked:!!prefs.notifications}),'Notify when a reply finishes'))}
+export function values(fields){return {about_me:fields.about_me,reply_instructions:fields.reply_instructions,safe_images:!!fields.safe_images,notifications:!!fields.notifications}}

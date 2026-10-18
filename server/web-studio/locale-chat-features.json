@@ -1,0 +1,82 @@
+{
+ "Search": [
+  "搜尋",
+  "搜索"
+ ],
+ "Search chats and image prompts": [
+  "搜尋對話及圖片提示詞",
+  "搜索对话和图片提示词"
+ ],
+ "No matches": [
+  "沒有符合的結果",
+  "没有匹配结果"
+ ],
+ "Archived chats": [
+  "已封存對話",
+  "已归档对话"
+ ],
+ "No archived chats": [
+  "沒有已封存對話",
+  "没有已归档对话"
+ ],
+ "Pin": [
+  "釘選",
+  "置顶"
+ ],
+ "Unpin": [
+  "取消釘選",
+  "取消置顶"
+ ],
+ "Archive": [
+  "封存",
+  "归档"
+ ],
+ "Unarchive": [
+  "取消封存",
+  "取消归档"
+ ],
+ "Export Markdown": [
+  "匯出 Markdown",
+  "导出 Markdown"
+ ],
+ "Export chat and images": [
+  "匯出對話與圖片",
+  "导出对话与图片"
+ ],
+ "Edit and branch": [
+  "編輯並建立分支",
+  "编辑并创建分支"
+ ],
+ "Edit message": [
+  "編輯訊息",
+  "编辑消息"
+ ],
+ "Send as new version": [
+  "以新版本送出",
+  "作为新版本发送"
+ ],
+ "Message version": [
+  "訊息版本",
+  "消息版本"
+ ],
+ "Regenerate": [
+  "重新產生",
+  "重新生成"
+ ],
+ "Continue": [
+  "繼續",
+  "继续"
+ ],
+ "Helpful": [
+  "有幫助",
+  "有帮助"
+ ],
+ "Not helpful": [
+  "沒有幫助",
+  "没有帮助"
+ ],
+ "Feedback saved": [
+  "已儲存回饋",
+  "已保存反馈"
+ ]
+}

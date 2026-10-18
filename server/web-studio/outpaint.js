@@ -1,0 +1,5 @@
+import {el,dialog,safe} from './dom.js';
+import {api} from './api.js';
+import {send} from './submit.js';
+import {state,emit} from './state.js';
+export function show(image){const instruction=el('textarea',{name:'instruction',rows:3,required:true,value:'Extend the image naturally into the new space. Keep the existing subject unchanged.'});const form=el('form',{},el('p',{},'Choose how much space to add. The existing image remains unchanged.'),...['left','top','right','bottom'].map(name=>el('label',{},name,el('input',{name,type:'number',min:0,max:2048,step:8,value:128}))),el('label',{},'Describe the expanded image',instruction),el('button',{type:'submit',class:'primary'},'Expand and generate'));const d=dialog('Expand canvas',form);form.onsubmit=safe(async event=>{event.preventDefault();const fields=Object.fromEntries(new FormData(form));const edges=Object.fromEntries(['left','top','right','bottom'].map(k=>[k,Number(fields[k])]));const value=await api('/api/images/'+image.id+'/outpaint','POST',edges);await send(fields.instruction+' Use the attached painted area to fill only the newly expanded canvas.',[value.source,value.mask]);d.close();emit('close-view')})}

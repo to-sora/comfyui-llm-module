@@ -1,0 +1,22 @@
+{
+ "Download chats, images, documents and settings. The ZIP is not encrypted; keep it private.": [
+  "下載對話、圖片、文件與設定。ZIP 未加密，請妥善保管。",
+  "下载对话、图片、文档和设置。ZIP 未加密，请妥善保管。"
+ ],
+ "Restore adds missing records and files. Existing data is kept. Finish active replies first.": [
+  "還原會新增缺少的記錄與檔案，保留既有資料。請先完成正在執行的回覆。",
+  "恢复会添加缺少的记录和文件，保留现有数据。请先完成正在运行的回复。"
+ ],
+ "Choose how much space to add. The existing image remains unchanged.": [
+  "選擇要增加的空間，原有圖片區域保持不變。",
+  "选择要增加的空间，原有图片区域保持不变。"
+ ],
+ "The browser could not save this draft": [
+  "瀏覽器無法儲存此草稿",
+  "浏览器无法保存此草稿"
+ ],
+ "Attach images": [
+  "附加圖片或文件",
+  "添加图片或文档"
+ ]
+}

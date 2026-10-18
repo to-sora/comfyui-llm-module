@@ -3,7 +3,8 @@
 <title>Studio</title><link rel="stylesheet" href="/static/base.css"><link rel="stylesheet" href="/static/layout.css">
 <link rel="stylesheet" href="/static/thread.css"><link rel="stylesheet" href="/static/viewer.css">
 <link rel="stylesheet" href="/static/panels.css"><link rel="stylesheet" href="/static/responsive.css">
-<link rel="stylesheet" href="/static/empty.css">
+<link rel="stylesheet" href="/static/empty.css"><link rel="stylesheet" href="/static/features.css">
+<link rel="manifest" href="/static/manifest.webmanifest"><meta name="theme-color" content="#536657">
 <script type="module" src="/static/main.js"></script></head><body>
 <a class="skip" href="#prompt">Skip to message</a>
 <nav id="sidebar" aria-label="Conversations"><a href="/" class="brand"><span class="brand-mark">▧</span>Studio</a>
@@ -21,6 +22,6 @@
 <button id="send" type="submit" class="send" aria-label="Send message" disabled>↑</button><button id="stop" type="button" hidden data-i18n="stop">Stop</button></div>
 </form><p class="composer-note" data-i18n="reviewNote">The assistant can make mistakes. Check the images and answers.</p></div></div></main>
 <aside id="viewer" hidden aria-label="Image viewer"></aside><aside id="debug-panel" hidden aria-label="Debug"></aside>
-<dialog id="dialog"></dialog><input id="files" type="file" accept="image/*,.heic,.heif" multiple hidden>
+<dialog id="dialog"></dialog><input id="files" type="file" accept="image/*,.heic,.heif,.pdf,.txt,.md,.csv,.json,.log" multiple hidden>
 <div id="toast" role="status" hidden></div>
 </body></html>

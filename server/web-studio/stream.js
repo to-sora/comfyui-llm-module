@@ -2,11 +2,12 @@ import {state,emit} from './state.js';
 import {api} from './api.js';
 import {merge} from './paging.js';
 let source,loading=false,again=false,buffer=[],generation=0;
-const kinds=['run.queued','message.delta','message.updated','tool.started','image.progress','image.preview','image.done','image.error','message.done','run.error','chat.summary','trace.changed'];
+const kinds=['branch.changed','run.queued','message.delta','message.updated','tool.started','image.progress','image.preview','image.done','image.error','message.done','run.error','chat.summary','trace.changed'];
 function apply(event){if(Number(event.lastEventId)<=state.cursor)return;state.cursor=Number(event.lastEventId);const d=JSON.parse(event.data);const kind=event.type;
 if(kind==='message.delta'){const row=state.messages.find(m=>m.id===d.message_id);if(row){let last=row.parts.at(-1);if(last?.type!=='text'){last={type:'text',text:''};row.parts.push(last)}last.text+=d.text;emit('message',row.id)}}
 else if(kind==='image.done'){state.images[d.image.id]=d.image;emit('image',d.image.id)}
 else if(kind.startsWith('image.')){const row=state.images[d.image_id];if(row){row.progress={...row.progress,...d};emit('image',row.id)}}
+else if(kind==='branch.changed'){state.messages=[];state.before=null;refresh()}
 else if(kind==='message.updated'||kind==='message.done')refresh();
 else if(kind==='run.error'){if(state.runs[d.run_id])state.runs[d.run_id].error=d.message;emit('activity',d.message);refresh()}
 else if(kind==='run.queued'){if(state.runs[d.id])Object.assign(state.runs[d.id],d);emit('queue',d)}
