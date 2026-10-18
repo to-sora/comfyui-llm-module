@@ -2,9 +2,10 @@ import asyncio
 import json
 import struct
 from pathlib import Path
-import folder_paths
 from aiohttp import web
 from .registry import profiles
+from .settings import APP,read
+from .checkpoint_cache import native
 
 
 def shapes(path):
@@ -15,17 +16,15 @@ def shapes(path):
                 raise ValueError("Invalid tensor header")
             header = json.loads(stream.read(size))
         return {k: v["shape"] for k, v in header.items() if k != "__metadata__"}
-    import torch
-    value = torch.load(path, map_location="meta", weights_only=True, mmap=True)
-    value = value.get("state_dict", value)
-    return {k: list(v.shape) for k, v in value.items() if hasattr(v, "shape")}
+    raise ValueError('Use a safetensors SDXL checkpoint for metadata-only discovery')
 
 
 def checkpoints():
     accepted, excluded = [], []
-    for name in folder_paths.get_filename_list("checkpoints"):
+    root=(APP/read('config.yaml')['comfy_directory']).resolve()/'models/checkpoints'
+    for name in native().INPUT_TYPES()['required']['ckpt_name'][0]:
         try:
-            shape = shapes(folder_paths.get_full_path_or_raise("checkpoints", name))
+            shape = shapes(root/name)
             prefix = "model.diffusion_model."
             adm = shape.get(prefix + "label_emb.0.0.weight", [])
             inp = shape.get(prefix + "input_blocks.0.0.weight", [])

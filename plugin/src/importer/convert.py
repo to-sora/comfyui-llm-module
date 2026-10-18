@@ -26,6 +26,8 @@ def main():
     target = APP / "data/imported" / args.profile
     if target.exists():
         raise FileExistsError(f"Existing import is retained: {target}")
+    from .budget import admit
+    admit(source,cfg['mmproj'],args.base)
     staging = target.with_name(target.name + ".partial")
     staging.mkdir(parents=True, exist_ok=True)
     tokenizer = AutoTokenizer.from_pretrained(source.parent, gguf_file=source.name, local_files_only=True)

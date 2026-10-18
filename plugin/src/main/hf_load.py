@@ -1,11 +1,11 @@
 import torch
 import transformers as tr
-import psutil
 from .quantization import configuration
 from .settings import APP
 from . import weight_cache
 from .estimate import weights
 from .offload_budget import weight_budget
+from . import ram_budget, weight_reads
 
 
 def processor(cfg):
@@ -36,14 +36,18 @@ def load(cfg, proc, vision, budget):
     if device != "cpu" and weights(cfg) > budget:
         mapping = "auto"
         options["max_memory"] = {torch.device(device).index or 0: weight_budget(config, budget),
-                                 "cpu": int(psutil.virtual_memory().available * .85)}
+                                 "cpu": max(0, ram_budget.available()-ram_budget.HEADROOM)}
         quant = options.get("quantization_config")
         if quant:
             quant.llm_int8_enable_fp32_cpu_offload = True
+    weight_reads.claim(source, cfg['quantization'])
     model = cls.from_pretrained(source, config=config, dtype=dtype, device_map=mapping,
                                attn_implementation="sdpa", **options, **common).eval()
     if "disk" in getattr(model, "hf_device_map", {}).values():
         raise MemoryError("The model requires more RAM than is available")
+    from .ram_storage import materialize
+    materialize(model)
+    weight_reads.completed(source)
     weight_cache.save(cfg, model, proc)
     model._llm_weight_source = source
     return model

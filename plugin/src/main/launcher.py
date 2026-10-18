@@ -37,22 +37,9 @@ def main():
                     raise RuntimeError("Port owner PID requires process visibility")
                 terminate(pid)
         cert, key = certificate()
-        script = APP.parents[1] / "civit_script" / "start.sh"
-        cmd = ["bash", str(script),
-               "--listen", hosts(cfg), "--port", str(cfg["port"]),
-               "--tls-keyfile", str(key), "--tls-certfile", str(cert),
-               "--disable-auto-launch", "--preview-method", "latent2rgb", "--user-directory", str(APP / "data/user"),
-               "--input-directory", str(APP / "data/input"),
-               "--output-directory", str(APP / "data/output"),
-               "--temp-directory", str(APP / "data/tmp")]
-        if args.cpu:
-            cmd.append("--cpu")
-        runtime = read("config.yaml")
-        cmd += ["--cache-ram", str(runtime.get("cache_ram_headroom_gb", 10)),
-                str(runtime.get("cache_ram_inactive_headroom_gb", 16))]
-        env = dict(os.environ, COMFY_PYTHON=sys.executable, COMFY_ENABLE_LLM="1",
-                   COMFY_PORT=str(cfg["port"]), COMFY_TLS_DIR=str(cert.parent))
-        child = subprocess.Popen(cmd, cwd=APP.parent, env=env, start_new_session=True)
+        from .startup import command
+        cmd,cwd,env=command(cfg,cert,key,args.cpu)
+        child = subprocess.Popen(cmd, cwd=cwd, env=env, start_new_session=True)
         record(child.pid)
     try:
         code = child.wait()

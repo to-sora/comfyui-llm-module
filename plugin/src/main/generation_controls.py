@@ -16,6 +16,8 @@ class StopGeneration(StoppingCriteria):
         self.end = tokenizer.encode(marker, add_special_tokens=False) if marker else []
 
     def __call__(self, input_ids, scores, **kwargs):
+        from .ram_budget import check, FLOOR
+        check(floor=FLOOR+1024**3)
         mm.throw_exception_if_processing_interrupted()
         return bool(self.end and input_ids[0, -len(self.end):].tolist() == self.end)
 

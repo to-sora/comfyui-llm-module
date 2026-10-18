@@ -6,6 +6,7 @@ from .gateway_graph import graph
 from .gateway_link import get, disconnect
 from .settings import read
 from .gateway_cleanup import cleanup
+from . import stream_bus
 
 
 async def execute(body, request=None, on_event=None):
@@ -17,6 +18,7 @@ async def execute(body, request=None, on_event=None):
     completed = False
     try:
         future = await link.events.subscribe(prompt_id, on_event)
+        stream_bus.register(prompt_id,on_event,future)
         await link.request("/prompt", {"prompt": graph(body), "prompt_id": prompt_id,
                                        "client_id": link.events.client_id})
         timeout = read("config.yaml")["request_timeout"]
@@ -36,6 +38,7 @@ async def execute(body, request=None, on_event=None):
         completed = True
         return value
     finally:
+        stream_bus.remove(prompt_id)
         gone.cancel()
         await asyncio.gather(gone, return_exceptions=True)
         await asyncio.shield(cleanup(link, prompt_id, completed, future))

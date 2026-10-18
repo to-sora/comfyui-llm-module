@@ -10,13 +10,10 @@ def initialize():
     from aiohttp import web
     from server import PromptServer
     from .gateway import install
-    from .gateway_link import close
-    PromptServer.instance.app.on_cleanup.append(close)
-    from .network import install_whitelist
+    from .route_access import Routes
     from .runtime import status
-    install_whitelist(PromptServer.instance.app)
     install()
 
-    @PromptServer.instance.routes.get("/llm/status")
+    @Routes(PromptServer.instance.routes).get("/llm/status")
     async def report(request):
         return web.json_response(status())

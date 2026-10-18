@@ -1,18 +1,18 @@
-import json
 import time
 from collections import deque
-from weakref import WeakValueDictionary
-from comfy import model_management as mm
 from .patcher import LLMPatcher
-from .estimate import working
+from .estimate import weights
+from . import ram_budget, weight_reads, weight_cache
+from .runtime_selection import Selection
 
-HANDLES = WeakValueDictionary()
+HANDLES = {}
 EVENTS = deque(maxlen=128)
 
 
 class LLMRuntime:
-    def __init__(self, cfg):
+    def __init__(self, cfg, key):
         self.cfg, self.engine = cfg, None
+        self.key = key
         self.resident_bytes = self.loads = self.transfers = 0
         self.patcher = LLMPatcher(self)
 
@@ -26,31 +26,29 @@ class LLMRuntime:
     def load(self, device, budget):
         self.ensure_engine()
         fresh = self.engine.model is None
+        if fresh:
+            size = int(weights(self.cfg)*1.15)+512*1024**2
+            ram_budget.reserve(self.key, size, weight_reads.staging_bytes(weight_cache.source(self.cfg)))
         self.engine.load(device, budget)
         self.resident_bytes = self.engine.diagnostics["storage"].get("cuda", 0)
+        ram_budget.update(self.key, sum(self.engine.diagnostics['storage'].values()), self.resident_bytes)
         self.loads += int(fresh)
         self.transfers += int(not fresh)
         EVENTS.append({"time": time.time(), "event": "loaded" if fresh else "restored",
             "model": self.cfg["id"], "resident_bytes": self.resident_bytes, "disk_loads": self.loads})
 
-    def chat(self, request, images=None):
-        self.ensure_engine()
-        inputs = self.engine.prepare(request, images)
-        length = inputs["input_ids"].shape[-1] + request.get("max_completion_tokens", request.get("max_tokens", 256))
-        if length > self.cfg["context_tokens"]:
-            raise ValueError("Prompt and reply exceed context capacity")
-        pixels = sum(v.numel() for k, v in inputs.items() if k.startswith("pixel_values"))
-        required = working(self.cfg, length, pixels, request.get('diagnostic_prefix'))
-        mm.load_models_gpu([self.patcher], memory_required=required)
-        mm.throw_exception_if_processing_interrupted()
-        return self.engine.chat(request, inputs, required)
+    def chat(self, request, images, cfg):
+        from .runtime_chat import chat
+        return chat(self, request, images, cfg)
 
     def offload(self):
         if self.engine is None or self.engine.model is None:
             return
+        ram_budget.check(self.resident_bytes, floor=ram_budget.FLOOR+512*1024**2)
         self.engine.offload()
         previous = self.resident_bytes
         self.resident_bytes = self.engine.diagnostics["storage"].get("cuda", 0)
+        ram_budget.update(self.key, sum(self.engine.diagnostics['storage'].values()), self.resident_bytes)
         freed = previous - self.resident_bytes
         EVENTS.append({"time": time.time(), "event": "offloaded", "model": self.cfg["id"],
                        "freed_bytes": freed, "ram_bytes": self.engine.diagnostics["storage"]["cpu"]})
@@ -63,12 +61,12 @@ class LLMRuntime:
 
 
 def get_handle(cfg):
-    key = json.dumps(cfg, sort_keys=True)
-    handle = HANDLES.get(key)
-    if handle is None:
-        handle = LLMRuntime(cfg)
-        HANDLES[key] = handle
-    return handle
+    key = (weight_reads.identity(cfg['model']), cfg['quantization'],
+           cfg.get('precision','bfloat16'), cfg.get('device','auto'))
+    with ram_budget.LOCK:
+        if key not in HANDLES:
+            HANDLES[key] = LLMRuntime(dict(cfg),key)
+        return Selection(HANDLES[key],cfg)
 
 
 def status():

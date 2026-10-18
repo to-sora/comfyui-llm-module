@@ -12,7 +12,8 @@ from .gateway_stream import stream_response
 
 
 def install():
-    routes = PromptServer.instance.routes
+    from .route_access import Routes
+    routes = Routes(PromptServer.instance.routes)
     from .capabilities import install as install_capabilities
     install_capabilities(routes)
     from .token_count import install as install_token_count
@@ -27,7 +28,9 @@ def install():
     async def chat(request):
         try:
             body = validate(await json_body(request))
-            if PromptServer.instance.prompt_queue.get_tasks_remaining() >= read("config.yaml")["queue_limit"]:
+            from .gateway_link import get
+            queue = await get().request('/queue')
+            if sum(len(queue[k]) for k in ('queue_running','queue_pending')) >= read("config.yaml")["queue_limit"]:
                 return web.json_response({"error": {"message": "ComfyUI queue is full."}}, status=429)
             if body.get("stream"):
                 return await stream_response(request, body)

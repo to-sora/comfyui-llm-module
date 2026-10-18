@@ -2,6 +2,8 @@ from comfy import model_management as mm
 from .nodes_load import LLMModel
 from .nodes_generate import LLMChat
 from .batch_noise import LLMBatchNoise
+from .checkpoint_cache import LLMManagedCheckpoint
+from .nodes_background import LLMRemoveBackground
 
 
 class LLMUnload:
@@ -24,4 +26,5 @@ class LLMUnload:
         return (after,)
 
 
-NODE_CLASS_MAPPINGS = {c.__name__: c for c in (LLMModel, LLMChat, LLMUnload, LLMBatchNoise)}
+NODE_CLASS_MAPPINGS = {c.__name__: c for c in (LLMModel, LLMChat, LLMUnload, LLMBatchNoise,
+                                           LLMManagedCheckpoint, LLMRemoveBackground)}

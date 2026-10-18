@@ -7,3 +7,4 @@ httpx==0.28.1
 socksio==1.0.0
 bitsandbytes==0.50.2
 hqq==0.2.8.post1
+onnxruntime==1.24.4

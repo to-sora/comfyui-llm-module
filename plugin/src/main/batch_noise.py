@@ -1,6 +1,5 @@
 import json
 import torch
-import comfy.sample
 
 
 class BatchNoise:
@@ -11,8 +10,11 @@ class BatchNoise:
         samples = latent['samples']
         if samples.shape[0] != len(self.seeds):
             raise ValueError('One random seed is required for each image in the batch')
-        return torch.cat([comfy.sample.prepare_noise(samples[i:i+1], seed)
-                          for i, seed in enumerate(self.seeds)], dim=0)
+        from nodes import NODE_CLASS_MAPPINGS
+        cls=NODE_CLASS_MAPPINGS['RandomNoise']
+        loader=cls()
+        return torch.cat([getattr(loader,cls.FUNCTION)(seed)[0].generate_noise(
+            {**latent,'samples':samples[i:i+1]}) for i,seed in enumerate(self.seeds)],dim=0)
 
 
 class LLMBatchNoise:

@@ -3,10 +3,9 @@ set -euo pipefail
 cd -- "$(dirname -- "$0")"
 source ./env.sh
 export COMFY_VENV="$QWEN_APP/.local-tool-app/venv"
-bash "$QWEN_APP/../../civit_script/install.sh"
+[[ -x "$COMFY_VENV/bin/python" ]] || "$COMFY_BOOTSTRAP_PYTHON" -m venv "$COMFY_VENV"
+[[ -f "$QWEN_APP/../../comfyui/requirements.txt" ]] || { echo 'Existing ComfyUI installation required'; exit 1; }
+"$COMFY_VENV/bin/python" src/main/pip_ipv4.py install -r "$QWEN_APP/../../comfyui/requirements.txt"
 "$COMFY_VENV/bin/python" src/main/pip_ipv4.py install -r requirements.txt
-target="$QWEN_APP/../../comfyui/custom_nodes/comfyui-llm-module"
-mkdir -p -- "$(dirname -- "$target")"
-if [[ ! -e "$target" ]]; then
-  ln -s "$(dirname -- "$QWEN_APP")" "$target"
-fi
+cd ..
+"$COMFY_VENV/bin/python" -m plugin.src.main.install_image_model
