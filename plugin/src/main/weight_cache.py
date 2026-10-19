@@ -45,3 +45,15 @@ def reservation(cfg):
             return size+512*1024**2
     from .estimate import weights
     return int(weights(cfg)*1.15)+512*1024**2
+
+
+def staging(cfg, device, budget, retained):
+    from .estimate import weights
+    from .weight_reads import staging_bytes
+    cached = source(cfg)
+    scratch = staging_bytes(cached)
+    if cached != cfg['model'] and str(device).startswith('cuda') and weights(cfg) <= budget:
+        # Same all-GPU condition as hf_load: loading scratch precedes CPU offload.
+        # Reserve the larger phase, retaining the full eventual RAM commitment.
+        return max(0, scratch-retained)
+    return scratch

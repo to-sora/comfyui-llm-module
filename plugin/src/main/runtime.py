@@ -27,7 +27,8 @@ class LLMRuntime:
         fresh = self.engine.model is None
         if fresh:
             size = weight_cache.reservation(self.cfg)
-            ram_budget.reserve(self.key, size, weight_reads.staging_bytes(weight_cache.source(self.cfg)))
+            staging = weight_cache.staging(self.cfg, device, budget, size)
+            ram_budget.reserve(self.key, size, staging)
         self.engine.load(device, budget)
         self.resident_bytes = self.engine.diagnostics["storage"].get("cuda", 0)
         ram_budget.update(self.key, sum(self.engine.diagnostics['storage'].values()), self.resident_bytes)

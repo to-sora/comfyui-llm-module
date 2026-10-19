@@ -16,3 +16,5 @@ Earlier cache-clear disposal behavior is superseded: R1 now keeps strong model o
 Human unaided acceptance and every model/configuration combination are not claimed. / 未宣稱真人驗收或所有模型組合通過。
 
 27B Firefox E2E: 51.42 s; native 17.90 GB offload/restore, one read each for 9B/27B/SDXL; peak RSS 37.17 GB, system used 51.13 GB, no swap. / 二百七十億端到端與原生記憶體切換完成。
+
+27B R2: three Firefox messages, five LLM calls and two native SDXL swaps in one PID; all weight reads stay one. Peak RSS 36.94 GB, minimum 80 GB-plan availability 24.51 GB; no swap. / 跨訊息常駐通過；權重各讀一次，無交換空間使用。
