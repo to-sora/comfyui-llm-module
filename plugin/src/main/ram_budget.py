@@ -36,7 +36,16 @@ def reserve(key, size, transient=0, kind='llm'):
             raise MemoryError(f'{kind} resident budget exceeded: '
                               f'{(used+size)/GB:.1f} GiB requested, {limit/GB:.0f} GiB limit')
         check(size+transient, returning())
-        RESERVATIONS[key] = {'bytes':size, 'kind':kind, 'gpu':0, 'state':'admitted'}
+        entry = {'bytes':size, 'kind':kind, 'gpu':0, 'state':'admitted'}
+        RESERVATIONS[key] = entry
+        return entry
+
+
+def release(key, token):
+    with LOCK:
+        if token is not None and RESERVATIONS.get(key) is token:
+            TRACKERS.pop(key, None)
+            del RESERVATIONS[key]
 
 
 def returning():

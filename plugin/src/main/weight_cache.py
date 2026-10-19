@@ -22,6 +22,10 @@ def source(cfg):
 def save(cfg, model, processor):
     if cfg["quantization"] != "bnb_nf4" or source(cfg) != cfg["model"]:
         return
+    from .weight_identity import origin
+    from .weight_reads import identity
+    if origin(cfg['model']) != identity(cfg['model']):
+        return
     target = location(cfg)
     staging = target.with_name(target.name + ".partial")
     if staging.exists():

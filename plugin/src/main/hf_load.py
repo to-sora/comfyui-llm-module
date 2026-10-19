@@ -40,7 +40,8 @@ def load(cfg, proc, vision, budget):
         quant = options.get("quantization_config")
         if quant:
             quant.llm_int8_enable_fp32_cpu_offload = True
-    weight_reads.claim(source, cfg['quantization'])
+    from .weight_identity import representation
+    weight_reads.claim(source, cfg['quantization'], representation(cfg))
     model = cls.from_pretrained(source, config=config, dtype=dtype, device_map=mapping,
                                attn_implementation="sdpa", **options, **common).eval()
     if "disk" in getattr(model, "hf_device_map", {}).values():

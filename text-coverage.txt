@@ -18,3 +18,5 @@ Human unaided acceptance and every model/configuration combination are not claim
 27B Firefox E2E: 51.42 s; native 17.90 GB offload/restore, one read each for 9B/27B/SDXL; peak RSS 37.17 GB, system used 51.13 GB, no swap. / 二百七十億端到端與原生記憶體切換完成。
 
 27B R2: three Firefox messages, five LLM calls and two native SDXL swaps in one PID; all weight reads stay one. Peak RSS 36.94 GB, minimum 80 GB-plan availability 24.51 GB; no swap. / 跨訊息常駐通過；權重各讀一次，無交換空間使用。
+
+Load failure/identity: tiny CPU fault injection passed; live 27B auto→cuda:0 reused one owner/load with unchanged quota after SDXL. Peak RSS 36.63 GB, minimum planned availability 24.30 GB. New 4×25 flow not passed; see server/doc/flow-acceptance.md. / 失敗回滾與別名通過；新增流程缺口已記錄。

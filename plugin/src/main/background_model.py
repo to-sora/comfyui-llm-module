@@ -4,19 +4,16 @@ import numpy as np
 from PIL import Image
 from .settings import APP
 from . import ram_budget,weight_reads
+from .load_transaction import admitted
 
 PATH=APP/'data/image-models/u2netp.onnx'
 SESSION=None
 
 
-def load():
-    global SESSION
-    if SESSION is not None:
-        return
+def create():
     import onnxruntime as ort
     if not PATH.is_file():
         raise FileNotFoundError('Install the background model with plugin/install-image-tools.sh')
-    ram_budget.reserve(('aux','u2netp'),256*1024**2,512*1024**2,kind='aux')
     weight_reads.claim(str(PATH),'U2NetP CPU segmentation')
     raw=PATH.read_bytes()
     if hashlib.md5(raw).hexdigest()!='8e83ca70e441ab06c318d82300c84806':
@@ -24,9 +21,17 @@ def load():
     options=ort.SessionOptions()
     options.intra_op_num_threads=4
     options.inter_op_num_threads=1
-    SESSION=ort.InferenceSession(raw,sess_options=options,providers=['CPUExecutionProvider'])
+    session=ort.InferenceSession(raw,sess_options=options,providers=['CPUExecutionProvider'])
     ram_budget.update(('aux','u2netp'),256*1024**2)
     weight_reads.completed(str(PATH))
+    return session
+
+
+def load():
+    global SESSION
+    if SESSION is None:
+        with admitted(('aux','u2netp'),256*1024**2,512*1024**2,'aux'):
+            SESSION=create()
 
 
 def mask(image):

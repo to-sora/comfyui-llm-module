@@ -6,6 +6,7 @@ def describe(handles, events):
     return {"models": [{"model": h.cfg["id"], "loaded": h.resident_bytes > 0,
         "in_ram": h.engine is not None and h.engine.model is not None,
         "source": h.cfg["model"], "backend": "transformers", "resident_bytes": h.resident_bytes,
+        "device": h.cfg['device'],
         "loads": h.loads, "transfers": h.transfers, "model_size": h.patcher.model_size(),
         "patcher_gpu_resident": h.resident_bytes > 0,
         "quantization": h.cfg["quantization"], "kv_quantization": h.cfg["kv_quantization"],

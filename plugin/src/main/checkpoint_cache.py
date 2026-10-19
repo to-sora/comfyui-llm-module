@@ -2,6 +2,7 @@
 from pathlib import Path
 from .settings import APP, read
 from . import ram_budget, weight_reads
+from .load_transaction import admitted
 
 CHECKPOINTS = {}
 
@@ -9,6 +10,18 @@ CHECKPOINTS = {}
 def native():
     from nodes import NODE_CLASS_MAPPINGS
     return NODE_CLASS_MAPPINGS['CheckpointLoaderSimple']
+
+
+def load_checkpoint(name, path, key, size):
+    weight_reads.claim(str(path),'SDXL checkpoint')
+    loader = native()()
+    value = getattr(loader,loader.FUNCTION)(name)
+    patchers = [value[0],value[1].patcher,value[2].patcher]
+    ram_budget.TRACKERS[key] = lambda:sum(p.loaded_size() for p in patchers
+        if str(p.current_loaded_device()).startswith('cuda'))
+    ram_budget.update(key,size)
+    weight_reads.completed(str(path))
+    return value
 
 
 class LLMManagedCheckpoint:
@@ -31,14 +44,6 @@ class LLMManagedCheckpoint:
             return CHECKPOINTS[identity]
         size = path.stat().st_size
         key = ('sdxl',str(path.resolve()))
-        ram_budget.reserve(key,size,transient=size+2*ram_budget.GB,kind='sdxl')
-        weight_reads.claim(str(path),'SDXL checkpoint')
-        loader = native()()
-        value = getattr(loader,loader.FUNCTION)(ckpt_name)
-        CHECKPOINTS[identity] = value
-        weight_reads.completed(str(path))
-        patchers=[value[0],value[1].patcher,value[2].patcher]
-        ram_budget.TRACKERS[key]=lambda:sum(p.loaded_size() for p in patchers
-            if str(p.current_loaded_device()).startswith('cuda'))
-        ram_budget.update(key,size)
-        return value
+        with admitted(key,size,size+2*ram_budget.GB,'sdxl'):
+            CHECKPOINTS[identity] = load_checkpoint(ckpt_name,path,key,size)
+        return CHECKPOINTS[identity]

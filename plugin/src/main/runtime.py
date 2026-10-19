@@ -1,7 +1,7 @@
 import time
 from collections import deque
 from .patcher import LLMPatcher
-from . import ram_budget, weight_reads, weight_cache
+from . import ram_budget
 from .runtime_selection import Selection
 
 HANDLES = {}
@@ -23,19 +23,8 @@ class LLMRuntime:
             self.engine = HFEngine(self.cfg)
 
     def load(self, device, budget):
-        self.ensure_engine()
-        fresh = self.engine.model is None
-        if fresh:
-            size = weight_cache.reservation(self.cfg)
-            staging = weight_cache.staging(self.cfg, device, budget, size)
-            ram_budget.reserve(self.key, size, staging)
-        self.engine.load(device, budget)
-        self.resident_bytes = self.engine.diagnostics["storage"].get("cuda", 0)
-        ram_budget.update(self.key, sum(self.engine.diagnostics['storage'].values()), self.resident_bytes)
-        self.loads += int(fresh)
-        self.transfers += int(not fresh)
-        EVENTS.append({"time": time.time(), "event": "loaded" if fresh else "restored",
-            "model": self.cfg["id"], "resident_bytes": self.resident_bytes, "disk_loads": self.loads})
+        from .runtime_loading import load
+        load(self, device, budget, EVENTS)
 
     def chat(self, request, images, cfg):
         from .runtime_chat import chat
@@ -61,8 +50,8 @@ class LLMRuntime:
 
 
 def get_handle(cfg):
-    key = (weight_reads.identity(cfg['model']), cfg['quantization'],
-           cfg.get('precision','bfloat16'), cfg.get('device','auto'))
+    from .runtime_identity import canonical
+    cfg, key = canonical(cfg)
     with ram_budget.LOCK:
         if key not in HANDLES:
             HANDLES[key] = LLMRuntime(dict(cfg),key)
