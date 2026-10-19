@@ -1,10 +1,9 @@
-"""Public loader-node wrapper retaining checkpoint outputs for this process."""
-from pathlib import Path
+"""Public loader wrapper with native caching and active-turn retention."""
+import weakref
 from .settings import APP, read
-from . import ram_budget, weight_reads
+from . import ram_budget, weight_reads, ram_cleanup
 from .load_transaction import admitted
-
-CHECKPOINTS = {}
+from .checkpoint_lifetime import CHECKPOINTS, Entry, pin, retain
 
 
 def native():
@@ -12,38 +11,52 @@ def native():
     return NODE_CLASS_MAPPINGS['CheckpointLoaderSimple']
 
 
-def load_checkpoint(name, path, key, size):
-    weight_reads.claim(str(path),'SDXL checkpoint')
+def path_for(name):
+    root = (APP/read('config.yaml')['comfy_directory']).resolve()/'models/checkpoints'
+    if name not in native().INPUT_TYPES()['required']['ckpt_name'][0]:
+        raise ValueError('Choose an available SDXL checkpoint')
+    path = root/name
+    if not path.is_file():
+        raise ValueError('Checkpoint file is unavailable')
+    return path.resolve()
+
+
+def load_checkpoint(name, path, key, size, token):
+    weight_reads.checkpoint_claim(str(path))
     loader = native()()
-    value = getattr(loader,loader.FUNCTION)(name)
-    patchers = [value[0],value[1].patcher,value[2].patcher]
-    ram_budget.TRACKERS[key] = lambda:sum(p.loaded_size() for p in patchers
-        if str(p.current_loaded_device()).startswith('cuda'))
+    values = getattr(loader,loader.FUNCTION)(name)
+    entry = Entry(str(path), values, key, token)
+    ref = weakref.ref(entry)
+    ram_budget.TRACKERS[key] = lambda: ref().gpu() if ref() is not None else 0
     ram_budget.update(key,size)
     weight_reads.completed(str(path))
-    return value
+    return entry
 
 
 class LLMManagedCheckpoint:
     CATEGORY = 'LLM'
-    RETURN_TYPES = ('MODEL','CLIP','VAE')
+    RETURN_TYPES = ('MODEL','CLIP','VAE','LLM_CHECKPOINT')
     FUNCTION = 'load'
-    DESCRIPTION = 'ComfyUI checkpoint loader with process-lifetime RAM retention.'
+    DESCRIPTION = 'Native ComfyUI caching; active turns retain shared checkpoint weights.'
 
     @classmethod
     def INPUT_TYPES(cls):
-        return native().INPUT_TYPES()
+        fields = native().INPUT_TYPES()
+        return {**fields, 'optional':{**fields.get('optional',{}),
+                                      'lease':('STRING',{'default':''})}}
 
-    def load(self, ckpt_name):
-        root = (APP / read('config.yaml')['comfy_directory']).resolve()
-        path = root / 'models/checkpoints' / ckpt_name
-        if not path.is_file():
-            raise ValueError('RAM-managed checkpoints must be in ComfyUI models/checkpoints')
-        identity=str(path.resolve())
-        if identity in CHECKPOINTS:
-            return CHECKPOINTS[identity]
-        size = path.stat().st_size
-        key = ('sdxl',str(path.resolve()))
-        with admitted(key,size,size+2*ram_budget.GB,'sdxl'):
-            CHECKPOINTS[identity] = load_checkpoint(ckpt_name,path,key,size)
-        return CHECKPOINTS[identity]
+    def load(self, ckpt_name, lease=''):
+        path = path_for(ckpt_name)
+        identity = str(path)
+        pin(lease,identity)
+        entry = CHECKPOINTS.get(identity)
+        if entry is None:
+            ram_cleanup.reclaim()
+            size, key = path.stat().st_size, ('sdxl',identity)
+            with admitted(key,size,size+2*ram_budget.GB,'sdxl'):
+                token = ram_budget.RESERVATIONS[key]
+                entry = load_checkpoint(ckpt_name,path,key,size,token)
+                CHECKPOINTS[identity] = entry
+        retain(entry)
+        pin(lease,identity,entry)
+        return entry.outputs()

@@ -28,6 +28,8 @@ def prepare(e, run, calls):
 
 
 async def execute_all(e, run, calls, tasks, results):
+    from .checkpoint_turn import retain
+    await retain(e,run,tasks)
     pictures(e,run,[t['id'] for t in tasks])
     e.publish(run,'tool.started',{'message':'Making your images','count':len(tasks)})
     e.trace(run,'tools',{'calls':calls,'images':results})
@@ -40,7 +42,8 @@ async def execute_all(e, run, calls, tasks, results):
             value = {'image':item['number'],'status':'done' if item['file'] else 'failed'}
             if item['file']:
                 visible.append(ident)
-                value.update(width=item['width'],height=item['height'])
+                value.update(width=item['width'],height=item['height'],
+                             checkpoint=item['recipe'].get('checkpoint'))
             else:
                 value['error']=item['recipe'].get('error','Image not completed')
             images.append(value)

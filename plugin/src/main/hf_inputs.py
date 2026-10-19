@@ -25,8 +25,9 @@ def prepare(processor, vision, request, images):
                 break
     if not processor.chat_template:
         raise ValueError("This checkpoint has no chat template. Configure its intended template before chat use.")
+    from .image_budget import options
     return processor.apply_chat_template(
         messages, tools=tools, tokenize=True, add_generation_prompt=True,
         return_dict=True, return_tensors="pt",
         enable_thinking=request.get("enable_thinking", False),
-        tool_choice=request.get("tool_choice", "auto"))
+        tool_choice=request.get("tool_choice", "auto"), processor_kwargs=options(processor, request))

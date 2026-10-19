@@ -33,3 +33,9 @@ Tools are returned to the client for execution; send their results back as `role
 流式输出在推理中发送文字，完成时发送结构化工具调用；可附用量。关闭连接会取消原生任务。
 
 Errors / 錯誤 / 错误: 400 invalid request, 429 queue full, 500 execution failure.
+
+`enable_thinking` toggles supported model reasoning. `max_image_tokens` (64–16384, default 16000) caps each Qwen image during preprocessing. Gemma uses 256 tokens per image and rejects lower caps. Context and output are maxima: effective reply length is clipped to remaining context. Usage reports actual image and reasoning token counts.
+
+可啟用 thinking；逐圖 token 上限於預處理套用。上下文與輸出為上限，實際輸出依剩餘空間縮短；用量回傳圖片及推理 token。
+
+可启用 thinking；逐图 token 上限在预处理应用。上下文与输出是上限，实际输出按剩余空间缩短；用量返回图片及推理 token。

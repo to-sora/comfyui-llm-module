@@ -1,22 +1,10 @@
 import asyncio
-import json
-import struct
 from pathlib import Path
 from aiohttp import web
 from .registry import profiles
 from .settings import APP,read
 from .checkpoint_cache import native
-
-
-def shapes(path):
-    if Path(path).suffix == ".safetensors":
-        with open(path, "rb") as stream:
-            size = struct.unpack("<Q", stream.read(8))[0]
-            if size > 32 * 1024 * 1024:
-                raise ValueError("Invalid tensor header")
-            header = json.loads(stream.read(size))
-        return {k: v["shape"] for k, v in header.items() if k != "__metadata__"}
-    raise ValueError('Use a safetensors SDXL checkpoint for metadata-only discovery')
+from .checkpoint_header import shapes
 
 
 def checkpoints():
@@ -35,7 +23,9 @@ def checkpoints():
             (accepted if valid else excluded).append(name)
         except Exception:
             excluded.append(name)
-    return {"checkpoints": accepted, "excluded_count": len(excluded)}
+    from .ram_budget import SDXL_LIMIT
+    return {"checkpoints": accepted, "excluded_count": len(excluded),
+            'batch_checkpoints':[name for name in accepted if (root/name).stat().st_size<=SDXL_LIMIT//2]}
 
 
 def install(routes):

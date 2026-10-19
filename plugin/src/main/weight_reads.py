@@ -11,15 +11,30 @@ def identity(source):
     return str(path.resolve()) if path.exists() else source
 
 
-def claim(source, purpose, representation=None):
+def ensure_new(source, representation=None):
     key = identity(source)
     with LOCK:
         if key in READS or (representation is not None and representation in REPRESENTATIONS):
             raise RuntimeError('R2: these weights were already read during this process: '+key+
-                               '. Reuse the resident representation; another read is refused.')
+                               '. Reuse the resident model; a retired model needs a ComfyUI restart.')
+
+
+def claim(source, purpose, representation=None):
+    key = identity(source)
+    with LOCK:
+        ensure_new(source, representation)
         READS[key] = {'purpose':purpose, 'reads':1, 'state':'reading'}
         if representation is not None:
             REPRESENTATIONS[representation] = key
+    return key
+
+
+def checkpoint_claim(source):
+    key = identity(source)
+    with LOCK:
+        previous = READS.get(key, {})
+        READS[key] = {'purpose':'SDXL checkpoint', 'reads':previous.get('reads',0)+1,
+                      'state':'reading'}
     return key
 
 
@@ -29,8 +44,9 @@ def completed(source):
 
 def failed_since(before, error):
     with LOCK:
-        for key in READS.keys()-before:
-            READS[key].update(state='failed', error=type(error).__name__)
+        for key,value in READS.items():
+            if before.get(key)!=value['reads']:
+                value.update(state='failed', error=type(error).__name__)
 
 
 def staging_bytes(source):

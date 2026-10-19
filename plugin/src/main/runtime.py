@@ -27,7 +27,9 @@ class LLMRuntime:
         load(self, device, budget, EVENTS)
 
     def chat(self, request, images, cfg):
+        from .model_switch import activate
         from .runtime_chat import chat
+        activate(self, HANDLES, EVENTS)
         return chat(self, request, images, cfg)
 
     def offload(self):

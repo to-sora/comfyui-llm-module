@@ -6,12 +6,12 @@ from ..settings import DATA
 def vision(db,ident,chat):
     from .image_store import metadata,load
     metadata(db,ident,chat)
-    cache=DATA/'vision'/(ident+'-alpha.jpg')
+    cache=DATA/'vision'/(ident+'-full.jpg')
     cache.parent.mkdir(exist_ok=True)
     if cache.is_file():
         return cache.read_bytes()
     picture=load(db,ident,chat)
-    picture.thumbnail((512,512),Image.Resampling.LANCZOS)
+    picture.thumbnail((4096,4096),Image.Resampling.LANCZOS)
     canvas=Image.new('RGB',picture.size,'#eeeeee')
     draw=ImageDraw.Draw(canvas)
     for y in range(0,picture.height,16):

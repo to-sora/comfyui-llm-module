@@ -1,22 +1,17 @@
-Current feature integration / 本次功能整合
-No inference mocks; no full model matrix or repeated conversion in this feature pass. / 未模擬推論，未重跑模型矩陣或轉換。
-Firefox: SDXL generation + actual-image review, U2NetP background removal and CJK text overlay completed. / 生圖檢視、模型去背及中文字完成。
-Firefox: document Q&A and edited-message branch answered the attached facts correctly. / 文件問答與分支正確使用附件。
-Firefox: Stop → Continue completed outpainting; the actual unmasked output pixels equal the source. / 停止續作擴圖，未塗像素相同。
-Firefox: drafts, search, desktop and phone layouts completed without console errors. / 草稿搜尋與桌機手機操作完成。
-Data: chat ZIP includes actual originals; full ZIP backup and merge restore completed. / 對話匯出、完整備份及合併還原完成。
-Memory: 7,882,445,024 LLM bytes offloaded to CPU and restored through native ComfyUI; KV/context changes keep one owner and one load. / 原生卸載恢復，共用權重且只讀一次。
-After resumed SDXL: LLM, SDXL and U2NetP source ledgers remain one read each; effective 80 GB planning availability exceeds 52 GB. / 續作後各讀一次，可用預算超過五十二 GB。
-Static checks: changed Python/JS syntax, JSON, whitespace and file size. / 修改檔案的語法、JSON、空白及大小。
+Current single-LLM flow / 本次單一 LLM 流程
+Real API matrix is running: 4 profiles ×25 rounds, three thinking/tool calls and 2/1/2 images per round. Not yet complete. / 真實矩陣仍執行中，未宣稱完成。
+No inference mocks. NF4/BF16/HQQ8, 35000 context, 12000 output maximum, 16000 per-image maximum; basic images512². / 未模擬推論，上限不需填滿。
+Runtime enums and real tool arguments select SDXL pairs. Shared native checkpoint leases survive another request; source-read and RAM observations are recorded per round. / 模型實際選擇配對，記錄共用、讀取及 RAM。
+Firefox controls: desktop, portrait and enlarged layouts saved thinking, sequential tools and all three token limits; screenshots inspected. / 三種版面設定保存及畫面檢查完成。
+Real incomplete SDXL file: failed read receipt retained, reservation released, LLM retained/read1. Header/file-bound checks now exclude it without scanning weights. / 真實損壞檔載入失敗已回收額度，LLM 保留。
+CPU processors: Qwen image cap and remaining-context reply cap; Gemma256 tokens per image and rejection below fixed minimum. No weights loaded for these checks. / 真實處理器檢查，未載入權重。
+Source checks: Python/JS syntax, JSON, whitespace and file sizes. / 語法、格式、空白及檔案大小。
+Evidence: fan-out/studio-chat/flow-api-261019.html; server/doc/flow-acceptance.md.
 
 Historical evidence / 既有證據
-Earlier five-profile text/tool/vision/SDXL, GGUF parity, NF4 prefix, 27B FP4, SSE cancellation, uploads, masked editing and layout reports remain in fan-out. / 先前五模型、轉換、前綴、串流及介面紀錄保留。
-Earlier cache-clear disposal behavior is superseded: R1 now keeps strong model owners until process exit. / 舊清快取釋放行為已由 R1 常駐規則取代。
-9B FP4 and FP16 candidate failures remain documented; NF4/BF16 is the default. / 九十億 FP4 與 FP16 失敗仍保留，預設 NF4/BF16。
-Human unaided acceptance and every model/configuration combination are not claimed. / 未宣稱真人驗收或所有模型組合通過。
-
-27B Firefox E2E: 51.42 s; native 17.90 GB offload/restore, one read each for 9B/27B/SDXL; peak RSS 37.17 GB, system used 51.13 GB, no swap. / 二百七十億端到端與原生記憶體切換完成。
-
-27B R2: three Firefox messages, five LLM calls and two native SDXL swaps in one PID; all weight reads stay one. Peak RSS 36.94 GB, minimum 80 GB-plan availability 24.51 GB; no swap. / 跨訊息常駐通過；權重各讀一次，無交換空間使用。
-
-Load failure/identity: tiny CPU fault injection passed; live 27B auto→cuda:0 reused one owner/load with unchanged quota after SDXL. Peak RSS 36.63 GB, minimum planned availability 24.30 GB. New 4×25 flow not passed; see server/doc/flow-acceptance.md. / 失敗回滾與別名通過；新增流程缺口已記錄。
+Five-profile text/tool/vision/SDXL, GGUF parity, prefix reuse, stream cancellation and native swap reports remain in fan-out. / 五模型、轉換、前綴、串流與原生切換紀錄保留。
+Firefox generation/review, model background removal, CJK text, document Q&A, branch, stop/resume outpaint, exact unmasked pixels, downloads, backups and layouts passed earlier. / 生圖檢視、編輯、文件、分支續作、未塗像素、下載及備份已實測。
+27B multi-message: five LLM calls/two SDXL swaps, weights read once, peak RSS36.94GB, minimum planned available24.51GB, no swap. / 既有二百七十億跨訊息測試通過。
+Load rollback and auto/cuda:0 identity passed tiny CPU checks and live27B reuse. / 失敗回滾及裝置別名共用已測。
+Latest rule supersedes permanent multi-LLM retention: only a replacement LLM may release the old one. / 最新規則僅允許換 LLM 時釋放舊者。
+No claim of every model/configuration, perfect visual semantics or unaided human acceptance. / 未宣稱所有組合、圖片語意或真人驗收。

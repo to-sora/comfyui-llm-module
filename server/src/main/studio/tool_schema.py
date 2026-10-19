@@ -13,17 +13,15 @@ def tool(name, description, properties, required):
 
 def schemas(caps):
     from .edit_schema import fields
+    from .image_tool_schema import fields as image_fields
     image = field('integer', minimum=1, description='Image number shown in this chat; never invent zero-based array indexes.')
     catalog = styles(caps)
     return [
-        tool('generate_images','Generate the whole requested set together. Describe each desired final image. Leave seed absent for fresh images.', {
-            'images':field('array',minItems=1,maxItems=8,items=field('object',properties={
-                'prompt':field('string'),'negative':field('string')},required=['prompt'],additionalProperties=False)),
-            'style':field('string',enum=list(catalog),description='; '.join(k+': '+v['describe'] for k,v in catalog.items())),
-            'aspect':field('string',enum=list(recipe()['aspects'])),
-            'seed':field('integer',minimum=0,description='Only provide to reproduce a previous result.')}, ['images','style','aspect']),
+        tool('generate_images','Generate an independent batch together. Leave seed absent for fresh images.',
+             image_fields(caps,field), ['images']),
         tool('edit_image','Change an existing image. Keep its aspect. Describe the complete desired image. Use an area only when the user supplied a mask.', {
             'image':image,'instruction':field('string'),'area':image,**fields(),
+            'checkpoint':field('string',enum=caps['checkpoints']),
             'strength':field('string',enum=['low','medium','high'],description='low .35, medium .5, high .7; default medium')}, ['image','instruction']),
         tool('upscale_image','Make an image twice as large, up to the 4096 pixel limit.',
              {'image':image,'factor':field('integer',enum=[2])},['image','factor']),

@@ -18,6 +18,7 @@ async def message(e,run,ids):
             notes.append(f'Final image {item["number"]}: the compositor preserved every unpainted pixel exactly.')
     sources=sources[:max(0,8-len(final))]
     return await attach(e,run['chat_id'],sources+final,
-        'Check the final images against the request. Compare edits only against source pixels shown here. '
+        'Check this batch against the request. Continue any remaining requested phases; otherwise give the final review. '
+        'Compare edits only against source pixels shown here. '
         'State visible matches or specific defects briefly. Do not invent a previous background or a change. '
         'If a source is not shown, avoid claiming how it changed.\n'+'\n'.join(notes))

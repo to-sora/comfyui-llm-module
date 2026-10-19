@@ -2,9 +2,7 @@ import torch
 from .generation_controls import StopGeneration, single_tool, end_tokens
 from .cache_stats import describe
 from .prefix_context import prepared
-from .tool_calls import parse
-from .gemma_tools import parse as parse_gemma
-from .model_response import parse as parse_response
+from .generation_result import opened, finish
 
 
 def generate(engine, request, inputs):
@@ -19,6 +17,7 @@ def generate(engine, request, inputs):
         inspect(engine, request, inputs)
     temperature = request.get("temperature", 0.0)
     tokenizer = getattr(processor, "tokenizer", processor)
+    thinking_open = opened(tokenizer, inputs)
     native_gemma = model.config.model_type == "gemma4"
     marker = "<tool_call|>" if native_gemma else "</tool_call>"
     options = {"do_sample": temperature > 0, "max_new_tokens": limit,
@@ -35,14 +34,9 @@ def generate(engine, request, inputs):
         options['logits_processor'] = [Scores(engine, tokenizer)]
     if request.get("stream") and request.get("comfy_prompt_id"):
         from .hf_stream import TokenStream
-        options["streamer"] = TokenStream(tokenizer, request)
+        options["streamer"] = TokenStream(tokenizer, request, thinking_open)
     with prepared(engine, request, inputs) as cache:
         output = model.generate(**inputs, past_key_values=cache, **options)
     engine.diagnostics["kv"] = describe(cache)
     tokens = output[0, count:]
-    raw = processor.decode(tokens, skip_special_tokens=False)
-    message = parse_response(parse_gemma if native_gemma else parse, raw, request.get("tools"))
-    reason = "tool_calls" if message.get("tool_calls") else "length" if len(tokens) >= limit else "stop"
-    return {"message": message, "finish_reason": reason,
-            "usage": {"prompt_tokens": count, "completion_tokens": len(tokens),
-                      "total_tokens": count + len(tokens)}}
+    return finish(engine, request, tokens, count, thinking_open)

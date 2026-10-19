@@ -21,7 +21,8 @@ def tokenizer(model):
 def count(body):
     value, vision = tokenizer(body["model"])
     inputs = prepare(value, vision, body, [])
-    return {"tokens": int(inputs["input_ids"].shape[-1])}
+    from .image_budget import counts
+    return {"tokens": int(inputs["input_ids"].shape[-1]), 'image_tokens':counts(value,inputs,body)}
 
 
 def install(routes):

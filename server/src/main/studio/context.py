@@ -7,9 +7,9 @@ from ..errors import UserError
 async def budget(e, run, system, current, tools):
     saved = e.db.get('chats',run['chat_id'])
     older = groups(e,run,saved['summary_through'])
-    limit = run['settings']['context_tokens'] - run['settings']['max_tokens'] - 64
+    limit = run['settings']['context_tokens'] - 64
     async def count(messages, schema):
-        result = await e.comfy.request('/llm/token_count',{'model':run['settings']['model'],
+        result = await e.comfy.request('/llm/token_count',{**run['settings'],
             'messages':messages,'tools':schema,'max_tokens':1})
         return result['tokens']
     while True:
@@ -24,7 +24,7 @@ async def budget(e, run, system, current, tools):
             {'role':'user','content':'Previous summary:\n'+saved['summary']+'\nOlder turn:\n'+json.dumps(group['messages'],ensure_ascii=False)}]
         if await count(prompt,[]) > run['settings']['context_tokens']-768:
             raise UserError('An earlier turn is too large to summarize. Increase the assistant context in Settings.')
-        answer = await complete(e,run,prompt,[],visible=False,max_tokens=512)
+        answer = await complete(e,run,prompt,[],visible=False,max_tokens=512,enable_thinking=False)
         if not answer.get('content'):
             raise RuntimeError('The assistant returned an empty conversation summary')
         saved = e.db.update('chats',run['chat_id'],summary=answer['content'],summary_through=group['through'])

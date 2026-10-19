@@ -1,28 +1,19 @@
 # Caching / 快取 / 缓存
 
-ComfyUI owns model lifetime. The runtime registry is weak; native cached node outputs retain weights. CPU tensors, quantization state and prefix snapshots are exposed to its RAM-pressure cache.
-ComfyUI 擁有模型生命週期；弱引用登記不保留權重，原生節點快取負責持有。CPU 權重、量化狀態及前綴快照供 RAM 壓力快取計量。
-ComfyUI 管理模型生命周期；弱引用注册不保留权重，由原生节点缓存持有。CPU 权重、量化状态及前缀快照供 RAM 压力缓存计量。
+One LLM stays resident. Only another LLM selection can release it. SDXL, node-cache clearing and GPU offload retain its weights. ComfyUI decides GPU placement. Context, KV and sampling changes reuse the owner. R2 receipts survive replacement: returning to retired A after A→B requires restarting ComfyUI; a second disk read is refused.
 
-The launcher reserves 10/16 GiB active/inactive RAM via `plugin/config/config.yaml`.
-啟動器依上述設定預留原生 RAM 餘量 10／16 GiB。
-启动器依上述配置预留原生 RAM 余量 10／16 GiB。
+同時常駐一個 LLM，只有另一 LLM 才可替換。SDXL、清節點快取與 GPU 卸載保留權重；GPU 由 ComfyUI 管理。上下文、KV 與取樣共用物件。R2 帳本不清除，切回已釋放模型須重啟。
 
-`/free` with `unload_models:true` offloads to RAM. Adding `free_memory:true` clears node caches and releases the runtime; the next call reloads weights.
-僅卸載模型會搬到 RAM；同時清理記憶體會釋放節點快取及執行實例，下次重載權重。
-仅卸载模型会搬到 RAM；同时清理内存会释放节点缓存及运行实例，下次重新加载权重。
+同时常驻一个 LLM，仅另一 LLM 可替换。SDXL、清节点缓存及 GPU 卸载保留权重；GPU 由 ComfyUI 管理。上下文、KV 与采样共用对象。保留 R2 账本，切回已释放模型须重启。
 
-Two CPU snapshots retain token IDs, math policy, attention KV and recurrent state. Each request restores a copy. HQQ starts after joining the suffix.
-兩份 CPU 快照記錄 token、精度、KV 及遞迴狀態；每次還原副本，合併後才做 HQQ。
-两份 CPU 快照记录 token、精度、KV 及递归状态；每次恢复副本，合并后才做 HQQ。
+The launcher uses native `--cache-lru 1`. `LLMManagedCheckpoint` returns native model/CLIP/VAE objects and their owner. Active turns retain shared references: `PUT /llm/turns/{token}` with `checkpoints:[names]`; `DELETE` releases only that turn. Another turn keeps the same objects alive. Idle SDXL entries can be evicted natively and reread in later turns. LLM reads remain once per process.
 
-Qwen vision uses BF16/CUDA with selective FP32 prefill; text and vision snapshots have separate math keys. ComfyUI reserves workspace. See [supported settings](vision-prefix.md). Text/tool and Gemma vision reuse remain enabled.
-Qwen 視覺以 BF16／CUDA 搭配局部 FP32 預填，文字視覺快照分開，空間由 ComfyUI 預留。支援範圍見連結；文字及 Gemma 視覺重用保留。
-Qwen 视觉以 BF16／CUDA 配合局部 FP32 预填，文本视觉快照分开，空间由 ComfyUI 预留。支持范围见链接；文本及 Gemma 视觉复用保留。
+採原生 LRU 1；當輪租約保留 SDXL，其他請求可共用。刪除單一租約不影響其他請求。閒置 SDXL 可由原生快取淘汰，下輪可重讀；LLM 仍每次程序只讀一次。
 
-`prefix_cache:false` disables reuse, retaining vision prefill precision. `/llm/status` reports hits, CPU bytes, math policy and bypass reasons. Tested speedups depend on the prompt and hardware; model answers are not universally exact.
-停用前綴仍保留視覺預填精度；狀態列出命中、CPU 用量、精度及略過原因。加速依提示與硬體而異，不保證模型永遠正確。
-停用前缀仍保留视觉预填精度；状态列出命中、CPU 用量、精度及跳过原因。加速取决于提示和硬件，不保证模型永远正确。
+使用原生 LRU 1；当轮保留 SDXL，其他请求可共享。删除一个租约不影响其他请求。闲置 SDXL 可由原生缓存淘汰，下轮可重读；LLM 仍每个进程只读一次。
 
-[Transformers cache documentation](https://huggingface.co/docs/transformers/kv_cache).
-[Diagnostic / 診斷 / 诊断](prefix-probe.md).
+Two CPU prefix snapshots retain tokens, attention KV and recurrent state. Each request restores a copy before suffix processing and HQQ. Qwen vision uses BF16/CUDA with selective FP32 prefill and separate math keys. `prefix_cache:false` disables reuse. Status reports hits, storage and bypass reasons. See [vision settings](vision-prefix.md).
+
+兩份 CPU 前綴快照保存 token、KV 與遞迴狀態，還原副本後處理後綴及 HQQ；視覺精度與限制見連結。狀態提供命中、用量與略過原因。
+
+两份 CPU 前缀快照保存 token、KV 和递归状态，恢复副本后处理后缀及 HQQ；视觉精度与限制见链接。状态提供命中、用量与跳过原因。

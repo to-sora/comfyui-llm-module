@@ -11,6 +11,8 @@ async def recover(e):
             except Exception:
                 logging.exception('Could not cancel an interrupted prompt')
         text='This request was interrupted by a restart. Try again to continue.'
+        from .checkpoint_turn import release
+        await release(e,run)
         e.db.update('runs',run['id'],status='interrupted',finished=time.time(),error=text,cancelled=0)
         mark_images(e,run,text)
         e.publish(run,'run.error',{'message':text})

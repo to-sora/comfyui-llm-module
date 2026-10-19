@@ -9,7 +9,7 @@ async def attach(e, chat, ids, text):
              if metadata(e.db,ident,chat)['kind']=='mask'}
     for ident in dict.fromkeys(ids):
         item = metadata(e.db,ident,chat)
-        filename = 'studio-vision-'+ident+'.jpg'
+        filename = 'studio-vision-full-'+ident+'.jpg'
         await e.comfy.upload(vision(e.db,ident,chat),filename)
         url = e.comfy.url+'/view?'+urlencode({'filename':filename,'type':'input'})
         label=f'Image {item["number"]}'

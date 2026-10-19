@@ -8,7 +8,7 @@ from . import ram_budget, ram_cleanup, weight_reads
 @contextmanager
 def admitted(key, size, transient=0, kind='llm', discard=None):
     token = ram_budget.reserve(key, size, transient, kind)
-    before = set(weight_reads.READS)
+    before = {k:v['reads'] for k,v in weight_reads.READS.items()}
     try:
         yield
     except BaseException as exc:

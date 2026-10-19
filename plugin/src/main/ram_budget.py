@@ -5,6 +5,7 @@ from . import ram_cleanup
 
 GB = 1024**3
 LIMIT, FLOOR, HEADROOM, LLM_LIMIT = 80_000_000_000, 8*GB, 20*GB, 35_000_000_000
+SDXL_LIMIT = 16_000_000_000
 LOCK = threading.RLock()
 RESERVATIONS = {}
 TRACKERS = {}
@@ -31,7 +32,7 @@ def reserve(key, size, transient=0, kind='llm'):
         if key in RESERVATIONS:
             return
         used = sum(v['bytes'] for v in RESERVATIONS.values() if v['kind']==kind)
-        limit = {'llm':LLM_LIMIT,'sdxl':14_000_000_000,'aux':1_000_000_000}[kind]
+        limit = {'llm':LLM_LIMIT,'sdxl':SDXL_LIMIT,'aux':1_000_000_000}[kind]
         if used+size > limit:
             raise MemoryError(f'{kind} resident budget exceeded: '
                               f'{(used+size)/GB:.1f} GiB requested, {limit/GB:.0f} GiB limit')
@@ -64,6 +65,6 @@ def update(key, size, gpu=0):
 def snapshot():
     returning()
     return {'planning_bytes':LIMIT, 'available_bytes':available(), 'floor_bytes':FLOOR,
-            'target_headroom_bytes':HEADROOM, 'llm_limit_bytes':LLM_LIMIT,
+            'target_headroom_bytes':HEADROOM, 'llm_limit_bytes':LLM_LIMIT, 'sdxl_limit_bytes':SDXL_LIMIT,
             'unused_cpu_cleanup':ram_cleanup.snapshot(),
             'reservations':{str(k):dict(v) for k,v in RESERVATIONS.items()}}

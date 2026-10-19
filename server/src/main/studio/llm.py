@@ -14,8 +14,9 @@ async def complete(e, run, messages, tools, visible=True, **options):
     trace.setdefault('prompt_ids',[]).append(prompt)
     e.db.update('runs',run['id'],trace_json=encode(trace))
     body = {**run['settings'], 'messages':messages,'tools':tools,'stream':True,
-            'stream_options':{'include_usage':True},'temperature':0,'enable_thinking':False,
-            'parallel_tool_calls':True,'comfy_prompt_id':prompt, **options}
+            'stream_options':{'include_usage':True},'temperature':0,
+            'parallel_tool_calls':run['settings'].get('parallel_tool_calls',True),
+            'comfy_prompt_id':prompt, **options}
     body.pop('image_checkpoint',None)
     started, completed, usage = time.monotonic(), False, {}
     finished = False

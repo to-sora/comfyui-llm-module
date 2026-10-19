@@ -8,12 +8,12 @@ API = os.environ.get("COMFY_TEST_URL", "https://127.0.0.1:8188")
 TLS = ssl._create_unverified_context()
 
 
-def request(path, data=None, binary=False):
+def request(path, data=None, binary=False, method=None):
     if path == '/v1/chat/completions' and data and os.environ.get('LLM_TEST_KERNELS'):
         data = {**data, 'diagnostic_kernels': os.environ['LLM_TEST_KERNELS']}
     payload = None if data is None else json.dumps(data).encode()
     req = urllib.request.Request(API + path, payload,
-                                 {"Content-Type": "application/json"})
+                                 {"Content-Type": "application/json"},method=method)
     with urllib.request.urlopen(req, context=TLS, timeout=900) as response:
         content = response.read()
     return content if binary else json.loads(content)

@@ -3,10 +3,11 @@ from .stream_text import VisibleText
 
 
 class TokenStream(TextStreamer):
-    def __init__(self, tokenizer, request):
+    def __init__(self, tokenizer, request, thinking_open=False):
         super().__init__(tokenizer, skip_prompt=True, skip_special_tokens=False)
         self.request = request
         self.visible = VisibleText()
+        self.visible.hidden = thinking_open
 
     def on_finalized_text(self, text, stream_end=False):
         value = self.visible.feed(text, final=stream_end)

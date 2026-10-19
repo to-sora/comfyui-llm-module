@@ -21,3 +21,9 @@ class Routes:
 
     def post(self,path):
         return self.route('post',path)
+
+    def put(self,path):
+        return self.route('put',path)
+
+    def delete(self,path):
+        return self.route('delete',path)

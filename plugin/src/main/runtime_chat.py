@@ -10,9 +10,12 @@ def chat(owner, request, images, cfg):
     owner.engine.cfg = owner.cfg
     ram_budget.check(256*1024**2, ram_budget.returning())
     inputs = owner.engine.prepare(request, images)
+    from .image_budget import counts, reply
+    request, limits = reply(request, inputs['input_ids'].shape[-1], cfg['context_tokens'])
+    limits['image_tokens'] = counts(owner.engine.processor, inputs, request)
+    limits['max_image_tokens'] = request.get('max_image_tokens', 16000)
+    owner.engine.diagnostics['token_budget'] = limits
     length = inputs['input_ids'].shape[-1] + request.get('max_completion_tokens', request.get('max_tokens',256))
-    if length > cfg['context_tokens']:
-        raise ValueError('Prompt and reply exceed context capacity')
     pixels = sum(v.numel() for k,v in inputs.items() if k.startswith('pixel_values'))
     required = working(cfg,length,pixels,request.get('diagnostic_prefix'))
     # Prefix snapshots and CPU inference are admitted in addition to weights.

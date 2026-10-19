@@ -18,6 +18,8 @@ def install():
     install_capabilities(routes)
     from .token_count import install as install_token_count
     install_token_count(routes)
+    from .checkpoint_routes import install as install_turns
+    install_turns(routes)
 
     @routes.get("/v1/models")
     async def models(request):

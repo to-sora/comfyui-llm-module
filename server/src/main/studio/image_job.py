@@ -15,6 +15,8 @@ async def start(e,run,tasks):
     source,mask,original,paint=await prepare(e,run,tasks[0],prompt)
     p.update(tasks[0]['params'])
     graph=build(p,[t['params']['seed'] for t in tasks],source,mask)
+    if '1' in graph:
+        graph['1']['inputs']['lease']=run['id']
     future=await e.comfy.events.subscribe(prompt,callback(e,run,tasks))
     e.prompts[run['id']].add(prompt)
     trace=e.db.get('runs',run['id'])['trace']

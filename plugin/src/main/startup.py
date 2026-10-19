@@ -19,9 +19,8 @@ def command(config,cert,key,cpu=False):
          '--disable-fast-disk','--disable-mmap','--disable-pinned-memory',
          '--preview-method','latent2rgb','--user-directory',str(APP/'data/user'),
          '--input-directory',str(APP/'data/input'),'--output-directory',str(APP/'data/output'),
-         '--temp-directory',str(APP/'data/tmp'),'--cache-ram',
-         str(settings.get('cache_ram_headroom_gb',10)),
-         str(settings.get('cache_ram_inactive_headroom_gb',16))]
+         '--temp-directory',str(APP/'data/tmp'),'--cache-lru',
+         str(settings.get('cache_lru_entries',1))]
     if cpu:
         cmd.append('--cpu')
     from .node_path import arguments

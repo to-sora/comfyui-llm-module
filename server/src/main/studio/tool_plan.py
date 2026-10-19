@@ -18,13 +18,9 @@ def plan(e, run, calls):
         output = []
         if name=='generate_images':
             images = images_argument(args.get('images'))
-            base = image_settings(e.caps,args.get('style','photo'),args.get('aspect','square'))
+            from .generation_plan import parameters
             for item in images:
-                description(item)
-                p = {**base,'prompt':item['prompt'],'negative':item.get('negative',''),
-                     'seed':seed(args['seed']) if 'seed' in args else secrets.randbits(52)}
-                p['requested_prompt']=p['prompt']
-                p['prompt']+=', '+styles(e.caps)[base['style']]['prompt_suffix']
+                p = parameters(e.caps,args,item)
                 output.append(add(e,run,tasks,p,call['id']))
         elif name in ('edit_image','upscale_image','remove_background'):
             source = number(e.db,run['chat_id'],args.get('image'))
@@ -33,6 +29,7 @@ def plan(e, run, calls):
             if name=='edit_image':
                 from .edit_plan import configure
                 configure(e,run,source,p,args)
+                checkpoint(e,p,args)
             elif name=='upscale_image' and args.get('factor')!=2:
                 raise UserError('Upscale supports factor 2')
             output.append(add(e,run,tasks,p,call['id'],[source['id']]))
@@ -42,6 +39,13 @@ def plan(e, run, calls):
             raise UserError('The assistant requested an unknown tool')
         results[call['id']]=output
     return tasks,results
+
+
+def checkpoint(e,p,args):
+    if 'checkpoint' in args:
+        if args['checkpoint'] not in e.caps['checkpoints']:
+            raise UserError('Choose an available SDXL checkpoint')
+        p['checkpoint']=args['checkpoint']
 
 
 def add(e,run,tasks,p,call,parents=None):

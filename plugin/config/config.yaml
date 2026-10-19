@@ -2,5 +2,4 @@ comfy_directory: ../../comfyui
 context_tokens: 16384
 request_timeout: 900
 queue_limit: 64
-cache_ram_headroom_gb: 10
-cache_ram_inactive_headroom_gb: 16
+cache_lru_entries: 1

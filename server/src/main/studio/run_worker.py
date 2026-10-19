@@ -1,9 +1,9 @@
 import asyncio
 import logging
 import time
-from .run_error import mark_images
+from .run_error import mark_images, plain
 from .engine import Stopped
-from ..errors import UserError, message
+from ..errors import message
 from .run_result import finish
 from .recovery import recover
 
@@ -19,19 +19,6 @@ def notify(e):
     e.events.publish('*', 'queue.changed', value)
     for row in value['active']+value['waiting']:
         e.events.publish(row['chat_id'], 'run.queued', row)
-
-
-def plain(exc):
-    text=message(exc)
-    if isinstance(exc, UserError):
-        return text
-    if any(value in text for value in ('RAM admission','resident budget','R2:')):
-        return 'This request exceeds the retained-model RAM budget or requires rereading weights. Existing models remain available; choose a resident model or reduce the context.'
-    if 'out of memory' in text.lower():
-        return 'Ran out of GPU memory. Try fewer images or a smaller size.'
-    if isinstance(exc, (ConnectionError, TimeoutError)) or 'connect' in text.lower():
-        return 'The image engine could not finish the request. Check its connection and try again.'
-    return 'Something went wrong while making this reply. Try again; details are in Debug.'
 
 
 async def worker(e):
@@ -61,6 +48,8 @@ async def worker(e):
             mark_images(e,job,text)
             e.publish(job,'run.error',{'message':text})
         finally:
+            from .checkpoint_turn import release
+            await release(e,job)
             e.publish(job,'message.done',{'message_id':job['assistant_id']})
             e.events.publish('*','chats.changed',{'chat_id':job['chat_id']})
             e.events.publish('*','run.finished',{'chat_id':job['chat_id'],'run_id':job['id'],

@@ -14,17 +14,17 @@ Implemented / 已實作
 Live integration / 實際整合
 First Firefox generate → SDXL → inspect completed in 24 s; background removal in 6 s.
 Document Q&A and edit-and-branch work in Firefox. Stop → Continue completed canvas expansion.
-Unmasked pixels remain exact; model loads remain one. Current feature implementation is complete.
+Unmasked pixels remain exact; model loads remain one. The new 4×25 flow is still running; see server/doc/flow-acceptance.md.
 首次瀏覽器生圖與檢視二十四秒完成，模型去背六秒；未執行完整模型矩陣。
 文件問答、訊息分支與停止續作擴圖已完成；未塗區像素一致，權重仍只載入一次。
-本次功能實作已完成；未宣稱所有模型設定或藝術要求均正確。
+新增四組各二十五輪流程仍執行中；未宣稱所有模型設定或藝術要求均正確。
 
 Constraints / 限制
-Existing models stay retained; additional models can be refused by the RAM budget.
+One LLM stays retained through SDXL. Another LLM can replace it; returning to a retired model requires restarting under R2.
 Image blur is reveal-on-click, not a classifier. PWA/notifications depend on browser support.
 Long documents use labeled context-limited excerpts; scanned PDFs need OCR.
 Pre-existing research found unreliable FP4/tool cases on 9B; NF4/BF16 stays the default.
-既有模型不丟棄；容量不足會拒絕新增載入。模糊為點選顯示，PWA 依瀏覽器支援。
+SDXL 保留目前 LLM；另一 LLM 可替換，R2 規則下切回已釋放模型須重啟。模糊為點選顯示，PWA 依瀏覽器支援。
 長文件為標示摘錄；掃描文件需 OCR。九十億 FP4 有既知模型回覆問題，預設維持 NF4/BF16。
 
 27B E2E completed: 51.42 s; peak system RAM 51.13 GB within the 80 GB plan.
